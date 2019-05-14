@@ -1,0 +1,8 @@
+package dev.xframe.test.game;
+option java_package = "dev.xframe.test.game";
+option java_outer_classname = "GameProto";
+
+
+message ValueMsg {
+	optional string val = 1;
+}

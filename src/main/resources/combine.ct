@@ -1,0 +1,95 @@
+///combine_name
+${combine_basic}$Combine
+///
+public class ${combine_name} extends ${combine_basic} implements dev.xframe.injection.code.CombineBuilder.ICombine {
+    
+    ///logger_field
+    static final org.slf4j.Logger _logger = org.slf4j.LoggerFactory.getLogger("${combine_basic}");
+    ///
+
+    ///delegates_field
+    final java.util.LinkedList _delegates = new java.util.LinkedList();
+    ///
+    
+    public void methodFromSupper()
+    {
+      ///simple_none_invoke_method_body
+      throw new IllegalArgumentException("unsupported method invocation");
+      ///
+    }
+    
+    public void methodFromSupper()
+	///simple_method_body
+    {
+    	java.util.Iterator it = this._delegates.iterator();
+        while(it.hasNext()) {
+        	${combine_basic} _delegate = (${combine_basic}) it.next();
+        	
+        	${obj_invoke_part}
+        	///obj_invoke_ex_part
+        	try {
+        		${obj_invoke_ex_part}
+        		///void_invoke_part
+        		_delegate.${method_name}(${method_params});
+            	///
+        		
+	        	///obj_invoke_part
+	        	${return_class} r = _delegate.${method_name}(${method_params});
+	        	if(r != ${return_default}) {
+	        		return r;
+	        	}
+	        	///
+        	} catch (Throwable t) {
+        		_logger.error("delegate invoke ignored error", t);
+        	}
+        	///
+        }
+        return ${return_default};
+    }
+    ///
+    
+    ///foreach_delegate_method
+    public void _forEachDeletage(java.util.function.Consumer consumer) {
+        java.util.Iterator it = this._delegates.iterator();
+        while(it.hasNext()) {
+            ${combine_basic} _delegate = (${combine_basic}) it.next();
+            
+            ${fe_invoke_part}
+            ///fe_invoke_ex_part
+            try {
+                ${fe_invoke_ex_part}
+                
+                ///fe_invoke_part
+                consumer.accept(_delegate);
+                ///
+            } catch (Throwable t) {
+                _logger.error("delegate foreach ignored error", t);
+            }
+            ///
+        }
+    }
+    ///
+    
+    ///void_rdef
+    ///
+    
+    ///obj_rdef
+		null
+	///
+	///pri_rdef
+		0
+	///
+	
+	///append_delegate_method
+	public void _appendDelegate(Object delegate) {
+		this._delegates.add(delegate);	
+	}
+	///
+	
+	///remove_delegate_method
+	public void _removeDelegate(Object delegate) {
+		this._delegates.remove(delegate);
+	}
+	///
+    
+}
