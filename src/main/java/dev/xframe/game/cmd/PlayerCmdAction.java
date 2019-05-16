@@ -8,7 +8,7 @@ import dev.xframe.net.codec.IMessage;
 public abstract class PlayerCmdAction<T extends ModularPlayer, V> {
 
     @ModularBridge.Source
-    public void exec(@ModularBridge.Bridging T player, IMessage req) throws Exception {
+    public final void exec(@ModularBridge.Bridging T player, IMessage req) throws Exception {
         // for dynamic override
         // bridge to Descriptor method
     }

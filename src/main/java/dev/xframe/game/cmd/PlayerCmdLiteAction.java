@@ -9,7 +9,7 @@ import dev.xframe.tools.LiteParser;
 
 public abstract class PlayerCmdLiteAction<T extends ModularPlayer, V, L extends MessageLite> extends PlayerCmdAction<T, V> {
 
-    final LiteParser parser = new LiteParser(this.getClass(), PlayerCmdLiteAction.class);
+    LiteParser parser;//该类是prototype 所以parser构建放在调用的地方 (@see PlayerCmdActionCmd)
 
     public final void exec(T player, @ModularInject V module, IMessage req) throws Exception {
         exec(player, module, parser.<L>parse(req.getBody()));
