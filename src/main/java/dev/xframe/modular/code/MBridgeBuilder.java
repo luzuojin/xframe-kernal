@@ -24,16 +24,8 @@ public class MBridgeBuilder {
     
     private static String LOADER_NAME = "_moduleLoader";
 
-    public static Class<?> build(Class<?> clazz) {
-        try {
-            Class<?> pclazz = build0(clazz).toClass();
-            
-            setupLoader(pclazz);
-            
-            return pclazz;
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e);
-        }
+    public static Class<?> build(Class<?> clazz) throws Exception {
+    	return setupLoader(build0(clazz).toClass());
     }
 
     public static CtClass build0(Class<?> clazz) throws Exception {
@@ -132,7 +124,7 @@ public class MBridgeBuilder {
             ++index;
             if(isBridgeTransfer(objects)) return index;
         }
-        throw new IllegalArgumentException("Bridge.In method require contains one parameter annotation persient by Bridge.Transfer");
+        throw new IllegalArgumentException("Bridge.Source method require contains one parameter annotation persient by Bridge.Bridging");
     }
 
     private static boolean isBridgeTransfer(Object[] objects) {

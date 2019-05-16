@@ -7,7 +7,6 @@ import dev.xframe.modular.code.MContainerBuilder;
 import dev.xframe.modular.code.MLoaderBuilder;
 import dev.xframe.modular.code.ModularAnalyzer;
 import dev.xframe.modular.code.ModularElement;
-import javassist.ClassPool;
 
 /**
  * 
@@ -28,9 +27,8 @@ public class ModularEnigne {
 	public static void initialize(Class<?> assembleClazz, List<Class<?>> clazzes) {
 		try {
             List<ModularElement> infos = ModularAnalyzer.analye(assembleClazz, clazzes);
-            ClassPool pool = ClassPool.getDefault();
             
-            mccn = MContainerBuilder.build(pool, assembleClazz, infos);
+            mccn = MContainerBuilder.build(assembleClazz, infos);
             lmap = MLoaderBuilder.build(infos);
             load = MLoaderBuilder.build(lmap);
             

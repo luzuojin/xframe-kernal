@@ -41,8 +41,8 @@ public class MContainerBuilder {
 	
 	public static String MODULES_LOAD_METHOD;
 
-	public static String build(ClassPool pool, Class<?> mcClazz, List<ModularElement> mes) throws Exception {
-		return new MContainerBuilder().build0(pool, mcClazz, mes);
+	public static String build(Class<?> mcClazz, List<ModularElement> mes) throws Exception {
+		return new MContainerBuilder().build0(mcClazz, mes);
 	}
 	
 	private String empty = "";
@@ -77,7 +77,7 @@ public class MContainerBuilder {
 	    Arrays.stream(clazz.getInterfaces()).forEach(c->putToInjectModules(modules, c, me));
     }
 
-    private String build0(ClassPool pool, Class<?> mcClazz, List<ModularElement> mes) throws Exception {
+    private String build0(Class<?> mcClazz, List<ModularElement> mes) throws Exception {
 		this.cts = CtParser.parse("assemble.ct");
 		this.injectModules = calcInjectModules(mes);
 		this.injectFields = calcInjectFields(mcClazz);
@@ -85,7 +85,7 @@ public class MContainerBuilder {
 		this.assembleClazz = mcClazz;
 		this.assembleBasic = mcClazz.getName();
 		this.assembleName = cts.get("assemble_name").replace("${assemble_basic}", assembleBasic);
-		
+		ClassPool pool = ClassPool.getDefault(); 
 		CtClass sc = pool.get(assembleBasic);
 		CtClass cc = pool.makeClass(assembleName);
 		cc.setSuperclass(sc);
