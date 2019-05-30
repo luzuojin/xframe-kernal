@@ -10,8 +10,8 @@ import java.lang.annotation.Target;
 public @interface Bean {
     
     /**
-     * 是否可以热更代码
+     * 是否可以reload, 如果可以则表明 该类可以hotswap
      */
-    public boolean hotfix() default false;
+    public boolean reloadable() default false;
     
 }

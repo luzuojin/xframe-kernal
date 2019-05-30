@@ -17,7 +17,6 @@ public abstract class PlayerCommand<T extends Player> implements Command {
     @Inject
     private PlayerLoader playerLoader;
     
-    
     @SuppressWarnings("unchecked")
     public final void execute(Session session, IMessage req) throws Exception {
         long playerId = req.getId();

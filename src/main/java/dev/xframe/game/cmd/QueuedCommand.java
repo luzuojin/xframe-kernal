@@ -1,6 +1,7 @@
 package dev.xframe.game.cmd;
 
 import dev.xframe.game.player.Player;
+import dev.xframe.injection.Inject;
 import dev.xframe.net.codec.IMessage;
 
 
@@ -11,9 +12,12 @@ import dev.xframe.net.codec.IMessage;
  */
 public abstract class QueuedCommand<T extends Player> extends PlayerCommand<T> {
     
+    @Inject
+    private PlayerCmdInvoker<T> invoker;
+    
     @Override
     protected final void execute0(T player, IMessage req) throws Exception {
-        new PlayerCmdInvokeAction<>(this, player, req, player.queue()).checkin();
+        new PlayerCmdInvokeAction<>(invoker, this, player, req, player.queue()).checkin();
     }
 
 }

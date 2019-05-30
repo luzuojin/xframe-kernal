@@ -69,7 +69,7 @@ public class ApplicationContext {
     }
 
     protected static boolean isProxyRequired(Class<?> clazz) {
-        return clazz.isAnnotationPresent(Templates.class) || (clazz.isAnnotationPresent(Bean.class) && clazz.getAnnotation(Bean.class).hotfix());
+        return clazz.isAnnotationPresent(Templates.class) || (clazz.isAnnotationPresent(Bean.class) && clazz.getAnnotation(Bean.class).reloadable());
     }
     protected static Map<Class<?>, Object> proxies = new HashMap<>();
     protected static Object makeProxy(Class<?> clazz, Object bean) {
