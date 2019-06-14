@@ -46,7 +46,7 @@ public class TaskContext implements Eventual {
     public void setup(int nthreads) {
         if(ctlPlus(CTL_SETUP)) {
             executor = new ScheduledThreadPoolExecutor(nthreads, new ThreadsFactory("Tasks"));
-            regist(Task.period("Clear task futures", 10, this::clearTaskFutures));
+            regist(Task.period("TaskFuturesCleaner", 10, this::clearTaskFutures));
         } else if(executor.getCorePoolSize() < nthreads){
             executor.setCorePoolSize(nthreads);
         }
@@ -60,8 +60,7 @@ public class TaskContext implements Eventual {
         if(key != null) {
             ScheduledFuture<?> f = futures.get(key);
             if(f != null) {
-                f.cancel(false);
-                return true;
+                return f.cancel(false);
             }
         }
         return false;

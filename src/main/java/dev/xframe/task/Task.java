@@ -10,10 +10,10 @@ public abstract class Task implements Runnable {
     
     protected static Logger logger = LoggerFactory.getLogger(Task.class);
     
-    final String name;
-    final int delay;
-    final int period;
-    final TimeUnit unit;
+    public final String name;
+    public final int delay;
+    public final int period;
+    public final TimeUnit unit;
     
     public Task(String name, int delay, int period, TimeUnit unit) {
         this.name = name;
