@@ -72,6 +72,14 @@ public class Codes {
 		return declaredClasses;
 	}
 	
+	public static boolean isDeclared(String className) {
+	    return classEntryMap.containsKey(className);
+	}
+	
+	public static boolean isMatching(String className) {
+	    return includes.match(className) && !excludes.match(className);
+	}
+	
 	public static List<Class<?>> getDeclaredClasses() {
 		return declaredClasses == null ? Collections.emptyList() : declaredClasses;
 	}
@@ -90,12 +98,12 @@ public class Codes {
 	    return null;
     }
 	
-	public static void redefineClass(File classFile) throws Exception {
+	public static boolean redefineClass(File classFile) throws Exception {
 	    ClassPool pool = getClassPool(classFile);
         CtClass ctClass = pool.makeClass(new FileInputStream(classFile));
         CodePatcher.makePatch(ctClass);
         Class<?> theClass = defineClass(pool, ctClass.getName());
-        XInstrument.redefine(new ClassDefinition(theClass, ctClass.toBytecode()));
+        return XInstrument.redefine(new ClassDefinition(theClass, ctClass.toBytecode()));
     }
 	
 	public static Class<?> getClassVersioning(File classFile) throws Exception {
