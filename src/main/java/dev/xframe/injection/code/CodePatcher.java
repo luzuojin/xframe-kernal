@@ -49,17 +49,23 @@ public class CodePatcher {
         }
     }
 
-    private static void makePatch(Set<CtClass> patched, CtClass clazz) throws Throwable {
+    private static void makePatch(Set<CtClass> patched, CtClass clazz) throws Exception {
         if(patched.contains(clazz) || dispensablePatch(clazz)) return;
         
         makePatch(patched, clazz.getSuperclass());//先处理父类
+        
+        if(makePatch(clazz)) patched.add(clazz);
+    }
 
+    public static boolean makePatch(CtClass clazz) throws Exception {
+        boolean patched = false;
         for(Patcher patcher : patchers) {
             if(patcher.required(clazz)) {
                 patcher.patch(clazz);
-                patched.add(clazz);
+                patched = true;
             }
         }
+        return patched;
     }
 
     private static boolean dispensablePatch(CtClass clazz) throws NotFoundException {

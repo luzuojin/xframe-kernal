@@ -93,6 +93,7 @@ public class Codes {
 	public static void redefineClass(File classFile) throws Exception {
 	    ClassPool pool = getClassPool(classFile);
         CtClass ctClass = pool.makeClass(new FileInputStream(classFile));
+        CodePatcher.makePatch(ctClass);
         Class<?> theClass = defineClass(pool, ctClass.getName());
         XInstrument.redefine(new ClassDefinition(theClass, ctClass.toBytecode()));
     }
