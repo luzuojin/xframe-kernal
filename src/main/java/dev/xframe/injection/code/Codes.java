@@ -3,6 +3,7 @@ package dev.xframe.injection.code;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.lang.instrument.ClassDefinition;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,6 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dev.xframe.tools.XInstrument;
 import dev.xframe.tools.XScanner;
 import dev.xframe.tools.XScanner.ClassEntry;
 import dev.xframe.tools.XScanner.ScanMatcher;
@@ -86,6 +88,13 @@ public class Codes {
 	        //ignore
 	    }
 	    return null;
+    }
+	
+	public static void redefineClass(File classFile) throws Exception {
+	    ClassPool pool = getClassPool(classFile);
+        CtClass ctClass = pool.makeClass(new FileInputStream(classFile));
+        Class<?> theClass = defineClass(pool, ctClass.getName());
+        XInstrument.redefine(new ClassDefinition(theClass, ctClass.toBytecode()));
     }
 	
 	public static Class<?> getClassVersioning(File classFile) throws Exception {

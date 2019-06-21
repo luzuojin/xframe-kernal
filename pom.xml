@@ -17,6 +17,20 @@
                  <encoding>UTF-8</encoding>
              </configuration>
          </plugin>
+	  	<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-jar-plugin</artifactId>
+			<version>3.0.2</version>
+			<configuration>
+				<archive>
+					<manifestEntries>
+						<Agent-Class>dev.xframe.tools.XInstrument</Agent-Class>
+						<Can-Retransform-Classes>true</Can-Retransform-Classes>
+						<Can-Redefine-Classes>true</Can-Redefine-Classes>
+					</manifestEntries>
+				</archive>
+			</configuration>
+		</plugin>
      </plugins>
  </build>
  <dependencies>
