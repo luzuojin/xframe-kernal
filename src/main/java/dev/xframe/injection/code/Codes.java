@@ -2,16 +2,15 @@ package dev.xframe.injection.code;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.lang.reflect.Field;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,9 +20,9 @@ import dev.xframe.tools.XScanner.ClassEntry;
 import dev.xframe.tools.XScanner.ScanMatcher;
 import javassist.CannotCompileException;
 import javassist.ClassMap;
+import javassist.ClassPath;
 import javassist.ClassPool;
 import javassist.CtClass;
-import javassist.Modifier;
 import javassist.NotFoundException;
 
 public class Codes {
@@ -33,8 +32,8 @@ public class Codes {
 	private static Map<String, ClassEntry> classEntryMap = new HashMap<>();
 	private static Map<String, AtomicInteger> classVersionMap = new HashMap<>();
 	
-	private static ScanMatcher includes;
-	private static ScanMatcher excludes;
+	private static ScanMatcher includes = new ScanMatcher(null);
+	private static ScanMatcher excludes = new ScanMatcher(null);
 
 	private static List<Class<?>> declaredClasses;
 	
@@ -52,103 +51,57 @@ public class Codes {
 	}
 
 	public static List<Class<?>> getClasses(ScanMatcher includes, ScanMatcher excludes) {
-		if(declaredClasses == null) {
-			declaredClasses = getClasses0(includes, excludes);
-		}
-		return declaredClasses;
+		return getClasses0(includes, excludes);
 	}
 
-	private static List<Class<?>> getClasses0(ScanMatcher includes, ScanMatcher excludes) {
-		Codes.includes = includes; Codes.excludes = excludes;
-		List<ClassEntry> entries = XScanner.scan(includes, excludes);
-		List<String> names = new ArrayList<>();
-		for (ClassEntry entry : entries) {
-			addEntry(entry);
-			names.add(entry.name);
-		}
-		
-		CodePatcher.makePatch(names);
-		
-		return loadClasses(names);
+	synchronized static List<Class<?>> getClasses0(ScanMatcher includes, ScanMatcher excludes) {
+	    if(declaredClasses == null) {
+	        Codes.includes = includes; Codes.excludes = excludes;
+	        List<ClassEntry> entries = XScanner.scan(includes, excludes);
+	        List<String> names = new ArrayList<>();
+	        for (ClassEntry entry : entries) {
+	            addEntry(entry);
+	            names.add(entry.name);
+	        }
+	        
+	        CodePatcher.makePatch(names);
+	        declaredClasses = loadClasses(names);
+	    }
+		return declaredClasses;
 	}
 	
 	public static List<Class<?>> getDeclaredClasses() {
 		return declaredClasses == null ? Collections.emptyList() : declaredClasses;
 	}
 	
-	public static Class<?> defineClass(String name) {
-	    return defineClass(getDefaultClassPoolWithClear(), name);
-	}
-	
 	private static Class<?> defineClass(ClassPool pool, String name) {
-	    Class<?> clazz = defineClass0(pool, name);
-	    if(clazz == null) throw new IllegalArgumentException("class not found: " + name);
-	    return clazz;
-	}
-
-	private static Class<?> defineClass0(ClassPool pool, String name) {
         try {
              return Class.forName(name);//如果在classloader中存在 直接返回
         } catch (ClassNotFoundException e) {
             //ignore;
         }
 	    try {
-	        return pool.get(name).toClass();//从文件中读取
+	        return ClassPool.getDefault().get(name).toClass();//从文件中读取
 	    } catch (NotFoundException | CannotCompileException e) {
 	        //ignore
 	    }
 	    return null;
     }
 	
-	public static ClassPool getDefaultClassPoolWithClear() {
-	    try {
-			Field field = ClassPool.class.getDeclaredField("defaultPool");
-			field.setAccessible(true);
-			field.set(null, null);
-		} catch (Throwable e1) {}//ignore
-		return ClassPool.getDefault();
-	}
-	
-	public static Class<?> getClass4Modify(File classFile) throws Exception {
-		ClassPool pool = getDefaultClassPoolWithClear();
-		pool.appendClassPath(classFile.getParent());
-		
+	public static Class<?> getClassVersioning(File classFile) throws Exception {
+		ClassPool pool = getClassPool(classFile);
 		CtClass ctClass = pool.makeClass(new FileInputStream(classFile));
-		return renameClassIfModified(pool, new ClassEntry(ctClass.getName(), classFile.length(), classFile.lastModified()), ctClass);
+		return renameClass(pool, new ClassEntry(ctClass.getName(), classFile.length(), classFile.lastModified()), ctClass);
 	}
 	
-	public static List<Class<?>> getClasses4Modify(String... classNames) {
-	    return getClasses4Modify(ct->Arrays.asList(classNames).contains(ct.getName()));
-	}
+    private static ClassPool getClassPool(File classFile) {
+        ClassPool pool = new ClassPool();
+        pool.appendClassPath(new DirClassPath(classFile.getParent()));
+		pool.appendSystemPath();
+        return pool;
+    }
 	
-	public static List<Class<?>> getClasses4Modify(Class<?>... annos) {
-	    return getClasses4Modify(ct->hasAnnotation(ct, annos));
-	}
-	
-	public static List<Class<?>> getClasses4Modify(Predicate<CtClass> predicate) {
-		ClassPool pool = getDefaultClassPoolWithClear();
-        List<ClassEntry> entries = XScanner.scan(includes, excludes);
-        List<Class<?>> ret = new ArrayList<>();
-        for (ClassEntry entry : entries) {
-            Class<?> clazz = getClass4Modify(pool, entry, predicate);
-            if(clazz != null) ret.add(clazz);
-        }
-        return ret;
-	}
-	
-	private static Class<?> getClass4Modify(ClassPool pool, ClassEntry entry, Predicate<CtClass> predicate) {
-	    try {
-            CtClass ctClass = pool.get(entry.name);
-            if(predicate.test(ctClass)) {
-                return renameClassIfModified(pool, entry, ctClass);
-            }
-        } catch (Throwable e) {
-            logger.info("load class error", e);
-        }
-	    return null;
-	}
-
-	private static Class<?> renameClassIfModified(ClassPool pool, ClassEntry entry, CtClass ctClass) throws Exception {
+	private static Class<?> renameClass(ClassPool pool, ClassEntry entry, CtClass ctClass) throws Exception {
 		if(classEntryMap.containsKey(entry.name) &&
 		        classEntryMap.get(entry.name).size == entry.size) return null;//none modify
 		int ver = addEntry(entry);
@@ -161,7 +114,7 @@ public class Codes {
 	public static Class<?> getBaseClass(Class<?> modifiedClazz) {
 	    String clazzName = modifiedClazz.getName();
 	    int idx = clazzName.lastIndexOf("_v");
-        return idx == -1 ? modifiedClazz : defineClass0(ClassPool.getDefault(), clazzName.substring(0, idx));
+        return idx == -1 ? modifiedClazz : defineClass(ClassPool.getDefault(), clazzName.substring(0, idx));
 	}
 
 	private static String newName(String originName, int ver) {
@@ -176,15 +129,11 @@ public class Codes {
 			if(refClass.equals(ctClass.getName())) continue;
 			if(refClass.startsWith(ctClass.getName() + "$")) {//内部类
 		        CtClass ref = pool.get(refClass);
-		        if(!Modifier.isStatic(ref.getModifiers())) {//非静态类均重命名
-		        	String newName = newName(refClass, ver);
-		        	ref.setName(newName);
-		        	ref.replaceClassName(ctClass.getName(), newName(ctClass.getName(), ver));
-		        	ref.toClass();
-		        	cm.put(refClass, newName);
-		        } else {
-		        	defineClass(pool, refClass);
-		        }
+	        	String newName = newName(refClass, ver);
+	        	ref.setName(newName);
+	        	ref.replaceClassName(ctClass.getName(), newName(ctClass.getName(), ver));
+	        	ref.toClass();
+	        	cm.put(refClass, newName);
 		    } else if(includes.match(refClass) && !excludes.match(refClass)) {//同应用内的类, 如果有就不加载, 没有加载
                 defineClass(pool, refClass);
             }
@@ -192,13 +141,6 @@ public class Codes {
         return cm;
 	}
 
-	private static boolean hasAnnotation(CtClass ctClass, Class<?>... annos) {
-		for (Class<?> anno : annos) {
-			if(ctClass.hasAnnotation(anno)) return true;
-		}
-		return false;
-	}
-	
 	public static List<Class<?>> loadClasses(List<String> names) {
 		ClassPool pool = ClassPool.getDefault();
 		List<Class<?>> clazzes = new ArrayList<>();
@@ -211,6 +153,40 @@ public class Codes {
 			}
 		}
 		return clazzes;
+	}
+	
+	static class DirClassPath implements ClassPath {
+	    final String dir;
+        public DirClassPath(String dir) {
+	        this.dir = dir;
+        }
+        public InputStream openClassfile(String classname) {
+            try {
+                return new FileInputStream(toFile(classname));
+            } catch (Exception e) {}
+            return null;
+        }
+        public URL find(String classname) {
+            try {
+                return toFile(classname).getCanonicalFile().toURI().toURL();
+            }catch (Exception e) {}
+            return null;
+        }
+        private File toFile(String classname) {
+            File f = toFile0(classname);
+            return f.exists() ? f : toFile1(classname);
+        }
+        private File toFile0(String classname) {
+            return new File(dir + File.separatorChar + classname.replace('.', File.separatorChar) + ".class");
+        }
+        private File toFile1(String classname) {
+            return new File(dir + File.separatorChar + classname.substring(classname.lastIndexOf('.')+1) + ".class");
+        }
+        public String toString() {
+            return dir;
+        }
+        public void close() {
+        }
 	}
 	
 }
