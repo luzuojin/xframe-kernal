@@ -16,7 +16,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.xframe.tools.XInstrument;
 import dev.xframe.tools.XScanner;
 import dev.xframe.tools.XScanner.ClassEntry;
 import dev.xframe.tools.XScanner.ScanMatcher;
