@@ -20,7 +20,7 @@ public class XTransformer implements ClassFileTransformer, Eventual {
                 className = className.replace("/", ".");
                 if(Codes.isMatching(className)) {
                     CtClass ctClass = ClassPool.getDefault().makeClass(new ByteArrayInputStream(classfileBuffer));
-                    CodePatcher.makePatch(ctClass);
+                    Patchers.makePatch(ctClass);
                     return ctClass.toBytecode();
                 }
             }

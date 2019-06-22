@@ -15,9 +15,9 @@ import javassist.CtClass;
 import javassist.Modifier;
 import javassist.NotFoundException;
 
-public class CodePatcher {
+public class Patchers {
     
-    static final Logger logger = LoggerFactory.getLogger(CodePatcher.class);
+    static final Logger logger = LoggerFactory.getLogger(Patchers.class);
     
     static final List<Patcher> patchers = new ArrayList<Patcher>(
             Arrays.asList(

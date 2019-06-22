@@ -65,7 +65,7 @@ public class Codes {
 	            names.add(entry.name);
 	        }
 	        
-	        CodePatcher.makePatch(names);
+	        Patchers.makePatch(names);
 	        declaredClasses = loadClasses(names);
 	    }
 		return declaredClasses;
@@ -100,7 +100,7 @@ public class Codes {
 	public static boolean redefineClass(File classFile) throws Exception {
 	    ClassPool pool = getClassPool(classFile);
         CtClass ctClass = pool.makeClass(new FileInputStream(classFile));
-        CodePatcher.makePatch(ctClass);
+        Patchers.makePatch(ctClass);
         Class<?> theClass = defineClass(pool, ctClass.getName());
         return XInstrument.redefine(new ClassDefinition(theClass, ctClass.toBytecode()));
     }
