@@ -25,7 +25,7 @@ public class XInstrument {
     synchronized static void loadAgent() {
         if(_inst == null && !_loaded) {
             try {
-                com.sun.tools.attach.VirtualMachine vm = getCurrentVM();
+                com.sun.tools.attach.VirtualMachine vm = com.sun.tools.attach.VirtualMachine.attach(XProcess.currentProcessId());
                 vm.loadAgent(getProtectionPath());
                 vm.detach();
             } catch (Throwable e) {}
@@ -34,15 +34,13 @@ public class XInstrument {
     }
 
     @SuppressWarnings("restriction")
-    static com.sun.tools.attach.VirtualMachine getCurrentVM() throws Exception {
-        return com.sun.tools.attach.VirtualMachine.attach(XProcess.currentProcessId());
-    }
-    
-    @SuppressWarnings("restriction")
     static boolean isAgentModel() {
         try {
-            return getCurrentVM().getAgentProperties().values().stream().filter(obj->obj.toString().contains("-agentlib")).findAny().isPresent();
-        } catch (Exception e) {}
+            com.sun.tools.attach.VirtualMachine vm = com.sun.tools.attach.VirtualMachine.attach(XProcess.currentProcessId());
+            boolean r = vm.getAgentProperties().values().stream().filter(obj->obj.toString().contains("-agentlib")).findAny().isPresent();
+            vm.detach();
+            return r;
+        } catch (Throwable e) {}
         return false;
     }
 
@@ -81,7 +79,7 @@ public class XInstrument {
 
         @Override
         public void eventuate() {
-            if(isAgentModel() && !new File(getProtectionPath()).isDirectory()) {
+            if(!new File(getProtectionPath()).isDirectory() && isAgentModel()) {
                 XInstrument.loadAgent();
                 XInstrument._inst.addTransformer(new XInstrumentTransformer());
             }
