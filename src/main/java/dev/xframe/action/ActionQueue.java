@@ -55,10 +55,23 @@ public class ActionQueue {
         return queue.size();
     }
  
-    static final ThreadLocal<ActionQueue> current = new ThreadLocal<>();
+    public static ActionQueue getCurrent() {
+    	Thread thread = Thread.currentThread();
+		return (thread instanceof ActionThread) ? ((ActionThread) thread).getAttach() : null;
+    }
     
-    public static ActionQueue current() {
-    	return current.get();
+    static void setCurrent(ActionQueue queue) {
+    	Thread thread = Thread.currentThread();
+    	if(thread instanceof ActionThread) {
+    		((ActionThread) thread).setAttach(queue);
+    	}
+    }
+    
+    static void unsetCurrent() {
+    	Thread thread = Thread.currentThread();
+    	if(thread instanceof ActionThread) {
+    		((ActionThread) thread).unsetAttach();
+    	}
     }
     
 }

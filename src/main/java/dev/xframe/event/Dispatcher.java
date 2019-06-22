@@ -45,7 +45,7 @@ public interface Dispatcher {
 		}
 		@Override
 		public void dispatch(Iterable<Subscriber> subscribers, Object evt) {
-			if(ActionQueue.current() == queue) {
+			if(ActionQueue.getCurrent() == queue) {
 				Dispatcher.doDispatch(subscribers, evt);
 			} else {
 				new Action(queue) {

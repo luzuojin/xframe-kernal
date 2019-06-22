@@ -62,7 +62,11 @@ public class ActionExecutors {
                             poolSize, Integer.MAX_VALUE,  //pool size
                             5, TimeUnit.MINUTES, //alive time
                             new LinkedTransferQueue<>(),
-                            new ThreadsFactory(this.name),
+                            new ThreadsFactory(this.name){
+								protected Thread newThread0(Runnable target) {
+									return new ActionThread(group, target, getThreadName());
+								}
+                            },
                             new DiscardPolicy());
             
             executors.add(this);

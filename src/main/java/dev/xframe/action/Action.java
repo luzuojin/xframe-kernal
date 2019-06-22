@@ -34,7 +34,7 @@ public abstract class Action implements Runnable, Metrical {
     @Override
     public final void run() {
         try {
-        	ActionQueue.current.set(queue);
+        	ActionQueue.setCurrent(queue);;
             if(runable()) {
                 long createTime = this.createTime;
                 long start = System.currentTimeMillis();
@@ -46,7 +46,7 @@ public abstract class Action implements Runnable, Metrical {
             logger.error("Execute exception: " + getClazz().getName(), e);
             failure(e);
         } finally {
-        	ActionQueue.current.remove();
+        	ActionQueue.unsetCurrent();
             queue.checkout(this);
             done();
         }
