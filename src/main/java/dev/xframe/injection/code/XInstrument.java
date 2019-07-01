@@ -5,9 +5,12 @@ import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
 import java.lang.management.ManagementFactory;
 
-import dev.xframe.tools.XProcess;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class XInstrument {
+    
+    static Logger logger = LoggerFactory.getLogger(XInstrument.class);
     
     static boolean _loaded = false;
     static Instrumentation _inst;
@@ -16,24 +19,32 @@ public class XInstrument {
     synchronized static void loadAgent() {
         if(_inst == null && !_loaded) {
             try {
-                com.sun.tools.attach.VirtualMachine vm = com.sun.tools.attach.VirtualMachine.attach(XProcess.currentProcessId());
+                com.sun.tools.attach.VirtualMachine vm = com.sun.tools.attach.VirtualMachine.attach(getProcessId());
                 vm.loadAgent(getProtectionPath());
                 vm.detach();
-            } catch (Throwable e) {}
+                logger.info("Load instrument success...");
+            } catch (Throwable e) {
+                logger.info("Load instrument failed...", e);
+            }
             _loaded = true;
         }
     }
-
-    static boolean isTransportModel() {
-    	return ManagementFactory.getRuntimeMXBean().getInputArguments().stream().filter(XInstrument::isTransportArg).findAny().isPresent();
+    
+    static String getProcessId() {
+        String name = ManagementFactory.getRuntimeMXBean().getName();
+        return name.substring(0, name.indexOf("@"));
     }
-
-	static boolean isTransportArg(String arg) {
-		return arg.contains("jdwp") && arg.contains("transport");
-	}
 
     static String getProtectionPath() {
         return XInstrument.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+    }
+
+    static boolean isTransportModel() {
+        return ManagementFactory.getRuntimeMXBean().getInputArguments().stream().filter(XInstrument::isTransportArg).findAny().isPresent();
+    }
+
+    static boolean isTransportArg(String arg) {
+        return arg.contains("jdwp") && arg.contains("transport");
     }
 
     public static void agentmain(String agentArgs, Instrumentation inst) throws ClassNotFoundException, UnmodifiableClassException, InterruptedException {

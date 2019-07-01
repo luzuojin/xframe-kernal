@@ -1,9 +1,10 @@
 package dev.xframe.injection.code;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.ProtectionDomain;
 
 import dev.xframe.injection.Configurator;
@@ -30,9 +31,10 @@ public class XTransformer implements ClassFileTransformer, Eventual {
 
     @Override
     public void eventuate() {
-        if(!new File(XInstrument.getProtectionPath()).isDirectory() && XInstrument.isTransportModel()) {
+        if(Files.isRegularFile(Paths.get(XInstrument.getProtectionPath())) && XInstrument.isTransportModel()) {
             XInstrument.loadAgent();
             XInstrument._inst.addTransformer(new XTransformer());
+            XInstrument.logger.debug("starting class file transformer...");
         }
     }
 }
