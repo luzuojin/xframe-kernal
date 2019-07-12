@@ -57,7 +57,7 @@ public class NetMessageHandler extends ChannelInboundHandlerAdapter {
         try {
 	        cmd.execute(session, req);
 	    } catch (Throwable ex) {
-	        listener.onCmdException(session, cmd, req, ex);
+	        listener.onExceptionCaught(session, cmd, req, ex);
 	    }
     }
 

@@ -16,6 +16,6 @@ public interface LifecycleListener {
     
     public void onSessionUnRegister(Session session);
 
-    public void onCmdException(Session session, Command cmd, IMessage req, Throwable ex);
+    public void onExceptionCaught(Session session, Command cmd, IMessage req, Throwable ex);
 
 }
