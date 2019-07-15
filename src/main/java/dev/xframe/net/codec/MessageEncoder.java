@@ -11,19 +11,20 @@ import io.netty.handler.codec.MessageToByteEncoder;
  */
 public class MessageEncoder extends MessageToByteEncoder<IMessage> {
 
-    public MessageEncoder() {
+    private MessageCrypt crypt;
+    
+    public MessageEncoder(MessageCrypt crypt) {
+        this.crypt = crypt;
     }
     
     @Override
     protected void encode(ChannelHandlerContext ctx, IMessage message, ByteBuf out) throws Exception {
-        encode(ctx, message);
+        if(crypt != null)
+            crypt.encrypt(ctx, message);
         
         message.writeHeader(out);
         message.writeParams(out);
         message.writeBody(out);
     }
 
-    protected void encode(ChannelHandlerContext ctx, IMessage message) {
-    }
-	
 }

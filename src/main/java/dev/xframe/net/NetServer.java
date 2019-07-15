@@ -5,7 +5,8 @@ import org.slf4j.LoggerFactory;
 
 import dev.xframe.net.NetChannelInitializer.ServerInitializer;
 import dev.xframe.net.cmd.CommandContext;
-import dev.xframe.net.codec.MessageCodecs;
+import dev.xframe.net.codec.MessageCrypt;
+import dev.xframe.net.codec.MessageCrypts;
 import dev.xframe.net.handler.NetMessageHandler;
 import dev.xframe.net.handler.ServerMessageHandler;
 import dev.xframe.tools.ThreadsFactory;
@@ -30,6 +31,9 @@ public class NetServer {
 	private NioEventLoopGroup workerGroup;
 	
 	public void start(int port, int threads, CommandContext cmdCtx, MessageInterceptor interceptor, LifecycleListener listener) {
+	    start(port, threads, cmdCtx, interceptor, listener, MessageCrypts.fromSysOps());
+	}
+	public void start(int port, int threads, CommandContext cmdCtx, MessageInterceptor interceptor, LifecycleListener listener, MessageCrypt crypt) {
 	    bossGroup = new NioEventLoopGroup(1, new ThreadsFactory("netty.boss"));
 	    workerGroup = new NioEventLoopGroup(threads, new ThreadsFactory("netty.worker"));
         NetMessageHandler dispatcher = new ServerMessageHandler(listener, cmdCtx, interceptor);
@@ -38,7 +42,7 @@ public class NetServer {
 	            new ServerBootstrap()
     	            .group(bossGroup, workerGroup)
     	            .channel(NioServerSocketChannel.class)
-    	            .childHandler(new ServerInitializer(dispatcher, new MessageCodecs()))
+    	            .childHandler(new ServerInitializer(dispatcher, crypt))
     	            .childOption(ChannelOption.SO_KEEPALIVE, true)//开启时系统会在连接空闲一定时间后像客户端发送请求确认连接是否有效
     	            .childOption(ChannelOption.TCP_NODELAY, true)//关闭Nagle算法
 //    	            .childOption(ChannelOption.SO_LINGER, 0)//连接关闭时,偿试把未发送完成的数据继续发送(等待时间, 如果为0则直接设置连接为CLOSE状态 不进行TIME_WAIT...)

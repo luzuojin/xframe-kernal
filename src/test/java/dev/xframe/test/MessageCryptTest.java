@@ -8,16 +8,15 @@ import org.junit.Test;
 
 import dev.xframe.net.codec.IMessage;
 import dev.xframe.net.codec.Message;
-import dev.xframe.net.codec.MessageCodecs;
+import dev.xframe.net.codec.MessageCrypts;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
 
-public class MessageTest extends MessageCodecs {
+public class MessageCryptTest extends MessageCrypts.SimpleCryption {
 	
-	public MessageTest() {
-		strict = true;
+	public MessageCryptTest() {
 	}
 	
 	private Map<AttributeKey<byte[]>, byte[]> ciphers = new HashMap<>();
@@ -50,7 +49,7 @@ public class MessageTest extends MessageCodecs {
 	}
 
 	private Message doOnce(IMessage smessage) {
-		this.encode(null, smessage);
+		this.encrypt(null, smessage);
 		
 		ByteBuf buff = ByteBufAllocator.DEFAULT.heapBuffer();
 		smessage.writeHeader(buff);
@@ -61,7 +60,7 @@ public class MessageTest extends MessageCodecs {
 		xmessage.readHeader(buff);
 		xmessage.readParams(buff);
 		xmessage.readBody(buff);
-		this.decode(null, xmessage);
+		this.decrypt(null, xmessage);
 		return xmessage;
 	}
 	

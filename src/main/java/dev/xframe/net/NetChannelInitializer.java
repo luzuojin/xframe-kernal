@@ -2,9 +2,11 @@ package dev.xframe.net;
 
 import java.util.concurrent.TimeUnit;
 
-import dev.xframe.net.codec.MessageCodecs;
 import dev.xframe.net.codec.IMessage;
 import dev.xframe.net.codec.Message;
+import dev.xframe.net.codec.MessageCrypt;
+import dev.xframe.net.codec.MessageDecoder;
+import dev.xframe.net.codec.MessageEncoder;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -19,18 +21,18 @@ public interface NetChannelInitializer {
     
     public static class ServerInitializer extends ChannelInitializer<SocketChannel> {
         private final ChannelHandler handler;
-        private final MessageCodecs factory;
+        private final MessageCrypt cryption;
         
-        public ServerInitializer(ChannelHandler handler, MessageCodecs factory) {
+        public ServerInitializer(ChannelHandler handler, MessageCrypt cryption) {
             this.handler = handler;
-            this.factory = factory;
+            this.cryption = cryption;
         }
         
         @Override
         protected void initChannel(SocketChannel ch) throws Exception {
             ChannelPipeline pipeline = ch.pipeline();
-            pipeline.addLast("decoder", factory.newDecoder());
-            pipeline.addLast("encoder", factory.newEncoder());
+            pipeline.addLast("decoder", new MessageDecoder(cryption));
+            pipeline.addLast("encoder", new MessageEncoder(cryption));
             pipeline.addLast("idleStateHandler", new IdleStateHandler(180, 0, 0, TimeUnit.SECONDS));//300秒不操作将会被断开
             pipeline.addLast("idleHandler", new IdleHandler());
             pipeline.addLast("handler", handler);
@@ -52,20 +54,20 @@ public interface NetChannelInitializer {
     
     public static class ClientInitializer extends ChannelInitializer<SocketChannel> {
         private final ChannelHandler handler;
-        private final MessageCodecs factory;
+        private final MessageCrypt cryption;
         private final IMessage heartbeat;
         
-        public ClientInitializer(ChannelHandler handler, MessageCodecs factory, IMessage heartbeat) {
+        public ClientInitializer(ChannelHandler handler, MessageCrypt cryption, IMessage heartbeat) {
             this.handler = handler;
-            this.factory = factory;
+            this.cryption = cryption;
             this.heartbeat = heartbeat;
         }
         
         @Override
         protected void initChannel(SocketChannel ch) throws Exception {
             ChannelPipeline pipeline = ch.pipeline();
-            pipeline.addLast("decoder", factory.newDecoder());
-            pipeline.addLast("encoder", factory.newEncoder());
+            pipeline.addLast("decoder", new MessageDecoder(cryption));
+            pipeline.addLast("encoder", new MessageEncoder(cryption));
             pipeline.addLast("idleStateHandler", new IdleStateHandler(0, 60, 0, TimeUnit.SECONDS));//60秒发一次心跳操作
             pipeline.addLast("hearbeatHandler", new HearbeatHandler(heartbeat));
             pipeline.addLast("handler", handler);

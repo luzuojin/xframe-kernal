@@ -12,7 +12,10 @@ import io.netty.handler.codec.ByteToMessageDecoder;
  */
 public class MessageDecoder extends ByteToMessageDecoder {
     
-    public MessageDecoder() {
+    private MessageCrypt crypt;
+    
+    public MessageDecoder(MessageCrypt crypt) {
+        this.crypt = crypt;
     }
 
     @Override
@@ -32,12 +35,10 @@ public class MessageDecoder extends ByteToMessageDecoder {
         message.readParams(buff);
         message.readBody(buff);
         
-        decode(ctx, message);
+        if(crypt != null)
+            crypt.decrypt(ctx, message);
         
         out.add(message);
-    }
-
-    protected void decode(ChannelHandlerContext ctx, IMessage message) {
     }
 
 }

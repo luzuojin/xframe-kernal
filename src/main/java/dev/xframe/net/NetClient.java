@@ -2,9 +2,10 @@ package dev.xframe.net;
 
 import dev.xframe.net.NetChannelInitializer.ClientInitializer;
 import dev.xframe.net.cmd.CommandContext;
-import dev.xframe.net.codec.MessageCodecs;
 import dev.xframe.net.codec.IMessage;
 import dev.xframe.net.codec.Message;
+import dev.xframe.net.codec.MessageCrypt;
+import dev.xframe.net.codec.MessageCrypts;
 import dev.xframe.net.handler.ClientMessageHandler;
 import dev.xframe.net.handler.NetMessageHandler;
 import dev.xframe.net.session.Session;
@@ -29,6 +30,9 @@ public class NetClient {
         this(threads, cmdCtx, interceptor, listener, Message.build(hearbeat));
     }
     public NetClient(int threads, CommandContext cmdCtx, MessageInterceptor interceptor, LifecycleListener listener, IMessage hearbeat) {
+        this(threads, cmdCtx, interceptor, listener, hearbeat, MessageCrypts.fromSysOps());
+    }
+    public NetClient(int threads, CommandContext cmdCtx, MessageInterceptor interceptor, LifecycleListener listener, IMessage hearbeat, MessageCrypt crypt) {
         this.listener = listener;
         this.bootstrap = new Bootstrap();
         this.group = new NioEventLoopGroup(threads, new ThreadsFactory("netty.client"));
@@ -37,7 +41,7 @@ public class NetClient {
         this.bootstrap.group(group)
              .channel(NioSocketChannel.class)
              .option(ChannelOption.TCP_NODELAY, true)
-             .handler(new ClientInitializer(dispatcher, new MessageCodecs(), hearbeat));
+             .handler(new ClientInitializer(dispatcher, crypt, hearbeat));
     }
     
     public Session buildSession(String host, int port, long sessionId) {
