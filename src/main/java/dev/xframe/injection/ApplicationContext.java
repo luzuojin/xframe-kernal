@@ -11,10 +11,10 @@ import java.util.function.Predicate;
 
 import dev.xframe.injection.code.Codes;
 import dev.xframe.injection.code.CombineBuilder;
+import dev.xframe.injection.code.Factory;
+import dev.xframe.injection.code.FactoryBuilder;
 import dev.xframe.injection.code.ProxyBuilder;
 import dev.xframe.injection.code.ProxyBuilder.IProxy;
-import dev.xframe.injection.factory.Factory;
-import dev.xframe.injection.factory.FactoryBuilder;
 
 public class ApplicationContext {
     

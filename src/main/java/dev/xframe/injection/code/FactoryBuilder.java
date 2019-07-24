@@ -1,4 +1,4 @@
-package dev.xframe.injection.factory;
+package dev.xframe.injection.code;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
