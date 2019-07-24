@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.xframe.action.Action;
-import dev.xframe.action.ActionQueue;
+import dev.xframe.action.ActionLoop;
 
 public interface Dispatcher {
 	
@@ -23,8 +23,8 @@ public interface Dispatcher {
 		}
     }
 	
-	public static Dispatcher queued(ActionQueue queue) {
-		return new QueuedDispatcher(queue);
+	public static Dispatcher looped(ActionLoop loop) {
+		return new LoopedDispatcher(loop);
 	}
 	
 	public static Dispatcher direct() {
@@ -38,17 +38,17 @@ public interface Dispatcher {
 		}
 	}
 	
-	static class QueuedDispatcher implements Dispatcher {
-		final ActionQueue queue;
-		public QueuedDispatcher(ActionQueue queue) {
-			this.queue = queue;
+	static class LoopedDispatcher implements Dispatcher {
+		final ActionLoop loop;
+		public LoopedDispatcher(ActionLoop loop) {
+			this.loop = loop;
 		}
 		@Override
 		public void dispatch(Iterable<Subscriber> subscribers, Object evt) {
-			if(ActionQueue.getCurrent() == queue) {
+			if(loop.inLoop()) {
 				Dispatcher.doDispatch(subscribers, evt);
 			} else {
-				new Action(queue) {
+				new Action(loop) {
 					protected void exec() {
 						Dispatcher.doDispatch(subscribers, evt);
 					}

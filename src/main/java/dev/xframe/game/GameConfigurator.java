@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import dev.xframe.action.ActionExecutor;
 import dev.xframe.action.ActionExecutors;
-import dev.xframe.action.ActionQueue;
+import dev.xframe.action.ActionLoop;
 import dev.xframe.game.cmd.PlayerCmdAction;
 import dev.xframe.game.cmd.PlayerCmdActionCmd;
 import dev.xframe.game.player.Player;
@@ -58,7 +58,7 @@ public final class GameConfigurator implements Loadable {
         public void configure(Class<?> assemble, final int threads, List<Class<?>> clazzes) {
             configure0(assemble, clazzes);
             
-            ActionExecutor executor = ActionExecutors.newFixed("queues", threads);//max: 2*threads
+            ActionExecutor executor = ActionExecutors.newFixed("logics", threads);//max: 2*threads
             PlayerFactory factory = new PlayerInjectFactory(newPlayerFactory());
             PlayerContext context = new PlayerContext(executor, factory);
             
@@ -66,7 +66,7 @@ public final class GameConfigurator implements Loadable {
             ApplicationContext.registBean(PlayerContext.class, context);
             ApplicationContext.registBean(CommandBuilder.class, newCommandBuilder());
             
-            logger.info("Load compelete modular and queue threads[{}]", threads);
+            logger.info("Load compelete modular and logics threads[{}]", threads);
         }
         
         protected abstract void configure0(Class<?> assemble, List<Class<?>> clazzes);
@@ -82,8 +82,8 @@ public final class GameConfigurator implements Loadable {
             this.factory = factory;
         }
         @Override
-        public Player newPlayer(long playerId, ActionQueue queue) {
-            Player player = factory.newPlayer(playerId, queue);
+        public Player newPlayer(long playerId, ActionLoop loop) {
+            Player player = factory.newPlayer(playerId, loop);
             Injection.inject(player);
             return player;
         }
@@ -94,16 +94,16 @@ public final class GameConfigurator implements Loadable {
         @Override
         protected void configure0(Class<?> assemble, List<Class<?>> clazzes) {
             try {
-                constructor = assemble.getConstructor(long.class, ActionQueue.class);
+                constructor = assemble.getConstructor(long.class, ActionLoop.class);
             } catch (Throwable e) {
                 throw new IllegalArgumentException(e);
             }
         }
         @Override
         protected PlayerFactory newPlayerFactory() {
-            return (playerId, queue) -> {
+            return (playerId, loop) -> {
                 try {
-                    return (Player) constructor.newInstance(playerId, queue);
+                    return (Player) constructor.newInstance(playerId, loop);
                 } catch (Throwable e) {
                     throw new IllegalArgumentException(e);
                 }

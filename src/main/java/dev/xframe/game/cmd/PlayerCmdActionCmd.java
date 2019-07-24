@@ -33,7 +33,7 @@ public final class PlayerCmdActionCmd<T extends ModularPlayer> extends PlayerCom
     
     @Override
     protected void execute0(T player, IMessage req) throws Exception {
-        new PlayerCmdInvokeAction<>(invoker, this, player, req, player.queue()).checkin();
+        new PlayerCmdInvokeAction<>(invoker, this, player, req, player.loop()).checkin();
     }
 
     @Override

@@ -1,6 +1,6 @@
 package dev.xframe.test.game;
 
-import dev.xframe.action.ActionQueue;
+import dev.xframe.action.ActionLoop;
 import dev.xframe.event.EventBus;
 import dev.xframe.event.Registrator;
 import dev.xframe.event.Subscriber;
@@ -19,8 +19,8 @@ public class TPlayer extends ModularPlayer implements Registrator {
     
     private EventBus events;
 
-	public TPlayer(long playerId, ActionQueue queue) {
-		super(playerId, queue);
+	public TPlayer(long playerId, ActionLoop loop) {
+		super(playerId, loop);
 		this.events = new EventBus();
 	}
 

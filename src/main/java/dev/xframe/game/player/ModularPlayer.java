@@ -1,6 +1,6 @@
 package dev.xframe.game.player;
 
-import dev.xframe.action.ActionQueue;
+import dev.xframe.action.ActionLoop;
 import dev.xframe.modular.ModuleContainer;
 import dev.xframe.modular.ModuleType;
 
@@ -8,8 +8,8 @@ public abstract class ModularPlayer extends Player implements ModuleContainer {
 
     private int loaded;
     
-    public ModularPlayer(long playerId, ActionQueue queue) {
-        super(playerId, queue);
+    public ModularPlayer(long playerId, ActionLoop loop) {
+        super(playerId, loop);
     }
     
     public boolean load(ModuleType type) {

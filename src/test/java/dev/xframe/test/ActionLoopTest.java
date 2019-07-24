@@ -5,17 +5,17 @@ import org.junit.Ignore;
 import dev.xframe.action.Action;
 import dev.xframe.action.ActionExecutor;
 import dev.xframe.action.ActionExecutors;
-import dev.xframe.action.ActionQueue;
+import dev.xframe.action.ActionLoop;
 
 @Ignore
-public class ActionQueueTest {
+public class ActionLoopTest {
     
     public static void main(String[] args) {
         ActionExecutor executor = ActionExecutors.newFixed("Test", 2);
         for (int i = 0; i < 10; i++) {
             final int j = i;
-            ActionQueue actionQueue = new ActionQueue(executor);
-            (new Action(actionQueue) {
+            ActionLoop loop = new ActionLoop(executor);
+            (new Action(loop) {
                 @Override
                 protected void exec() {
                     System.out.println(Thread.currentThread().getName() + "\t" + j);

@@ -4,8 +4,8 @@ public final class RunnableAction extends Action {
 
     private final Runnable runnable;
     
-    public RunnableAction(ActionQueue queue, Runnable runnable) {
-        super(queue);
+    public RunnableAction(ActionLoop loop, Runnable runnable) {
+        super(loop);
         this.runnable = runnable;
     }
 
@@ -14,8 +14,8 @@ public final class RunnableAction extends Action {
         runnable.run();
     }
 
-    public static final RunnableAction of(ActionQueue queue, Runnable runnable) {
-        return new RunnableAction(queue, runnable);
+    public static final RunnableAction of(ActionLoop loop, Runnable runnable) {
+        return new RunnableAction(loop, runnable);
     }
     
 }

@@ -2,17 +2,17 @@ package dev.xframe.action;
 
 class ActionThread extends Thread {
 	
-	ActionQueue attach;
+	ActionLoop attach;
 	
 	public ActionThread(ThreadGroup group, Runnable target, String name) {
 		super(group, target, name);
 	}
 	
-	public ActionQueue getAttach() {
+	public ActionLoop getAttach() {
 		return attach;
 	}
 	
-	public void setAttach(ActionQueue attach) {
+	public void setAttach(ActionLoop attach) {
 		this.attach = attach;
 	}
 	

@@ -7,9 +7,9 @@ package dev.xframe.action;
  */
 public interface ActionExecutor {
     
-    public ActionQueue defaultQueue();
+    public ActionLoop defaultLoop();
     
-    public void delayCheck(DelayAction action);
+    public void schedule(DelayAction action);
 
     public void execute(Runnable action);
     

@@ -27,8 +27,8 @@ public abstract class FutureAction extends Action {
     static final int STATUS_CANCEL   = 3;
     static final int STATUS_COMPLETE = 4;
 
-    public FutureAction(ActionQueue queue) {
-        super(queue);
+    public FutureAction(ActionLoop loop) {
+        super(loop);
         this.status = new AtomicInteger(STATUS_NORMAL);
         this.latch = new CountDownLatch(1);
     }
@@ -86,8 +86,8 @@ public abstract class FutureAction extends Action {
         return status.compareAndSet(STATUS_NORMAL, STATUS_RUNNING);
     }
     
-    public static final FutureAction of(ActionQueue queue, Runnable runnable) {
-        return new FutureAction(queue) {protected void exec() {runnable.run();}};
+    public static final FutureAction of(ActionLoop loop, Runnable runnable) {
+        return new FutureAction(loop) {protected void exec() {runnable.run();}};
     }
     
 }

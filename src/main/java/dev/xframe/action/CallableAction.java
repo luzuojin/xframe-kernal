@@ -4,8 +4,8 @@ public abstract class CallableAction extends Action {
 
     private final Action callable;
     
-    public CallableAction(ActionQueue queue, Action callable) {
-        super(queue);
+    public CallableAction(ActionLoop loop, Action callable) {
+        super(loop);
         this.callable = callable;
     }
     
@@ -14,8 +14,8 @@ public abstract class CallableAction extends Action {
         if(callable != null) callable.checkin();
     }
     
-    public static final CallableAction of(ActionQueue queue, Runnable runnable, Action callable){
-        return new CallableAction(queue, callable) {protected void exec() {runnable.run();}};
+    public static final CallableAction of(ActionLoop loop, Runnable runnable, Action callable){
+        return new CallableAction(loop, callable) {protected void exec() {runnable.run();}};
     }
 
 }

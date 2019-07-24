@@ -13,14 +13,14 @@ public abstract class DelayAction extends Action implements Delayed {
     
     volatile boolean isCancelled;
     
-	public DelayAction(ActionQueue queue, int delay) {
-	    super(queue);
-	    this.initialize(createTime, delay);
+	public DelayAction(ActionLoop loop, int delay) {
+	    super(loop);
+	    this.initial(createTime, delay);
 	}
 	
-	public DelayAction(ActionQueue queue, long curTime, int delay) {
-		super(queue);
-		this.initialize(curTime, delay);
+	public DelayAction(ActionLoop loop, long curTime, int delay) {
+		super(loop);
+		this.initial(curTime, delay);
 	}
 
 	@Override
@@ -28,7 +28,7 @@ public abstract class DelayAction extends Action implements Delayed {
 	    return !isCancelled;
     }
 
-    private void initialize(long curTime, int delay) {
+    private void initial(long curTime, int delay) {
         this.isCancelled = false;
         this.createTime = curTime;
         this.execTime = delay > 0 ? (curTime + delay) : 0;
@@ -37,9 +37,9 @@ public abstract class DelayAction extends Action implements Delayed {
 	@Override
     public void checkin() {
 	    if(this.execTime == 0) {//don`t need delay
-	        queue.checkin(this);
+	        loop.checkin(this);
 	    } else {
-	        queue.checkinDelayAction(this);
+	        loop.schedule(this);
 	    }
     }
 	
@@ -52,7 +52,7 @@ public abstract class DelayAction extends Action implements Delayed {
 	}
 	
 	public void recheckin(long curTime, int delay) {
-		initialize(curTime, delay);
+		initial(curTime, delay);
 		checkin();
 	}
 
@@ -63,7 +63,7 @@ public abstract class DelayAction extends Action implements Delayed {
         
 		if(curTime >= execTime) {
 			createTime = curTime;
-			getActionQueue().checkin(this);
+			getActionLoop().checkin(this);
 			return true;
 		}
 		return false;
@@ -84,8 +84,8 @@ public abstract class DelayAction extends Action implements Delayed {
         return getClazz().getName() + "[" + DateTimeFormatter.ofPattern("HH:mm:ss").format(ZonedDateTime.ofInstant(Instant.ofEpochMilli(execTime), ZoneOffset.systemDefault())) + "]";
     }  
 
-    public static final DelayAction of(ActionQueue queue, int delay, Runnable runnable) {
-        return new DelayAction(queue, delay) {protected void exec() {runnable.run();}};
+    public static final DelayAction of(ActionLoop loop, int delay, Runnable runnable) {
+        return new DelayAction(loop, delay) {protected void exec() {runnable.run();}};
     }
     
 }

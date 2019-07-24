@@ -3,20 +3,20 @@ package dev.xframe.action;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ActionQueue {
+public class ActionLoop {
     
     private ActionExecutor executor;
     private ConcurrentLinkedQueue<Runnable> queue;
     private AtomicBoolean isRunning;
     
-    public ActionQueue(ActionExecutor executor) {
+    public ActionLoop(ActionExecutor executor) {
         this.executor = executor;
         this.queue = new ConcurrentLinkedQueue<>();
         this.isRunning = new AtomicBoolean(false);
     }
     
-    void checkinDelayAction(DelayAction action) {
-        executor.delayCheck(action);
+    void schedule(DelayAction action) {
+        executor.schedule(action);
     }
     
     void checkin(Action action) {
@@ -54,16 +54,20 @@ public class ActionQueue {
     int size() {
         return queue.size();
     }
- 
-    public static ActionQueue getCurrent() {
+    
+    public boolean inLoop() {
+        return this == getCurrent();
+    }
+    
+    static ActionLoop getCurrent() {
     	Thread thread = Thread.currentThread();
 		return (thread instanceof ActionThread) ? ((ActionThread) thread).getAttach() : null;
     }
     
-    static void setCurrent(ActionQueue queue) {
+    static void setCurrent(ActionLoop loop) {
     	Thread thread = Thread.currentThread();
     	if(thread instanceof ActionThread) {
-    		((ActionThread) thread).setAttach(queue);
+    		((ActionThread) thread).setAttach(loop);
     	}
     }
     

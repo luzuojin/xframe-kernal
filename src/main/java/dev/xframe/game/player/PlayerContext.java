@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import dev.xframe.action.Action;
 import dev.xframe.action.ActionExecutor;
-import dev.xframe.action.ActionQueue;
+import dev.xframe.action.ActionLoop;
 import dev.xframe.game.callable.Callable;
 
 
@@ -64,7 +64,7 @@ public class PlayerContext {
         }
         
         //不存在缓存中, 从DB中load, 仅load共享数据(shareData)
-		Player player = factory.newPlayer(playerId, new ActionQueue(executor));
+		Player player = factory.newPlayer(playerId, new ActionLoop(executor));
 		players.put(playerId, player);//放入缓存中
 		
         if(!player.load()) {
@@ -87,12 +87,12 @@ public class PlayerContext {
         }
         
         //不存在缓存中, 从DB中load
-        final Player player = factory.newPlayer(playerId, new ActionQueue(executor));
+        final Player player = factory.newPlayer(playerId, new ActionLoop(executor));
         
         players.put(playerId, player);//放入缓存中
         
         //通过playerTask Load数据
-        new Action(player.queue) {
+        new Action(player.loop) {
             @Override
             protected void exec() {
                 if(!player.load()) {
@@ -117,12 +117,12 @@ public class PlayerContext {
         }
         
         //不存在缓存中, 从DB中load
-        final Player player = factory.newPlayer(playerId, new ActionQueue(executor));
+        final Player player = factory.newPlayer(playerId, new ActionLoop(executor));
         
         players.put(playerId, player);//放入缓存中
         
         //通过playerTask Load数据
-        new Action(player.queue) {
+        new Action(player.loop) {
             @Override
             protected void exec() {
                 try {

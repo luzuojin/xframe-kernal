@@ -5,7 +5,7 @@ import dev.xframe.injection.Inject;
 import dev.xframe.net.codec.IMessage;
 
 /**
- * 直接的, 没有经过player.queue
+ * 直接的, 没有经过player.loop
  * @author luzj
  */
 public abstract class DirectModularCmd<T extends ModularPlayer, V> extends ModularCommand<T, V> {

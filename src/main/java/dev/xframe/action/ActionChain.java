@@ -36,7 +36,7 @@ public class ActionChain {
         private final Action action;
         private ChainAction next;
         public ChainAction(Action action) {
-            super(action.queue);
+            super(action.loop);
             this.action = action;
         }
         @Override

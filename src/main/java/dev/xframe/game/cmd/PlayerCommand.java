@@ -28,7 +28,7 @@ public abstract class PlayerCommand<T extends Player> implements Command {
         }
     }
     
-    //for Queued Or Direct
+    //for Looped Or Direct
     protected abstract void execute0(T player, IMessage req) throws Exception;
     
     public abstract void exec(T player, IMessage req) throws Exception;

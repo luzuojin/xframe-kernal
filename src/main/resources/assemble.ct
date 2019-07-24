@@ -11,7 +11,7 @@ public class ${assemble_name} extends ${assemble_basic} implements dev.xframe.mo
     final Object[] _modules = new Object[${module_count}];
     ///
     
-    public ${assemble_simple_name}(long id, dev.xframe.action.ActionQueue actionQueue)
+    public ${assemble_simple_name}(long id, dev.xframe.action.ActionLoop loop)
     ///constructor
     {
         super(${params});

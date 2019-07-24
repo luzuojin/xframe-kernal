@@ -46,8 +46,8 @@ public class ActionExecutors {
         private boolean isRunning = true;
         
         //delay set
-        private ActionQueue defaultQueue;
-        private DelayCheckThread delayCheckThread;
+        private ActionLoop defaultLoop;
+        private ScheduleThread scheduleThread;
         
         /**
          * 执行action队列的线程池
@@ -72,31 +72,31 @@ public class ActionExecutors {
             executors.add(this);
         }
         
-		public ActionQueue defaultQueue() {
-            if(this.defaultQueue == null) {
+		public ActionLoop defaultLoop() {
+            if(this.defaultLoop == null) {
                 setupDefaultQueue();
             }
-            return this.defaultQueue;
+            return this.defaultLoop;
         }
         
-        private synchronized void setupDefaultQueue() {
-            if(this.defaultQueue == null) {
-                this.defaultQueue = new ActionQueue(this);
+        synchronized void setupDefaultQueue() {
+            if(this.defaultLoop == null) {
+                this.defaultLoop = new ActionLoop(this);
             }
         }
 
-        public void delayCheck(DelayAction action) {
-            if(this.delayCheckThread == null) {
-                setupDelayCheckTread();
+        public void schedule(DelayAction action) {
+            if(this.scheduleThread == null) {
+                setupScheduleThread();
             }
             
-            this.delayCheckThread.checkin(action);
+            this.scheduleThread.checkin(action);
         }
         
-        private synchronized void setupDelayCheckTread() {
-            if(this.delayCheckThread == null) {
-                this.delayCheckThread = new DelayCheckThread(name);
-                this.delayCheckThread.start();
+        private synchronized void setupScheduleThread() {
+            if(this.scheduleThread == null) {
+                this.scheduleThread = new ScheduleThread(name);
+                this.scheduleThread.start();
             }
         }
 
@@ -110,20 +110,20 @@ public class ActionExecutors {
                     executor.shutdown();
                 }
                 
-                if(delayCheckThread != null)
-                    delayCheckThread.shutdown();
+                if(scheduleThread != null)
+                    scheduleThread.shutdown();
                 
                 isRunning = false;
             }
         }
         
-        static class DelayCheckThread extends Thread {
+        static class ScheduleThread extends Thread {
 
             private DelayQueue<DelayAction> queue;
             private boolean isRunning;
             private int counter;
 
-            public DelayCheckThread(String prefix) {
+            public ScheduleThread(String prefix) {
                 super(prefix + "-thread-dc");
                 setPriority(Thread.MAX_PRIORITY); // 给予高优先级
                 queue = new DelayQueue<>();

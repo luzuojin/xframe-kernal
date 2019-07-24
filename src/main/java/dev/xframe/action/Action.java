@@ -15,26 +15,26 @@ public abstract class Action implements Runnable, Metrical {
     
     protected static final Logger logger = LoggerFactory.getLogger(Action.class);
     
-    protected ActionQueue queue;
+    protected ActionLoop loop;
     protected long createTime;
 
-    public Action(ActionQueue queue) {
-        this.queue = queue;
+    public Action(ActionLoop loop) {
+        this.loop = loop;
         this.createTime = System.currentTimeMillis();
     }
 
-    public ActionQueue getActionQueue() {
-        return queue;
+    public ActionLoop getActionLoop() {
+        return loop;
     }
     
     public void checkin() {
-        this.queue.checkin(this);
+        this.loop.checkin(this);
     }
     
     @Override
     public final void run() {
         try {
-        	ActionQueue.setCurrent(queue);;
+        	ActionLoop.setCurrent(loop);;
             if(runable()) {
                 long createTime = this.createTime;
                 long start = System.currentTimeMillis();
@@ -46,8 +46,8 @@ public abstract class Action implements Runnable, Metrical {
             logger.error("Execute exception: " + getClazz().getName(), e);
             failure(e);
         } finally {
-        	ActionQueue.unsetCurrent();
-            queue.checkout(this);
+        	ActionLoop.unsetCurrent();
+            loop.checkout(this);
             done();
         }
     }
@@ -75,7 +75,7 @@ public abstract class Action implements Runnable, Metrical {
     }
     
 	public final int waitings() {
-		return queue.size();
+		return loop.size();
 	}
 
 	@Override

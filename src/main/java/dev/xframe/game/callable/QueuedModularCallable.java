@@ -6,7 +6,7 @@ import dev.xframe.game.player.ModularPlayer;
 public interface QueuedModularCallable<T extends ModularPlayer, V> extends ModularCallable<T, V> {
 
     default void call(final T player, final V module) {
-        RunnableAction.of(player.queue(), ()->exec(player, module)).checkin();
+        RunnableAction.of(player.loop(), ()->exec(player, module)).checkin();
     }
 
     public void exec(T player, V module);

@@ -6,9 +6,9 @@ import dev.xframe.game.player.Player;
 import dev.xframe.net.codec.IMessage;
 import dev.xframe.tools.LiteParser;
 
-public abstract class QueuedLiteCmd<T extends Player, L extends MessageLite> extends QueuedCommand<T> {
+public abstract class LoopedLiteCmd<T extends Player, L extends MessageLite> extends LoopedCommand<T> {
 
-	private LiteParser parser = new LiteParser(this.getClass(), QueuedLiteCmd.class);
+	private LiteParser parser = new LiteParser(this.getClass(), LoopedLiteCmd.class);
 	
 	@Override
 	public final void exec(T player, IMessage req) throws Exception {

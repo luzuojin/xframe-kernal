@@ -1,6 +1,6 @@
 package dev.xframe.game.player;
 
-import dev.xframe.action.ActionQueue;
+import dev.xframe.action.ActionLoop;
 
 /**
  * 玩家数据在baseserver中需要用到的数据的一个子集
@@ -10,16 +10,16 @@ import dev.xframe.action.ActionQueue;
  */
 public abstract class Player {
     
-    protected ActionQueue queue;
+    protected ActionLoop loop;
     protected long playerId;
 
-    public Player(long playerId, ActionQueue queue) {
+    public Player(long playerId, ActionLoop loop) {
         this.playerId = playerId;
-        this.queue = queue;
+        this.loop = loop;
     }
     
-    public ActionQueue queue() {
-        return this.queue;
+    public ActionLoop loop() {
+        return this.loop;
     }
 
     public long getPlayerId() {

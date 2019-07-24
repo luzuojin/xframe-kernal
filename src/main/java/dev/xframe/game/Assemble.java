@@ -9,6 +9,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface Assemble {
 
-    int threads() default 0;//queues threads
+    int threads() default 0;//logics threads
     
 }
