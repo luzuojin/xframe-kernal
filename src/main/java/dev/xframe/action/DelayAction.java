@@ -63,7 +63,7 @@ public abstract class DelayAction extends Action implements Delayed {
         
 		if(curTime >= execTime) {
 			createTime = curTime;
-			getActionLoop().checkin(this);
+			loop.checkin(this);
 			return true;
 		}
 		return false;

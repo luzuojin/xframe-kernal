@@ -23,10 +23,6 @@ public abstract class Action implements Runnable, Metrical {
         this.createTime = System.currentTimeMillis();
     }
 
-    public ActionLoop getActionLoop() {
-        return loop;
-    }
-    
     public void checkin() {
         this.loop.checkin(this);
     }
