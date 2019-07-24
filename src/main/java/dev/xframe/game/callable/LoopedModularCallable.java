@@ -3,7 +3,7 @@ package dev.xframe.game.callable;
 import dev.xframe.action.RunnableAction;
 import dev.xframe.game.player.ModularPlayer;
 
-public interface QueuedModularCallable<T extends ModularPlayer, V> extends ModularCallable<T, V> {
+public interface LoopedModularCallable<T extends ModularPlayer, V> extends ModularCallable<T, V> {
 
     default void call(final T player, final V module) {
         RunnableAction.of(player.loop(), ()->exec(player, module)).checkin();
