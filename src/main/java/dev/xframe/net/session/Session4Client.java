@@ -63,10 +63,11 @@ public class Session4Client extends Session4Server {
         listener.onSessionRegister(this);
     }
 
-    public void syncConnect() throws InterruptedException {
+    public Session syncConnect() throws InterruptedException {
         if (!isActive()) {
             bindChannel(bootstrap.connect(host, port).sync().channel());
         }
+        return this;
     }
 
     private void logFailure(Throwable e) {
