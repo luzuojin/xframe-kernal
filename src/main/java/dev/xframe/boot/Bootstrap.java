@@ -6,14 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.xframe.http.HttpServer;
-import dev.xframe.http.service.ServiceContext;
 import dev.xframe.injection.ApplicationContext;
-import dev.xframe.injection.Inject;
-import dev.xframe.injection.Injection;
-import dev.xframe.net.LifecycleListener;
-import dev.xframe.net.MessageInterceptor;
 import dev.xframe.net.NetServer;
-import dev.xframe.net.cmd.CommandContext;
 import dev.xframe.tools.XProcess;
 
 public class Bootstrap {
@@ -34,15 +28,6 @@ public class Bootstrap {
     int httpPort;
     int httpThreads;
     HttpServer http;
-    
-    @Inject
-    LifecycleListener lifecycleListener;
-    @Inject
-    CommandContext commandCtx;
-    @Inject
-    ServiceContext serviceCtx;
-    @Inject
-    MessageInterceptor interceptor;
     
     public Bootstrap() {
     	if(RUNNING_INSTANCE != null) {
@@ -73,11 +58,8 @@ public class Bootstrap {
         return this;
     }
     
-    public static int defTcpThreads() {
-        return Runtime.getRuntime().availableProcessors() * 2;
-    }
     public Bootstrap withTcp(int port) {
-        return withTcp(port, defTcpThreads());
+        return withTcp(port, NetServer.defaultThreads());
     }
     public Bootstrap withTcp(int port, int nThreads) {
         this.tcpPort = port;
@@ -85,11 +67,8 @@ public class Bootstrap {
         return this;
     }
     
-    public static int defHttpThreads() {
-        return Runtime.getRuntime().availableProcessors();
-    }
     public Bootstrap withHttp(int port) {
-        return withHttp(port, defHttpThreads());
+        return withHttp(port, HttpServer.defaultThreads());
     }
     public Bootstrap withHttp(int port, int nThreads) {
         this.httpPort = port;
@@ -108,16 +87,12 @@ public class Bootstrap {
             
             ApplicationContext.initialize(includes, excludes);
             
-            Injection.inject(this);
-            
             if(tcpPort > 0) {
-                tcp = new NetServer();
-                tcp.start(tcpPort, tcpThreads, commandCtx, interceptor, lifecycleListener);
+                tcp = new NetServer().working(tcpThreads).listening(tcpPort).startup();
             }
 
             if(httpPort > 0) {
-                http = new HttpServer();
-                http.start(httpPort, httpThreads, serviceCtx);
+                http = new HttpServer().working(httpThreads).listening(httpPort).startup();
             }
         } catch (Throwable ex) {
             logger.error("Startup failed!", ex);
@@ -127,8 +102,8 @@ public class Bootstrap {
     }
     
     public Bootstrap shutdown() {
-        if(http != null) http.stop();
-        if(tcp != null) tcp.stop();
+        if(http != null) http.shutdown();
+        if(tcp != null) tcp.shutdown();
         return this;
     }
     

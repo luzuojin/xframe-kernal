@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.xframe.http.service.ServiceContext;
+import dev.xframe.injection.Inject;
+import dev.xframe.injection.Injection;
 import dev.xframe.net.NetServer;
 import dev.xframe.tools.ThreadsFactory;
 import io.netty.bootstrap.ServerBootstrap;
@@ -24,11 +26,34 @@ public class HttpServer {
     
     private static Logger logger = LoggerFactory.getLogger(NetServer.class);
     
+    public static int defaultThreads() {
+        return Runtime.getRuntime().availableProcessors();
+    }
+    
+    @Inject
+    private ServiceContext serviceCtx;
+    
     private Channel bossChannel;
     private NioEventLoopGroup bossGroup;
     private NioEventLoopGroup workerGroup;
     
-    public void start(int port, int threads, ServiceContext serviceCtx) {
+    private int threads = defaultThreads();
+    
+    private int port;
+    
+    public HttpServer listening(int port) {
+        this.port = port;
+        return this;
+    }
+    
+    public HttpServer working(int threads) {
+        this.threads = threads;
+        return this;
+    }
+    
+    public HttpServer startup() {
+        Injection.inject(this);
+        
         bossGroup = new NioEventLoopGroup(1, new ThreadsFactory("http.boss"));
         workerGroup = new NioEventLoopGroup(threads, new ThreadsFactory("http.worker"));
         
@@ -56,9 +81,10 @@ public class HttpServer {
         } catch (InterruptedException e) {
             logger.error("HttpServer start failed ...", e);
         }
+        return this;
     }
     
-    public void stop() {
+    public void shutdown() {
         bossGroup.shutdownGracefully();
         workerGroup.shutdownGracefully();
         bossChannel.close().awaitUninterruptibly();

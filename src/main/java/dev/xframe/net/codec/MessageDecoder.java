@@ -35,8 +35,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
         message.readParams(buff);
         message.readBody(buff);
         
-        if(crypt != null)
-            crypt.decrypt(ctx, message);
+        crypt.decrypt(ctx, message);
         
         out.add(message);
     }

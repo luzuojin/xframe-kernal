@@ -19,8 +19,7 @@ public class MessageEncoder extends MessageToByteEncoder<IMessage> {
     
     @Override
     protected void encode(ChannelHandlerContext ctx, IMessage message, ByteBuf out) throws Exception {
-        if(crypt != null)
-            crypt.encrypt(ctx, message);
+        crypt.encrypt(ctx, message);
         
         message.writeHeader(out);
         message.writeParams(out);

@@ -3,6 +3,8 @@ package dev.xframe.net;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dev.xframe.injection.Inject;
+import dev.xframe.injection.Injection;
 import dev.xframe.net.NetChannelInitializer.ServerInitializer;
 import dev.xframe.net.cmd.CommandContext;
 import dev.xframe.net.codec.MessageCrypt;
@@ -26,14 +28,44 @@ public class NetServer {
 	
 	private static Logger logger = LoggerFactory.getLogger(NetServer.class);
 	
+	public static int defaultThreads() {
+        return Runtime.getRuntime().availableProcessors() * 2;
+    }
+	
+	@Inject
+	private CommandContext cmdCtx;
+	@Inject
+	private MessageInterceptor interceptor;
+	@Inject
+	private LifecycleListener listener;
+	
 	private Channel bossChannel;
 	private NioEventLoopGroup bossGroup;
 	private NioEventLoopGroup workerGroup;
 	
-	public void start(int port, int threads, CommandContext cmdCtx, MessageInterceptor interceptor, LifecycleListener listener) {
-	    start(port, threads, cmdCtx, interceptor, listener, MessageCrypts.fromSysOps());
+	private MessageCrypt crypt = MessageCrypts.fromSysOps();
+	private int threads = defaultThreads();
+
+	private int port;
+	
+	public NetServer listening(int port) {
+	    this.port = port;
+	    return this;
 	}
-	public void start(int port, int threads, CommandContext cmdCtx, MessageInterceptor interceptor, LifecycleListener listener, MessageCrypt crypt) {
+	
+	public NetServer working(int threads)  {
+	    this.threads = threads;
+	    return this;
+	}
+	
+	public NetServer crypting(MessageCrypt crypt) {
+	    this.crypt = crypt;
+	    return this;
+	}
+	
+	public NetServer startup() {
+	    Injection.inject(this);
+	    
 	    bossGroup = new NioEventLoopGroup(1, new ThreadsFactory("netty.boss"));
 	    workerGroup = new NioEventLoopGroup(threads, new ThreadsFactory("netty.worker"));
         NetMessageHandler dispatcher = new ServerMessageHandler(listener, cmdCtx, interceptor);
@@ -61,9 +93,10 @@ public class NetServer {
         } catch (InterruptedException e) {
             logger.error("NetServer start failed ...", e);
         }
+	    return this;
 	}
 	
-	public void stop() {
+	public void shutdown() {
         bossGroup.shutdownGracefully();
         workerGroup.shutdownGracefully();
 	    bossChannel.close().awaitUninterruptibly();
