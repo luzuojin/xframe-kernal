@@ -74,12 +74,12 @@ public class ActionExecutors {
         
 		public ActionLoop defaultLoop() {
             if(this.defaultLoop == null) {
-                setupDefaultQueue();
+                setupDefaultLoop();
             }
             return this.defaultLoop;
         }
         
-        synchronized void setupDefaultQueue() {
+        synchronized void setupDefaultLoop() {
             if(this.defaultLoop == null) {
                 this.defaultLoop = new ActionLoop(this);
             }
