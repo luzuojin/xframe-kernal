@@ -13,7 +13,6 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -31,12 +30,15 @@ public class XLambda {
 	private static final int ALL_MODES = (PRIVATE | PROTECTED | PACKAGE | PUBLIC);
 	
 	@SuppressWarnings("unchecked")
-	public static <T> Supplier<T> createUseConstructor(Class<?> clazz, Class<?>... parameterTypes) throws Throwable {
+	public static <T> Supplier<T> createByConstructor(Class<?> clazz) throws Throwable {
+		return createByConstructor(Supplier.class, clazz);
+	}
+	public static <T> T createByConstructor(Class<T> lambdaInterface, Class<?> clazz, Class<?>... parameterTypes) throws Throwable {
 		Constructor<?> constructor = clazz.getDeclaredConstructor(parameterTypes);
 		constructor.setAccessible(true);
 		MethodHandles.Lookup lookup = createLookup(clazz);
 		MethodHandle methodHandle = lookup.unreflectConstructor(constructor);
-		return (Supplier<T>) _create(Supplier.class, constructor, lookup, methodHandle);
+		return _create(lambdaInterface, lookup, methodHandle);
 	}
 	
 	public static <T> T create(Class<T> lambdaInterface, Class<?> clazz, String methodName, Class<?>... parameterTypes) throws Throwable {
@@ -52,8 +54,8 @@ public class XLambda {
 		return method;
 	}
 
-	public static <T> T create(Class<T> lambdaInterfaceClass, Method method) throws Throwable {
-		return _create(lambdaInterfaceClass, method, false);
+	public static <T> T create(Class<T> lambdaInterface, Method method) throws Throwable {
+		return _create(lambdaInterface, method, false);
 	}
 	public static <T> T createSpecial(Class<T> lambdaInterface, Method method) throws Throwable {
 		return _create(lambdaInterface, method, true);
@@ -62,19 +64,19 @@ public class XLambda {
 	private static <T> T _create(Class<T> lambdaInterface, Method method, boolean invokeSpecial) throws Throwable {
 		MethodHandles.Lookup lookup = createLookup(method.getDeclaringClass());
 		MethodHandle methodHandle = invokeSpecial? lookup.unreflectSpecial(method, method.getDeclaringClass()) : lookup.unreflect(method);
-		return _create(lambdaInterface, method, lookup, methodHandle);
+		return _create(lambdaInterface, lookup, methodHandle);
 	}
 	
-	private static <T> T _create(Class<T> lambdaInterface, Executable method, MethodHandles.Lookup lookup, MethodHandle methodHandle) throws LambdaConversionException, Throwable {
+	private static <T> T _create(Class<T> lambdaInterface, MethodHandles.Lookup lookup, MethodHandle methodHandle) throws LambdaConversionException, Throwable {
 		MethodType instantiatedMethodType = methodHandle.type();
-		MethodType signature = createLambdaMethodType(method, instantiatedMethodType);
+		MethodType samMethodType = makeMethodTypeGeneric(instantiatedMethodType);
 		String signatureName = getNameFromLambdaInterceClass(lambdaInterface);
 		CallSite site = LambdaMetafactory.metafactory(
-				lookup, 
+				lookup,
 				signatureName,
-				MethodType.methodType(lambdaInterface), 
-				signature, 
-				methodHandle, 
+				MethodType.methodType(lambdaInterface),
+				samMethodType,
+				methodHandle,
 				instantiatedMethodType);
 		return (T) site.getTarget().invoke();
 	}
@@ -84,19 +86,21 @@ public class XLambda {
 		return Arrays.stream(lambdaInterfaceClass.getMethods()).filter(m->!m.isDefault()&&(m.getModifiers()&Modifier.STATIC)==0).findAny().get().getName();
 	}
 
-	private static MethodType createLambdaMethodType(Executable method, MethodType instantiatedMethodType) {
-		boolean nullInvokable = Modifier.isStatic(method.getModifiers()) || (method instanceof Constructor);
-		MethodType signature = nullInvokable ? instantiatedMethodType : instantiatedMethodType.changeParameterType(0, Object.class);
-		Class<?>[] params = method.getParameterTypes();
-		for (int i=0; i<params.length; i++){
+	/**
+	 * change instantiated method type paramters to generic (Object)
+	 */
+	private static MethodType makeMethodTypeGeneric(MethodType methodType) {
+		MethodType sam = methodType;
+		Class<?>[] params = sam.parameterArray();
+		for (int i = 0; i < params.length; i++) {
 			if (Object.class.isAssignableFrom(params[i])){
-				signature = signature.changeParameterType(nullInvokable ? i : i+1, Object.class);
+				sam = sam.changeParameterType(i, Object.class);
 			}
 		}
-		if (Object.class.isAssignableFrom(signature.returnType())){
-			signature = signature.changeReturnType(Object.class);
+		if (Object.class.isAssignableFrom(sam.returnType())){
+			sam = sam.changeReturnType(Object.class);
 		}
-		return signature;
+		return sam;
 	}
 	
 	private static Lookup createLookup(Class<?> clazz) throws NoSuchFieldException, IllegalAccessException {
