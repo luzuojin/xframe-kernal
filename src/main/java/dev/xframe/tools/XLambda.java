@@ -70,7 +70,7 @@ public class XLambda {
 	private static <T> T _create(Class<T> lambdaInterface, MethodHandles.Lookup lookup, MethodHandle methodHandle) throws LambdaConversionException, Throwable {
 		MethodType instantiatedMethodType = methodHandle.type();
 		MethodType samMethodType = makeMethodTypeGeneric(instantiatedMethodType);
-		String signatureName = getNameFromLambdaInterceClass(lambdaInterface);
+		String signatureName = getNameFromLambdaInterface(lambdaInterface);
 		CallSite site = LambdaMetafactory.metafactory(
 				lookup,
 				signatureName,
@@ -81,9 +81,9 @@ public class XLambda {
 		return (T) site.getTarget().invoke();
 	}
 
-	private static String getNameFromLambdaInterceClass(Class<?> lambdaInterfaceClass) {
-		assert lambdaInterfaceClass.isInterface();
-		return Arrays.stream(lambdaInterfaceClass.getMethods()).filter(m->!m.isDefault()&&(m.getModifiers()&Modifier.STATIC)==0).findAny().get().getName();
+	private static String getNameFromLambdaInterface(Class<?> lambdaInterface) {
+		assert lambdaInterface.isInterface();
+		return Arrays.stream(lambdaInterface.getMethods()).filter(m->!m.isDefault()&&(m.getModifiers()&Modifier.STATIC)==0).findAny().get().getName();
 	}
 
 	/**
