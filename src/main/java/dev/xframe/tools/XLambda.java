@@ -25,25 +25,25 @@ import java.util.function.Supplier;
  * 性能接近原生方法调用
  * @author luzj
  */
-public class XAccessor {
+public class XLambda {
 	
 	private static Field lookupAllowedModesField;
 	private static final int ALL_MODES = (PRIVATE | PROTECTED | PACKAGE | PUBLIC);
 	
 	@SuppressWarnings("unchecked")
-	public static <T> Supplier<T> newConstructorLambda(Class<?> clazz, Class<?>... parameterTypes) throws Throwable {
+	public static <T> Supplier<T> createUseConstructor(Class<?> clazz, Class<?>... parameterTypes) throws Throwable {
 		Constructor<?> constructor = clazz.getDeclaredConstructor(parameterTypes);
 		constructor.setAccessible(true);
-		MethodHandles.Lookup lookup = newLookup(clazz);
+		MethodHandles.Lookup lookup = createLookup(clazz);
 		MethodHandle methodHandle = lookup.unreflectConstructor(constructor);
-		return (Supplier<T>) _newLambda(Supplier.class, constructor, lookup, methodHandle);
+		return (Supplier<T>) _create(Supplier.class, constructor, lookup, methodHandle);
 	}
 	
-	public static <T> T newLambda(Class<T> lambdaInterface, Class<?> clazz, String methodName, Class<?>... parameterTypes) throws Throwable {
-		return newLambda(lambdaInterface, getMethod(clazz, methodName, parameterTypes));
+	public static <T> T create(Class<T> lambdaInterface, Class<?> clazz, String methodName, Class<?>... parameterTypes) throws Throwable {
+		return create(lambdaInterface, getMethod(clazz, methodName, parameterTypes));
 	}
-	public static <T> T newLambdaSpecial(Class<T> lambdaInterface, Class<?> clazz, String methodName, Class<?>... parameterTypes) throws Throwable {
-		return newLambdaSpecial(lambdaInterface, getMethod(clazz, methodName, parameterTypes));
+	public static <T> T createSpecial(Class<T> lambdaInterface, Class<?> clazz, String methodName, Class<?>... parameterTypes) throws Throwable {
+		return createSpecial(lambdaInterface, getMethod(clazz, methodName, parameterTypes));
 	}
 
 	private static Method getMethod(Class<?> clazz, String methodName, Class<?>... parameterTypes) throws Exception {
@@ -52,22 +52,22 @@ public class XAccessor {
 		return method;
 	}
 
-	public static <T> T newLambda(Class<T> lambdaInterfaceClass, Method method) throws Throwable {
-		return _newLambda(lambdaInterfaceClass, method, false);
+	public static <T> T create(Class<T> lambdaInterfaceClass, Method method) throws Throwable {
+		return _create(lambdaInterfaceClass, method, false);
 	}
-	public static <T> T newLambdaSpecial(Class<T> lambdaInterface, Method method) throws Throwable {
-		return _newLambda(lambdaInterface, method, true);
+	public static <T> T createSpecial(Class<T> lambdaInterface, Method method) throws Throwable {
+		return _create(lambdaInterface, method, true);
 	}
 	
-	private static <T> T _newLambda(Class<T> lambdaInterface, Method method, boolean invokeSpecial) throws Throwable {
-		MethodHandles.Lookup lookup = newLookup(method.getDeclaringClass());
+	private static <T> T _create(Class<T> lambdaInterface, Method method, boolean invokeSpecial) throws Throwable {
+		MethodHandles.Lookup lookup = createLookup(method.getDeclaringClass());
 		MethodHandle methodHandle = invokeSpecial? lookup.unreflectSpecial(method, method.getDeclaringClass()) : lookup.unreflect(method);
-		return _newLambda(lambdaInterface, method, lookup, methodHandle);
+		return _create(lambdaInterface, method, lookup, methodHandle);
 	}
 	
-	private static <T> T _newLambda(Class<T> lambdaInterface, Executable method, MethodHandles.Lookup lookup, MethodHandle methodHandle) throws LambdaConversionException, Throwable {
+	private static <T> T _create(Class<T> lambdaInterface, Executable method, MethodHandles.Lookup lookup, MethodHandle methodHandle) throws LambdaConversionException, Throwable {
 		MethodType instantiatedMethodType = methodHandle.type();
-		MethodType signature = newLambdaMethodType(method, instantiatedMethodType);
+		MethodType signature = createLambdaMethodType(method, instantiatedMethodType);
 		String signatureName = getNameFromLambdaInterceClass(lambdaInterface);
 		CallSite site = LambdaMetafactory.metafactory(
 				lookup, 
@@ -84,7 +84,7 @@ public class XAccessor {
 		return Arrays.stream(lambdaInterfaceClass.getMethods()).filter(m->!m.isDefault()&&(m.getModifiers()&Modifier.STATIC)==0).findAny().get().getName();
 	}
 
-	private static MethodType newLambdaMethodType(Executable method, MethodType instantiatedMethodType) {
+	private static MethodType createLambdaMethodType(Executable method, MethodType instantiatedMethodType) {
 		boolean nullInvokable = Modifier.isStatic(method.getModifiers()) || (method instanceof Constructor);
 		MethodType signature = nullInvokable ? instantiatedMethodType : instantiatedMethodType.changeParameterType(0, Object.class);
 		Class<?>[] params = method.getParameterTypes();
@@ -99,7 +99,7 @@ public class XAccessor {
 		return signature;
 	}
 	
-	private static Lookup newLookup(Class<?> clazz) throws NoSuchFieldException, IllegalAccessException {
+	private static Lookup createLookup(Class<?> clazz) throws NoSuchFieldException, IllegalAccessException {
 		Lookup lookup = MethodHandles.lookup().in(clazz);
 		getLookupsModifiersField().set(lookup, ALL_MODES);
 		return lookup;
