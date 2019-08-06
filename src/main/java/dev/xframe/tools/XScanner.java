@@ -1,10 +1,13 @@
 package dev.xframe.tools;
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -13,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -104,6 +108,44 @@ public class XScanner {
         }
         return classes;
     }
+    
+    //jar:file:{jarpath}!/{jarentry}!/
+  	private static Set<ClassEntry> getFromJarInsidePath(String path) throws Exception {
+      	String[] _path = path.split("!/");
+      	if(_path.length > 1) {
+      		try(JarFile jarFile = new JarFile(Paths.get(new URI(_path[0])).toFile())) {
+      			if(isJarFile(_path[1])) {//jar
+      				JarEntry entry = jarFile.getJarEntry(_path[1]);
+      				return getFromJarStream(jarFile.getInputStream(entry));
+      			} else {//folder
+      				Enumeration<JarEntry> entries = jarFile.entries();
+      				Set<ClassEntry> classes = new LinkedHashSet<ClassEntry>();
+      				while (entries.hasMoreElements()) {
+      					JarEntry entry = (JarEntry) entries.nextElement();
+      					String name = entry.getName();
+      					if (name.startsWith(_path[1]) && isClassFile(name)) {
+      						String className = name.substring(_path[1].length(), entry.getName().indexOf(CLASS_FILE_EXT)).replace(FILE_SEPARATOR, PACKAGE_SEPARATOR);
+      						classes.add(new ClassEntry(className, entry.getSize(), entry.getTime()));
+      					}
+      				}
+      			}
+      		}
+      	}
+      	return new LinkedHashSet<ClassEntry>();
+  	}
+  	
+  	private static Set<ClassEntry> getFromJarStream(InputStream input) throws Exception {
+      	Set<ClassEntry> classes = new LinkedHashSet<ClassEntry>();
+  		try(JarInputStream jarInput = new JarInputStream(input);) {
+  			JarEntry next;
+  			while((next = jarInput.getNextJarEntry()) != null) {
+  				if(isClassFile(next.getName())) {
+  					classes.add(new ClassEntry(next));
+  				}
+  			}
+  		}
+  		return classes;
+  	}
 
     /**
      * 得到文件夹下所有class的全包名
@@ -121,17 +163,17 @@ public class XScanner {
      * 获取jar文件里的所有class文件名
      */
     private static Set<ClassEntry> getFromJar(File file) throws Exception {
-        JarFile jarFile = new JarFile(file);
-        Enumeration<JarEntry> entries = jarFile.entries();
-        Set<ClassEntry> classes = new LinkedHashSet<ClassEntry>();
-        while (entries.hasMoreElements()) {
-            JarEntry entry = (JarEntry) entries.nextElement();
-            if (isClassFile(entry.getName())) {
-            	classes.add(new ClassEntry(entry));
-            }
+        try (JarFile jarFile = new JarFile(file);) {
+        	Enumeration<JarEntry> entries = jarFile.entries();
+        	Set<ClassEntry> classes = new LinkedHashSet<ClassEntry>();
+        	while (entries.hasMoreElements()) {
+        		JarEntry entry = (JarEntry) entries.nextElement();
+        		if (isClassFile(entry.getName())) {
+        			classes.add(new ClassEntry(entry));
+        		}
+        	}
+        	return classes;
         }
-        jarFile.close();
-        return classes;
     }
     
     public static List<String> getClassPathes(String includes, String excludes) {
@@ -143,7 +185,8 @@ public class XScanner {
         try {
             Set<String> classPathes = getClassPathes();
             for (String path : classPathes) {
-                if (!isJarFile(path) || (includes.match(path) && !excludes.match(path))) ret.add(path);
+                if (!isJarFile(path) || (includes.match(path) && !excludes.match(path)))
+                	ret.add(path);
             }
         } catch (Exception ex) {
             // ignore
@@ -173,7 +216,13 @@ public class XScanner {
 	}
     
     private static Set<ClassEntry> getFromPath(String path) throws Exception {
-        return isJarFile(path) ? getFromJar(newFile(path)) : getFromDir(newFile(path));
+    	if(path.contains("!/")) {//@see JarURLConnection
+    		return getFromJarInsidePath(path);
+    	}
+    	if(isJarFile(path)) {
+    		return getFromJar(newFile(path));
+    	}
+        return getFromDir(newFile(path));
     }
 
 	public static class ClassEntry {
@@ -200,6 +249,29 @@ public class XScanner {
         public String toString() {
             return name;
         }
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((name == null) ? 0 : name.hashCode());
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			ClassEntry other = (ClassEntry) obj;
+			if (name == null) {
+				if (other.name != null)
+					return false;
+			} else if (!name.equals(other.name))
+				return false;
+			return true;
+		}
     }
     
     public static class ScanMatcher {
