@@ -5,13 +5,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 
 import dev.xframe.tools.Reflection;
+import dev.xframe.tools.XLambda;
 
 /**
  * listeners with @Subscribe declared by class 
  * @author luzj
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public final class Registry {
 	
 	public static void regist(Object declaredObj, Registrator registrator) {
@@ -20,29 +23,50 @@ public final class Registry {
     public static void regist(Class<?> declared, Object declaredObj, Registrator registrator) {
         Declaring[] declaring = get(declared);
         for (Declaring r : declaring) {
-            registrator.regist(new DeclaringSubscriber(r.group, r.type, declaredObj, r.method));
+            registrator.regist(r.newSubscriber(declaredObj));
         }
     }
     
 	static class Declaring {
 	    final int group;
 	    final int type;
-	    final Method method;
+	    final BiConsumer invoker;
 	    
-	    public Declaring(int group, Method m) {
-	        this.group = group;
-	        this.type = checkAndGetEventType(m);
-	        this.method = m;
-	        this.method.setAccessible(true);
+		public Declaring(int group, Method m) {
+	    	try {
+				m.setAccessible(true);
+				this.group = group;
+				this.type = checkAndGetEventType(m);
+				this.invoker = XLambda.create(BiConsumer.class, m);
+			} catch (Throwable e) {
+				throw new IllegalArgumentException(e);
+			}
 	    }
-	    
 		private int checkAndGetEventType(Method m) {
 			if(m.getParameterTypes().length != 1 || m.getParameterTypes()[0].getAnnotation(Event.class) == null) {
 				throw new IllegalArgumentException("Event subscribe method must has only one paramter with @Event marked)");
 			}
 			return m.getParameterTypes()[0].getAnnotation(Event.class).value();
 		}
+		
+		public Subscriber newSubscriber(Object declaredObj) {
+			return new DeclaringSubscriber(this, declaredObj);
+		}
 	}
+	
+	static class DeclaringSubscriber extends Subscriber {
+    	final Object declareObj;
+		final BiConsumer invoker;
+    	public DeclaringSubscriber(Declaring declaring, Object declareObj) {
+    		super(declaring.group, declaring.type);
+    		this.declareObj = declareObj;
+    		this.invoker = declaring.invoker;
+    	}
+		@Override
+		public void onEvent(Object event) throws Exception {
+			invoker.accept(declareObj, event);
+		}
+    }
     
     private static AtomicInteger _group = new AtomicInteger();
     private static Map<Class<?>, Integer> _groups = new HashMap<>();
@@ -92,20 +116,6 @@ public final class Registry {
                 .toArray(s -> new Declaring[s]);
     }
 
-    static class DeclaringSubscriber extends Subscriber {
-    	final Object declareObj;
-    	final Method method;
-    	public DeclaringSubscriber(int group, int type, Object declare, Method method) {
-    		super(group, type);
-    		this.declareObj = declare;
-    		this.method = method;
-    	}
-		@Override
-		public void onEvent(Object event) throws Exception {
-			method.invoke(declareObj, event);
-		}
-    }
-    
     private static Class<?> getOnlyParamType(Method method) {
         Class<?>[] types = method.getParameterTypes();
         return types.length == 1 ? types[0] : Void.class;
