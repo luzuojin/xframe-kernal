@@ -33,8 +33,7 @@ public class Codes {
 	private static Map<String, ClassEntry> classEntryMap = new HashMap<>();
 	private static Map<String, AtomicInteger> classVersionMap = new HashMap<>();
 	
-	private static ScanMatcher includes = new ScanMatcher(null);
-	private static ScanMatcher excludes = new ScanMatcher(null);
+	private static ScanMatcher matcher = new ScanMatcher(null, null);
 
 	private static List<Class<?>> declaredClasses;
 	
@@ -48,17 +47,17 @@ public class Codes {
 	}
 	
 	public static List<Class<?>> getClasses(String includes, String excludes) {
-		return getClasses(new ScanMatcher(includes), new ScanMatcher(excludes));
+		return getClasses(new ScanMatcher(includes, excludes));
 	}
 
-	public static List<Class<?>> getClasses(ScanMatcher includes, ScanMatcher excludes) {
-		return getClasses0(includes, excludes);
+	public static List<Class<?>> getClasses(ScanMatcher matcher) {
+		return getClasses0(matcher);
 	}
 
-	synchronized static List<Class<?>> getClasses0(ScanMatcher includes, ScanMatcher excludes) {
+	synchronized static List<Class<?>> getClasses0(ScanMatcher matcher) {
 	    if(declaredClasses == null) {
-	        Codes.includes = includes; Codes.excludes = excludes;
-	        List<ClassEntry> entries = XScanner.scan(includes, excludes);
+	        Codes.matcher = matcher;
+	        List<ClassEntry> entries = XScanner.scan(matcher);
 	        List<String> names = new ArrayList<>();
 	        for (ClassEntry entry : entries) {
 	            addEntry(entry);
@@ -76,7 +75,7 @@ public class Codes {
 	}
 	
 	public static boolean isMatching(String className) {
-	    return includes.match(className) && !excludes.match(className);
+	    return matcher.match(className);
 	}
 	
 	public static List<Class<?>> getDeclaredClasses() {
@@ -151,7 +150,7 @@ public class Codes {
 	        	ref.replaceClassName(ctClass.getName(), newName(ctClass.getName(), ver));
 	        	ref.toClass();
 	        	cm.put(refClass, newName);
-		    } else if(includes.match(refClass) && !excludes.match(refClass)) {//同应用内的类, 如果有就不加载, 没有加载
+		    } else if(matcher.match(refClass)) {//同应用内的类, 如果有就不加载, 没有加载
                 defineClass(pool, refClass);
             }
         }

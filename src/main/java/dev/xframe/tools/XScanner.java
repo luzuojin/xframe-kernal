@@ -38,6 +38,31 @@ public class XScanner {
     private static final String CLASS_FILE_EXT = ".class";
     // jar类文件的扩展名
     private static final String JAR_FILE_EXT = ".jar";
+    // jar包内路径分隔符
+    private static final String INSIDE_SEPARATOR = "!/";
+    
+	public static String fromURIPath(String path) {
+		String p = path;
+		// "/foo!/" --> "/foo"
+		if (p.length() > 2 && p.endsWith("!/")) {//jar path
+			p = p.substring(0, p.length() - 2);
+		}
+		if ((p.length() > 2) && (p.charAt(2) == ':')) {//win path
+			// "/c:/foo" --> "c:/foo"
+			p = p.substring(1);
+			// "c:/foo/" --> "c:/foo", but "c:/" --> "c:/"
+			if ((p.length() > 3) && p.endsWith("/"))
+				p = p.substring(0, p.length() - 1);
+		} else if ((p.length() > 1) && p.endsWith("/")) {//unix path
+			// "/foo/" --> "/foo"
+			p = p.substring(0, p.length() - 1);
+		}
+		return p;
+	}
+	
+	private static String urlToPath(URL url) {
+		return fromURIPath(url.getFile());
+	}
     
     private static File newFile(String path) throws UnsupportedEncodingException {
 		return new File(URLDecoder.decode(path, "utf-8"));
@@ -51,17 +76,18 @@ public class XScanner {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         while(set.isEmpty() && loader != null) {
             if(loader instanceof URLClassLoader) {
-                Arrays.stream(((URLClassLoader)loader).getURLs()).map(url->url.getFile()).forEach(set::add);
+                Arrays.stream(((URLClassLoader)loader).getURLs()).map(XScanner::urlToPath).forEach(set::add);
             }
             loader = loader.getParent();
         }
         
-        for(String cp : set.stream().filter(XScanner::isJarFile).collect(Collectors.toList())) {
+        for(String cp : set.stream().filter(path->isJarFile(path)&&!isInsidePath(path)).collect(Collectors.toList())) {
             JarFile jarFile = new JarFile(newFile(cp));
             String manfest = (String) jarFile.getManifest().getMainAttributes().getValue(MANFEST_CLASS_PATH);
             if(!XStrings.isEmpty(manfest)) {
                 for (String c : manfest.split("\\s+")) {
-                    if(c.contains(":")) set.add(new URL(c).getFile());
+                    if(c.contains(":"))
+                    	set.add(urlToPath(new URL(c)));
                 }
             }
             jarFile.close();
@@ -75,6 +101,10 @@ public class XScanner {
     
     private static boolean isJarFile(String path) {
         return path.endsWith(JAR_FILE_EXT);
+    }
+    
+    private static boolean isInsidePath(String path) {
+    	return path.contains(INSIDE_SEPARATOR); //@see JarURLConnection
     }
 
     /**
@@ -111,7 +141,7 @@ public class XScanner {
     
     //jar:file:{jarpath}!/{jarentry}!/
   	private static Set<ClassEntry> getFromJarInsidePath(String path) throws Exception {
-      	String[] _path = path.split("!/");
+      	String[] _path = path.split(INSIDE_SEPARATOR);
       	if(_path.length > 1) {
       		try(JarFile jarFile = new JarFile(Paths.get(new URI(_path[0])).toFile())) {
       			if(isJarFile(_path[1])) {//jar
@@ -177,15 +207,15 @@ public class XScanner {
     }
     
     public static List<String> getClassPathes(String includes, String excludes) {
-        return getClassPathes(new ScanMatcher(includes), new ScanMatcher(excludes));
+        return getClassPathes(new ScanMatcher(includes, excludes));
     }
 
-	public static List<String> getClassPathes(ScanMatcher includes, ScanMatcher excludes) {
+	public static List<String> getClassPathes(ScanMatcher matcher) {
 		List<String> ret = new ArrayList<>();
         try {
             Set<String> classPathes = getClassPathes();
             for (String path : classPathes) {
-                if (!isJarFile(path) || (includes.match(path) && !excludes.match(path)))
+                if (!isJarFile(path) || matcher.match(path))
                 	ret.add(path);
             }
         } catch (Exception ex) {
@@ -195,15 +225,15 @@ public class XScanner {
 	}
 
     public static List<ClassEntry> scan(String includes, String excludes) {
-        return scan(new ScanMatcher(includes), new ScanMatcher(excludes));
+        return scan(new ScanMatcher(includes, excludes));
     }
 
-	public static List<ClassEntry> scan(ScanMatcher includes, ScanMatcher excludes) {
+	public static List<ClassEntry> scan(ScanMatcher matcher) {
 		List<ClassEntry> ret = new ArrayList<ClassEntry>();
         try {
             for (String path : getClassPathes()) {
                 for (ClassEntry clazz : getFromPath(path)) {
-                    if(includes.match(clazz.name) && !excludes.match(clazz.name)) {
+                    if(matcher.match(clazz.name)) {
                         ret.add(clazz);
                     }
                 }
@@ -216,7 +246,7 @@ public class XScanner {
 	}
     
     private static Set<ClassEntry> getFromPath(String path) throws Exception {
-    	if(path.contains("!/")) {//@see JarURLConnection
+    	if(isInsidePath(path)) {//@see JarURLConnection
     		return getFromJarInsidePath(path);
     	}
     	if(isJarFile(path)) {
@@ -273,30 +303,58 @@ public class XScanner {
 			return true;
 		}
     }
+	
+	public static class ScanMatcher {
+		final SingleMatcher includes;
+		final SingleMatcher excludes;
+		public ScanMatcher(String includes, String excludes) {
+			this.includes = new SingleMatcher(includes);
+			this.excludes = new SingleMatcher(excludes);
+		}
+		public boolean match(String path) {
+			return includes.slack(path) && !excludes.strict(path);
+		}
+	}
     
-    public static class ScanMatcher {
-        Pattern[] patterns;
-        public ScanMatcher(String res) {
-            if(res == null || res.length() == 0) {
-                patterns = new Pattern[0];
-                return;
+    private static class SingleMatcher {
+        SimpleMatcher jarMatcher;
+        SimpleMatcher clsMatcher;
+        public SingleMatcher(String res) {
+            List<Pattern> jarPatterns = new ArrayList<>(3);
+            List<Pattern> clsPatterns = new ArrayList<>(3);
+            if(res != null && res.length() > 0) {
+            	String[] regs = res.split(";");
+            	for (int i = 0; i < regs.length; i++) {
+            		String reg = regs[i];
+            		List<Pattern> list = reg.endsWith(".jar") ? jarPatterns : clsPatterns;
+            		reg = reg.endsWith("*") ? reg : reg + "$";
+            		reg = reg.replace(".", "\\.");
+            		reg = reg.replace("*", ".*");
+            		list.add(Pattern.compile(reg));
+            	}
             }
-            
-            String[] regs = res.split(";");
-            patterns = new Pattern[regs.length];
-            for (int i = 0; i < regs.length; i++) {
-                String reg = regs[i];
-                reg = reg.endsWith("*") ? reg : reg + "$";
-                reg = reg.replace(".", "\\.");
-                reg = reg.replace("*", ".*");
-                patterns[i] = Pattern.compile(reg);
-            }
+            jarMatcher = new SimpleMatcher(jarPatterns.toArray(new Pattern[0]));
+            clsMatcher = new SimpleMatcher(clsPatterns.toArray(new Pattern[0]));
         }
-        public boolean match(String path) {
+        public boolean strict(String path) {
+        	return (isJarFile(path) ? jarMatcher : clsMatcher).match(path, false);
+        }
+        public boolean slack(String path) {
+        	return (isJarFile(path) ? jarMatcher : clsMatcher).match(path, true);
+        }
+    }
+    
+    private static class SimpleMatcher {
+    	final Pattern[] patterns;
+    	public SimpleMatcher(Pattern[] patterns) {
+    		this.patterns = patterns == null ? new Pattern[0] : patterns;
+		}
+    	public boolean match(String val, boolean nilMatch) {
+    		return (nilMatch && patterns.length == 0) || match(val);
+    	}
+    	private boolean match(String val) {
             for (Pattern p : patterns) {
-                if(p.matcher(path).find()) {
-                    return true;
-                }
+                if(p.matcher(val).find()) return true;
             }
             return false;
         }
