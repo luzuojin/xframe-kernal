@@ -8,6 +8,8 @@ import java.lang.management.ManagementFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dev.xframe.tools.XPaths;
+
 public class XInstrument {
     
     static Logger logger = LoggerFactory.getLogger(XInstrument.class);
@@ -36,7 +38,7 @@ public class XInstrument {
     }
 
     static String getProtectionPath() {
-        return XInstrument.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        return XPaths.toPath(XInstrument.class.getProtectionDomain().getCodeSource().getLocation());
     }
 
     static boolean isTransportModel() {

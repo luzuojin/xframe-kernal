@@ -2,11 +2,9 @@ package dev.xframe.tools;
 
 import java.io.File;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.net.URLDecoder;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,33 +39,6 @@ public class XScanner {
     // jar包内路径分隔符
     private static final String INSIDE_SEPARATOR = "!/";
     
-	public static String fromURIPath(String path) {
-		String p = path;
-		// "/foo!/" --> "/foo"
-		if (p.length() > 2 && p.endsWith("!/")) {//jar path
-			p = p.substring(0, p.length() - 2);
-		}
-		if ((p.length() > 2) && (p.charAt(2) == ':')) {//win path
-			// "/c:/foo" --> "c:/foo"
-			p = p.substring(1);
-			// "c:/foo/" --> "c:/foo", but "c:/" --> "c:/"
-			if ((p.length() > 3) && p.endsWith("/"))
-				p = p.substring(0, p.length() - 1);
-		} else if ((p.length() > 1) && p.endsWith("/")) {//unix path
-			// "/foo/" --> "/foo"
-			p = p.substring(0, p.length() - 1);
-		}
-		return p;
-	}
-	
-	private static String urlToPath(URL url) {
-		return fromURIPath(url.getFile());
-	}
-    
-    private static File newFile(String path) throws UnsupportedEncodingException {
-		return new File(URLDecoder.decode(path, "utf-8"));
-	}
-
     /**
      * 获取项目的所有classpath ，包括 APP_CLASS_PATH 和所有的jar文件
      */
@@ -76,18 +47,18 @@ public class XScanner {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         while(set.isEmpty() && loader != null) {
             if(loader instanceof URLClassLoader) {
-                Arrays.stream(((URLClassLoader)loader).getURLs()).map(XScanner::urlToPath).forEach(set::add);
+                Arrays.stream(((URLClassLoader)loader).getURLs()).map(XPaths::toPath).forEach(set::add);
             }
             loader = loader.getParent();
         }
         
         for(String cp : set.stream().filter(path->isJarFile(path)&&!isInsidePath(path)).collect(Collectors.toList())) {
-            JarFile jarFile = new JarFile(newFile(cp));
+            JarFile jarFile = new JarFile(new File(cp));
             String manfest = (String) jarFile.getManifest().getMainAttributes().getValue(MANFEST_CLASS_PATH);
             if(!XStrings.isEmpty(manfest)) {
                 for (String c : manfest.split("\\s+")) {
                     if(c.contains(":"))
-                    	set.add(urlToPath(new URL(c)));
+                    	set.add(XPaths.toPath(new URL(c)));
                 }
             }
             jarFile.close();
@@ -250,9 +221,9 @@ public class XScanner {
     		return getFromJarInsidePath(path);
     	}
     	if(isJarFile(path)) {
-    		return getFromJar(newFile(path));
+    		return getFromJar(new File(path));
     	}
-        return getFromDir(newFile(path));
+        return getFromDir(new File(path));
     }
 
 	public static class ClassEntry {
