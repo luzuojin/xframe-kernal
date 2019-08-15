@@ -1,30 +1,31 @@
 package dev.xframe.tools;
 
-import java.lang.reflect.Method;
+import java.util.function.Function;
 
 import com.google.protobuf.MessageLite;
 
 /**
  * 
- * Message lite parser
+ * MessageLite parser
+ * 
  * @author luzj
  *
  */
+@SuppressWarnings("unchecked")
 public class LiteParser {
 	
-	final Method method;
+	final Function<Object, byte[]> func;
+	
 	public LiteParser(Class<?> clazz, Class<?> gerenic) {
 		try {
-			Class<?> type = Generic.parse(clazz, gerenic).getByType(MessageLite.class);
-			method = type.getMethod("parseFrom", byte[].class);
-		} catch (Exception e) {
+			func = XLambda.create(Function.class, Generic.parse(clazz, gerenic).getByType(MessageLite.class), "parseFrom", byte[].class);
+		} catch (Throwable e) {
 			throw new IllegalArgumentException(e);
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	public <T> T parse(byte[] bytes) throws Exception {
-		return (T) method.invoke(null, bytes);
+		return (T) func.apply(bytes);
 	}
 
 }
