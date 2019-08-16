@@ -8,10 +8,9 @@ import java.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.xframe.metric.Metric;
-import dev.xframe.metric.Metrical;
+import dev.xframe.metric.Metrics;
 
-public abstract class Action implements Runnable, Metrical {
+public abstract class Action implements Runnable {
     
     protected static final Logger logger = LoggerFactory.getLogger(Action.class);
     
@@ -27,16 +26,20 @@ public abstract class Action implements Runnable, Metrical {
         this.loop.checkin(this);
     }
     
-    @Override
+    public long getCreateTime() {
+		return createTime;
+	}
+
+	@Override
     public final void run() {
         try {
-        	ActionLoop.setCurrent(loop);;
+        	ActionLoop.setCurrent(loop);
             if(runable()) {
                 long createTime = this.createTime;
                 long start = System.currentTimeMillis();
                 this.exec();
                 long end = System.currentTimeMillis();
-                Metric.gauge(getClazz(), createTime, start, end, this);
+                Metrics.gauge(getClazz(), createTime, start, end, this);
             }
         } catch (Throwable e) {
             logger.error("Execute exception: " + getClazz().getName(), e);
@@ -70,7 +73,7 @@ public abstract class Action implements Runnable, Metrical {
     	return this.getClass();
     }
     
-	public final int waitings() {
+	public final int loopings() {
 		return loop.size();
 	}
 
