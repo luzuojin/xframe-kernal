@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import dev.xframe.injection.code.CombineBuilder;
+import dev.xframe.injection.code.SyntheticBuilder;
 import dev.xframe.modular.Component;
 import dev.xframe.modular.ModularAgent;
 import dev.xframe.modular.ModularInject;
@@ -218,7 +218,7 @@ public class MContainerBuilder {
 	}
 
     private Class<?> buildAgent(ModularElement me) {
-        return CombineBuilder.buildClass(me.clazz, me.clazz.getAnnotation(ModularAgent.class).invokable(), me.clazz.getAnnotation(ModularAgent.class).ignoreError(), me.clazz.getAnnotation(ModularAgent.class).boolByTrue());
+        return SyntheticBuilder.buildClass(me.clazz, me.clazz.getAnnotation(ModularAgent.class).invokable(), me.clazz.getAnnotation(ModularAgent.class).ignoreError(), me.clazz.getAnnotation(ModularAgent.class).boolByTrue());
     }
 
     private boolean isTransient(Class<?> clazz) {

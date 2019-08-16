@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Combine {
+public @interface Synthetic {
     
     boolean boolByTrue() default true;      //Boolean返回值是遇True终止, 否则遇False终止
     boolean ignoreError() default false;	//返回值为void时有效

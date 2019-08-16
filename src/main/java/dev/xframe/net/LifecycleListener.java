@@ -1,11 +1,11 @@
 package dev.xframe.net;
 
-import dev.xframe.injection.Combine;
+import dev.xframe.injection.Synthetic;
 import dev.xframe.net.cmd.Command;
 import dev.xframe.net.codec.IMessage;
 import dev.xframe.net.session.Session;
 
-@Combine
+@Synthetic
 public interface LifecycleListener {
     
     public void onSessionRegister(Session session);

@@ -1,8 +1,8 @@
 package dev.xframe.modular;
 
-import dev.xframe.injection.Combine;
+import dev.xframe.injection.Synthetic;
 
-@Combine
+@Synthetic
 public interface ModuleLoader {
     
     /**

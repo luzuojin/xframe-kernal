@@ -1,6 +1,6 @@
 package dev.xframe.net;
 
-import dev.xframe.injection.Combine;
+import dev.xframe.injection.Synthetic;
 import dev.xframe.net.codec.IMessage;
 import dev.xframe.net.session.Session;
 
@@ -9,7 +9,7 @@ import dev.xframe.net.session.Session;
  * @author luzj
  *
  */
-@Combine
+@Synthetic
 public interface MessageInterceptor {
     
     /**

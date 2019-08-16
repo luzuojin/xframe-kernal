@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import dev.xframe.injection.code.Codes;
-import dev.xframe.injection.code.CombineBuilder;
+import dev.xframe.injection.code.SyntheticBuilder;
 import dev.xframe.injection.code.Factory;
 import dev.xframe.injection.code.FactoryBuilder;
 import dev.xframe.injection.code.ProxyBuilder;
@@ -41,7 +41,7 @@ public class ApplicationContext {
     }
 
     protected static void registBean0(Class<?> clazz, Object bean) {
-        beanClassMap.putIfAbsent(clazz, makeCombine(clazz, bean));
+        beanClassMap.putIfAbsent(clazz, makeSynthetic(clazz, bean));
         
         Class<?> superclazz = clazz.getSuperclass();
         if(superclazz != null && superclazz != Object.class)
@@ -51,17 +51,17 @@ public class ApplicationContext {
             registBean(interfaze, bean);
     }
 
-    protected static boolean isCombineRequired(Class<?> clazz) {
-        return clazz.isAnnotationPresent(Combine.class);
+    protected static boolean isSyntheticRequired(Class<?> clazz) {
+        return clazz.isAnnotationPresent(Synthetic.class);
     }
-    protected static Object makeCombine(Class<?> clazz, Object bean) {
-        if(isCombineRequired(clazz)) {
+    protected static Object makeSynthetic(Class<?> clazz, Object bean) {
+        if(isSyntheticRequired(clazz)) {
             Object exists = beanClassMap.get(clazz);
             if(exists == null) {
-                exists = CombineBuilder.buildBean(clazz);
+                exists = SyntheticBuilder.buildBean(clazz);
             }
             if(bean != null) {
-                CombineBuilder.append(exists, bean);
+                SyntheticBuilder.append(exists, bean);
             }
             return exists;
         }
@@ -87,7 +87,7 @@ public class ApplicationContext {
     }
 
     protected static Object fetchBeanTryProxy(Class<?> clazz) {
-        if(fetchBean(clazz) == null && (isProxyRequired(clazz) || isCombineRequired(clazz))) {//Bean不存在 如果可以为该bean创建Proxy
+        if(fetchBean(clazz) == null && (isProxyRequired(clazz) || isSyntheticRequired(clazz))) {//Bean不存在 如果可以为该bean创建Proxy
             registBean(clazz, null);
         }
         return fetchBean(clazz);

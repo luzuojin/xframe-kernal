@@ -1,10 +1,10 @@
-///combine_name
-${combine_basic}$Combine
+///synthetic_name
+${synthetic_basic}$Synthetic
 ///
-public class ${combine_name} extends ${combine_basic} implements dev.xframe.injection.code.CombineBuilder.ICombine {
+public class ${synthetic_name} extends ${synthetic_basic} implements dev.xframe.injection.code.SyntheticBuilder.ISynthetic {
     
     ///logger_field
-    static final org.slf4j.Logger _logger = org.slf4j.LoggerFactory.getLogger("${combine_basic}");
+    static final org.slf4j.Logger _logger = org.slf4j.LoggerFactory.getLogger("${synthetic_basic}");
     ///
 
     ///delegates_field
@@ -23,7 +23,7 @@ public class ${combine_name} extends ${combine_basic} implements dev.xframe.inje
     {
     	java.util.Iterator it = this._delegates.iterator();
         while(it.hasNext()) {
-        	${combine_basic} _delegate = (${combine_basic}) it.next();
+        	${synthetic_basic} _delegate = (${synthetic_basic}) it.next();
         	
         	${obj_invoke_part}
         	///obj_invoke_ex_part
@@ -52,7 +52,7 @@ public class ${combine_name} extends ${combine_basic} implements dev.xframe.inje
     public void _forEachDeletage(java.util.function.Consumer consumer) {
         java.util.Iterator it = this._delegates.iterator();
         while(it.hasNext()) {
-            ${combine_basic} _delegate = (${combine_basic}) it.next();
+            ${synthetic_basic} _delegate = (${synthetic_basic}) it.next();
             
             ${fe_invoke_part}
             ///fe_invoke_ex_part

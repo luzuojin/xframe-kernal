@@ -1,8 +1,8 @@
 package dev.xframe.http.service;
 
-import dev.xframe.injection.Combine;
+import dev.xframe.injection.Synthetic;
 
-@Combine
+@Synthetic
 public interface RequestInteceptor {
     
     Response intecept(Request req);

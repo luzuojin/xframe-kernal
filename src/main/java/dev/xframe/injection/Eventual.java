@@ -1,6 +1,6 @@
 package dev.xframe.injection;
 
-@Combine
+@Synthetic
 public interface Eventual {
 
 	public void eventuate();
