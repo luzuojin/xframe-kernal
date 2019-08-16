@@ -35,11 +35,11 @@ public abstract class Action implements Runnable {
         try {
         	ActionLoop.setCurrent(loop);
             if(runable()) {
-                long createTime = this.createTime;
+                long create = this.createTime;
                 long start = System.currentTimeMillis();
                 this.exec();
                 long end = System.currentTimeMillis();
-                Metrics.gauge(getClazz(), createTime, start, end, this);
+                Metrics.gauge(getClazz(), create, start, end, this);
             }
         } catch (Throwable e) {
             logger.error("Execute exception: " + getClazz().getName(), e);

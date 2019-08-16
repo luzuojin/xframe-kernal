@@ -10,6 +10,7 @@ public class Metric {
     final AtomicLong sum = new AtomicLong();//执行总时间
     final AtomicLong max = new AtomicLong();//最长执行时间
     final AtomicLong wat = new AtomicLong();//最长等待时间
+    final AtomicLong slo = new AtomicLong();
     
     public Metric(Class<?> ident) {
         this.ident = ident;
@@ -23,6 +24,7 @@ public class Metric {
                sum.get() / cnt.get() + '\t' +
                max.get() + '\t' +
                wat.get() + '\t' +
+               wat.get() + '\t' +
                ident.getName();
     }
     
@@ -32,6 +34,7 @@ public class Metric {
                 "avg  \t" +
                 "max  \t" +
                 "wait \t" +
+                "slow \t" +
                 "ident\t";
     }
 

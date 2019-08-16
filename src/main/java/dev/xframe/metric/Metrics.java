@@ -51,35 +51,31 @@ public class Metrics {
     
     public static void gauge(Class<?> ident, long create, long start, long end, Action action) {
         if(watching) {
-            long used = end - start;
-            long wait = start - create;
-            
-            gauge(ident, used, wait);
-            
-            if (used > 1000 || wait > 6000) {
-                logger.warn("Execute slow [" + ident.getName() + "] used: " + used + ", wait: " + wait + ", size: " + action.loopings());
-            }
+        	try {
+        		long used = end - start;
+        		long wait = start - create;
+
+        		Metric metric = get(ident);
+        		gauge(metric, used, wait);
+
+        		if (used > 1000) {
+        			logger.warn("Execute slow [" + ident.getName() + "] used: " + used + ", wait: " + wait + ", size: " + action.loopings());
+        			metric.slo.incrementAndGet();
+        		} else if (wait > 6000) {
+        			logger.warn("Execute slow [" + ident.getName() + "] used: " + used + ", wait: " + wait + ", size: " + action.loopings());
+        		}
+        	 } catch (Throwable e) {
+                 //ignore
+             }
         }
     }
     
-    public static void gauge(Class<?> ident, long create, long start, long end) {
-        if(watching) {
-            gauge(ident, end - start, start - create);
-        }
-    }
+    private static void gauge(Metric metric, long used, long wait) {
+    	metric.cnt.incrementAndGet();
+    	metric.sum.addAndGet(used);
 
-    private static void gauge(Class<?> ident, long used, long wait) {
-        try {
-            Metric metric = get(ident);
-            
-            metric.cnt.incrementAndGet();
-            metric.sum.addAndGet(used);
-            
-            updateMax(metric.max, used);
-            updateMax(metric.wat, wait);
-        } catch (Throwable e) {
-            //ignore
-        }
+    	updateMax(metric.max, used);
+    	updateMax(metric.wat, wait);
     }
     
     public static void watch() {
