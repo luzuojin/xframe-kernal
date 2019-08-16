@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import dev.xframe.action.Action;
 import dev.xframe.action.ActionExecutor;
 import dev.xframe.action.ActionLoop;
-import dev.xframe.game.callable.Callable;
+import dev.xframe.game.callable.PlayerCallable;
 
 
 /**
@@ -262,14 +262,14 @@ public class PlayerContext {
         }
     }
 
-    public <T extends Player> void callPlayer(long id, Callable<T> callable) {
+    public <T extends Player> void callPlayer(long id, PlayerCallable<T> callable) {
         Player player = players.get(id);
         if(player != null) {
             execCall(callable, player);
         }
     }
     
-    public <T extends Player> void callOnlinePlayers(Callable<T> callable) {
+    public <T extends Player> void callOnlinePlayers(PlayerCallable<T> callable) {
         List<Player> values = players.values();
         for (Player player : values) {
             if(player.isOnline()){
@@ -278,14 +278,14 @@ public class PlayerContext {
         }
     }
 
-    public <T extends Player> void callAllPlayers(Callable<T> callable) {
+    public <T extends Player> void callAllPlayers(PlayerCallable<T> callable) {
         List<Player> values = players.values();
         for (Player player : values) {
         	execCall(callable, player);
         }
     }
     
-	private <T extends Player> void execCall(Callable<T> callable, Player player) {
+	private <T extends Player> void execCall(PlayerCallable<T> callable, Player player) {
 		try {
 			callable.call((T) player);
 		} catch (Throwable e) {

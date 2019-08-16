@@ -3,7 +3,7 @@ package dev.xframe.game.callable;
 import dev.xframe.action.RunnableAction;
 import dev.xframe.game.player.Player;
 
-public interface LoopedCallable<T extends Player> extends Callable<T>{
+public interface LoopedCallable<T extends Player> extends PlayerCallable<T>{
 
     @Override
     default void call(final T player) {

@@ -15,7 +15,7 @@ import dev.xframe.tools.Generic;
  * @param <T>
  * @param <V>
  */
-public interface ModularCallable<T extends ModularPlayer, V> extends Callable<T> {
+public interface ModularCallable<T extends ModularPlayer, V> extends PlayerCallable<T> {
 	
 	static Map<Class<?>, ModuleTypeLoader> loaders = new HashMap<>();
 	
