@@ -59,6 +59,8 @@ public class XScanner {
                 for (String c : manfest.split("\\s+")) {
                     if(c.contains(":"))
                     	set.add(XPaths.toPath(new URL(c)));
+                    else
+                    	set.add(XPaths.toFile(c).getAbsolutePath());
                 }
             }
             jarFile.close();
