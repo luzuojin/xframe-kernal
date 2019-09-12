@@ -15,10 +15,10 @@ import dev.xframe.tools.Generic;
  */
 public abstract class ModularCommand<T extends ModularPlayer, V> extends PlayerCommand<T> {
     
-    final ModuleTypeLoader loader = ModularEnigne.getLoader(getModuleType());
+    final ModuleTypeLoader loader = ModularEnigne.getLoader(getModuleType(this.getClass()));
 
-    public final Class<?> getModuleType() {
-        return Generic.parse(this.getClass(), ModularCommand.class).getByName("V");
+    public static Class<?> getModuleType(Class<?> clazz) {
+        return Generic.parse(clazz, ModularCommand.class).getByName("V");
     }
 
     public final void exec(T player, IMessage req) throws Exception {

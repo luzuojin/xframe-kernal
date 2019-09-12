@@ -22,11 +22,15 @@ public interface ModularCallable<T extends ModularPlayer, V> extends PlayerCalla
 	static ModuleTypeLoader getLoader(Class<?> clazz) {
 		ModuleTypeLoader loader = loaders.get(clazz);
 		if(loader == null) {
-			loader = ModularEnigne.getLoader(Generic.parse(clazz, ModularCallable.class).getByName("V"));
+			loader = ModularEnigne.getLoader(getModuleType(clazz));
 			loaders.put(clazz, loader);
 		}
 		return loader;
 	}
+
+    static Class<?> getModuleType(Class<?> clazz) {
+        return Generic.parse(clazz, ModularCallable.class).getByName("V");
+    }
     
     default void call(T player) {
         call(player, getLoader(this.getClass()).<V>load(player));
