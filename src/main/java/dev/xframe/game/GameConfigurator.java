@@ -19,11 +19,9 @@ import dev.xframe.injection.Configurator;
 import dev.xframe.injection.Injection;
 import dev.xframe.injection.Loadable;
 import dev.xframe.injection.code.Codes;
-import dev.xframe.modular.ModularBridge;
 import dev.xframe.modular.ModularEnigne;
 import dev.xframe.modular.ModuleContainer;
 import dev.xframe.modular.ModuleLoader;
-import dev.xframe.modular.code.MBridgeBuilder;
 import dev.xframe.modular.code.MFactoryBuilder;
 import dev.xframe.net.cmd.Command;
 import dev.xframe.net.cmd.CommandBuilder;
@@ -135,13 +133,10 @@ public final class GameConfigurator implements Loadable {
         protected CommandBuilder newCommandBuilder() {
             return clazz -> {
                 try {
-                    Class<?> t = clazz;
                     if(PlayerCmdAction.class.isAssignableFrom(clazz)) {
                         return new PlayerCmdActionCmd<>(clazz);
-                    } else if (t.isAnnotationPresent(ModularBridge.class)) {
-                        t = MBridgeBuilder.build(t);
                     }
-                    return (Command) t.newInstance();
+                    return (Command) clazz.newInstance();
                 } catch (Throwable e) {
                     throw new IllegalArgumentException(clazz.getName(), e);
                 }
