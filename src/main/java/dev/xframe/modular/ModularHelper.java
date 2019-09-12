@@ -11,6 +11,10 @@ public class ModularHelper {
     
     private static final Logger logger = LoggerFactory.getLogger(ModularHelper.class);
     
+    public static <T> void removeAgent(T agent, T delegate) {
+        SyntheticBuilder.remove(agent, delegate);
+    }
+    
     public static <T> void appendAgent(T agent, T delegate) {
         SyntheticBuilder.append(agent, delegate);
     }
