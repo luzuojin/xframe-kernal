@@ -43,10 +43,9 @@ public class ActionExecutors {
         private final String name;
         private final ThreadPoolExecutor executor;
         
-        private boolean isRunning = true;
+        private volatile boolean isRunning = true;
         
         //delay set
-        private ActionLoop defaultLoop;
         private ScheduleThread scheduleThread;
         
         /**
@@ -72,24 +71,10 @@ public class ActionExecutors {
             executors.add(this);
         }
         
-		public ActionLoop defaultLoop() {
-            if(this.defaultLoop == null) {
-                setupDefaultLoop();
-            }
-            return this.defaultLoop;
-        }
-        
-        synchronized void setupDefaultLoop() {
-            if(this.defaultLoop == null) {
-                this.defaultLoop = new ActionLoop(this);
-            }
-        }
-
         public void schedule(DelayAction action) {
             if(this.scheduleThread == null) {
                 setupScheduleThread();
             }
-            
             this.scheduleThread.checkin(action);
         }
         
@@ -120,11 +105,11 @@ public class ActionExecutors {
         static class ScheduleThread extends Thread {
 
             private DelayQueue<DelayAction> queue;
-            private boolean isRunning;
-            private int counter;
+            private volatile boolean isRunning;
+            private int checkedCount;
 
             public ScheduleThread(String prefix) {
-                super(prefix + "-thread-dc");
+                super(prefix + "-schedule");
                 setPriority(Thread.MAX_PRIORITY); // 给予高优先级
                 queue = new DelayQueue<>();
                 isRunning = true;
@@ -135,7 +120,8 @@ public class ActionExecutors {
             }
 
             public void shutdown() {
-                if (isRunning) isRunning = false;
+                if (isRunning)
+                    isRunning = false;
             }
 
             @Override
@@ -147,12 +133,12 @@ public class ActionExecutors {
                         if (!action.tryExec(now)) {
                             checkin(action);
                         }
-                        if (++counter > 1024) {
+                        if (++checkedCount > 1024) {
                             int size = queue.size();
                             if (size > 32)
                                 logger.info("Waiting delay actions [{}]", size);
                             
-                            counter = 0;
+                            checkedCount = 0;
                         }
                     } catch (Throwable e) {
                         logger.error(getName() + " Error. ", e);

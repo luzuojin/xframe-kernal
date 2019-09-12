@@ -19,7 +19,7 @@ public class ActionLoop {
         executor.schedule(action);
     }
     
-    void checkin(Action action) {
+    void checkin(Runnable action) {
         this.queue.offer(action);
         
         if(this.isRunning.compareAndSet(false, true)){

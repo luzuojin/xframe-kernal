@@ -7,7 +7,9 @@ package dev.xframe.action;
  */
 public interface ActionExecutor {
     
-    public ActionLoop defaultLoop();
+    default ActionLoop newLoop() {
+        return new ActionLoop(this);
+    }
     
     public void schedule(DelayAction action);
 
