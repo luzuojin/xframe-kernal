@@ -89,7 +89,7 @@ public class ${assemble_name} extends ${assemble_basic} implements dev.xframe.mo
                 ///
                 ${agent_remove_part}
                 ///agent_remove_part
-                ((${agent_class})this._modules[${agent_index}]).removeCombineDelegate(${local_name});
+                dev.xframe.modular.ModularHelper.removeAgent(this._modules[${agent_index}], ${local_name});
                 ///
                 this._modules[${index}] = null;
                 ///

@@ -1,8 +1,10 @@
 package dev.xframe.game.cmd;
 
 import dev.xframe.game.player.ModularPlayer;
-import dev.xframe.modular.ModularBridge;
+import dev.xframe.modular.ModularEnigne;
+import dev.xframe.modular.ModuleTypeLoader;
 import dev.xframe.net.codec.IMessage;
+import dev.xframe.tools.Generic;
 
 /**
  * module 入口
@@ -11,16 +13,18 @@ import dev.xframe.net.codec.IMessage;
  * @param <T>
  * @param <V>
  */
-@ModularBridge
 public abstract class ModularCommand<T extends ModularPlayer, V> extends PlayerCommand<T> {
+    
+    final ModuleTypeLoader loader = ModularEnigne.getLoader(getModuleType(this.getClass()));
 
-    @ModularBridge.Source
-    public void exec(@ModularBridge.Bridging T player, IMessage req) throws Exception {
-        //for dynamic override
-        //bridge to Descriptor method
+    public static Class<?> getModuleType(Class<?> clazz) {
+        return Generic.parse(clazz, ModularCommand.class).getByName("V");
+    }
+
+    public final void exec(T player, IMessage req) throws Exception {
+        exec(player, loader.load(player), req);
     }
     
-    @ModularBridge.Dest
-    public abstract void exec(T player, @ModularBridge.Bridging V module, IMessage req) throws Exception;
+    public abstract void exec(T player, V module, IMessage req) throws Exception;
     
 }
