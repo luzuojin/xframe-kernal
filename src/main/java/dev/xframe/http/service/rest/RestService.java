@@ -1,10 +1,11 @@
 package dev.xframe.http.service.rest;
 
 import dev.xframe.http.service.Request;
+import dev.xframe.http.service.Response;
 import dev.xframe.http.service.uri.PathMatcher;
 
 public interface RestService {
-
+	
 	//impelemention by DynamicBuilder
 	public default Object get(Request req, PathMatcher matcher) {
 		return new IllegalArgumentException("unsupported method [get]");
@@ -23,7 +24,7 @@ public interface RestService {
 	}
 	
 	public default Object options(Request req, PathMatcher matcher) {
-	    return new IllegalArgumentException("unsupported method [options]");
+		return Response.OPTIONS_DEFAULT.retain();
 	}
 
 }
