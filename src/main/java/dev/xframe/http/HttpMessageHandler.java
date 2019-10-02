@@ -158,6 +158,7 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
    }
 
     protected void setContentType(HttpResponse response, String contentType) {
+    	response.headers().set(HttpHeaders.Names.ACCESS_CONTROL_MAX_AGE, "86400");
         response.headers().set(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
         response.headers().set(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_HEADERS, "*");
         response.headers().set(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_METHODS, "*");
