@@ -6,12 +6,12 @@ import dev.xframe.http.service.Service;
 import dev.xframe.http.service.uri.PathMatcher;
 import io.netty.handler.codec.http.HttpMethod;
 
-public class ServiceAdapter implements Service {
+public class RestServiceInvoker implements Service {
 	
 	final RespEncoder respEncoder;
 	final RestService service;
 	
-	public ServiceAdapter(RestService service, RespEncoder respEncoder) {
+	public RestServiceInvoker(RestService service, RespEncoder respEncoder) {
 		this.service = service;
 		this.respEncoder = respEncoder;
 	}

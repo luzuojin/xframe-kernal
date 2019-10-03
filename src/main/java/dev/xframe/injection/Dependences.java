@@ -78,14 +78,14 @@ class Dependences {
                 provides.add(clazz);
             } else {
                 analysed.add(clazz);
-                putUpwardIfIsBean(injectors, clazz, Injection.build(clazz));
+                putUpwardIfNotPrototype(injectors, clazz, Injection.build(clazz));
             }
         }
         
         for (Class<?> provide : provides) {
             if(!isProvided(provide)) {
                 analysed.add(provide);
-                putUpwardIfIsBean(injectors, provide, Injection.build(provide));
+                putUpwardIfNotPrototype(injectors, provide, Injection.build(provide));
             }
         }
         
@@ -143,8 +143,8 @@ class Dependences {
         injector.index = ++index;
     }
     
-    public <T> void putUpwardIfIsBean(Map<Class<?>, T> map, Class<?> key, T val) {
-        putUpward(map, key, val, key.isAnnotationPresent(Bean.class));
+    public <T> void putUpwardIfNotPrototype(Map<Class<?>, T> map, Class<?> key, T val) {
+        putUpward(map, key, val, !key.isAnnotationPresent(Prototype.class));
     }
     
     public <T> void putUpward(Map<Class<?>, T> map, Class<?> key, T val, boolean clazzUpWard) {

@@ -9,6 +9,10 @@ public class XStrings {
     private static final Charset UTF8 = Charset.forName("utf-8");
     private static final byte[] EMPTY_BYTES = new byte[0];
     
+    public static String orElse(String b, String t) {
+    	return isEmpty(b) ? t : b;
+    }
+    
     public static boolean isEmpty(String x) {
         int len;
         if (x == null || (len = x.length()) == 0)

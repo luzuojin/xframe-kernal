@@ -1,5 +1,7 @@
 package dev.xframe.test;
 
+import java.util.function.Consumer;
+
 import org.junit.Ignore;
 
 import dev.xframe.http.decode.HttpBody;
@@ -7,12 +9,11 @@ import dev.xframe.http.service.Http;
 import dev.xframe.http.service.Request;
 import dev.xframe.http.service.Response;
 import dev.xframe.http.service.ServiceContext;
+import dev.xframe.http.service.rest.BodyDecoder;
+import dev.xframe.http.service.rest.HttpArgs;
 import dev.xframe.http.service.rest.HttpMethods;
-import dev.xframe.http.service.rest.RequestBody;
-import dev.xframe.http.service.rest.RequestHeader;
-import dev.xframe.http.service.rest.RequestParam;
-import dev.xframe.http.service.rest.RequestPath;
-import dev.xframe.http.service.rest.RestConfiguratorAdapter;
+import dev.xframe.http.service.rest.RespEncoder;
+import dev.xframe.http.service.rest.RestConfigSetter;
 import dev.xframe.http.service.rest.RestService;
 import dev.xframe.http.service.rest.RestServiceBuilder;
 import dev.xframe.injection.ApplicationContext;
@@ -25,37 +26,36 @@ import io.netty.handler.codec.http.HttpMethod;
 public class RestServiceTest implements RestService {
     
     @HttpMethods.GET("/b")
-	public String dosomething0(@RequestParam int a, @RequestHeader long b, @RequestBody int x) {
+	public String dosomething0(@HttpArgs.Param int a, @HttpArgs.Header long b, @HttpArgs.Body int x) {
     	long ret = (a + b) / x;
 		return "dosomething0: (" + a + "+" + b + ")/"+x+"=" + ret;
 	}
     
     @HttpMethods.GET("/{r}")
-    public String dosomething1(@RequestPath int r, @RequestParam int a, @RequestHeader long b, @RequestBody int x) {
+    public String dosomething1(@HttpArgs.Path int r, @HttpArgs.Param int a, @HttpArgs.Header long b, @HttpArgs.Body int x) {
     	long ret = (a + b) * r / x;
     	return "dosomething1: (" + a + "+" + b + ")*" + r + "/" + x + "=" + ret;
     }
     
-    @Http("/a/{v}")
-    @HttpMethods.GET
-    public String dosomething2(@RequestPath String v) {
+    @HttpMethods.GET("/a/{v}")
+    public String dosomething2(@HttpArgs.Path String v) {
         return v;
     }
     
     @HttpMethods.GET("/x")
-    public String dosomething3(@RequestParam boolean x) {
+    public String dosomething3(@HttpArgs.Param boolean x) {
         return String.valueOf(x);
     }
 	
 	public static void main(String[] args) throws Exception {
-		RestConfiguratorAdapter configurer = new RestConfiguratorAdapter(){
+		RestConfigSetter configurer = new RestConfigSetter(){
             @Override
-            public void setBodyDecoder(BodyDecoderSetter setter) {
-                setter.set((t, body) -> Integer.parseInt(new String(body)));
+            public void setBodyDecoder(Consumer<BodyDecoder> setter) {
+                setter.accept((t, body) -> Integer.parseInt(new String(body)));
             }
             @Override
-            public void setRespEncoder(RespEncoderSetter setter) {
-                setter.set(resp -> new Response(resp.toString()));
+            public void setRespEncoder(Consumer<RespEncoder> setter) {
+                setter.accept(resp -> new Response(resp.toString()));
             }
 		};
 		configurer.load();

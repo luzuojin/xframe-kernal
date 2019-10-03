@@ -1,5 +1,7 @@
 package dev.xframe.http.service.rest;
 
+import java.util.function.Consumer;
+
 import dev.xframe.http.service.ErrorHandler;
 import dev.xframe.http.service.FileHandler;
 import dev.xframe.http.service.RequestInteceptor;
@@ -11,7 +13,7 @@ import dev.xframe.tools.XStrings;
 
 @Configurator
 @Providable
-public class RestConfiguratorAdapter implements RestConfig, Loadable {
+public class RestConfigSetter implements RestConfig, Loadable {
     
     private RequestInteceptor inteceptor;
     private ErrorHandler errorhandler;
@@ -55,39 +57,24 @@ public class RestConfiguratorAdapter implements RestConfig, Loadable {
         setRespEncoder(v->respEncoder=v);
     }
 
-    public void setIncepetor(IncepetorSetter setter) {
-        setter.set(r -> null);
+    public void setIncepetor(Consumer<RequestInteceptor> setter) {
+        setter.accept(r -> null);
     }
 
-    public void setErrorHandler(ErrorHandlerSetter setter) {
-        setter.set((r, e) -> new Response(XStrings.getStackTrace(e)));
+    public void setErrorHandler(Consumer<ErrorHandler> setter) {
+        setter.accept((r, e) -> new Response(XStrings.getStackTrace(e)));
     }
 
-    public void setBodyDecoder(BodyDecoderSetter setter) {
-        setter.set((t, b) -> b);
+    public void setBodyDecoder(Consumer<BodyDecoder> setter) {
+        setter.accept((t, b) -> b);
     }
 
-    public void setRespEncoder(RespEncoderSetter setter) {
-        setter.set(o -> (Response) o);
+    public void setRespEncoder(Consumer<RespEncoder> setter) {
+        setter.accept(o -> (Response) o);
     }
 
-    public void setFileHandler(FileHandlerSetter setter) {
-        setter.set(p -> null);
+    public void setFileHandler(Consumer<FileHandler> setter) {
+        setter.accept(p -> null);
     }
     
-    public interface IncepetorSetter {
-        void set(RequestInteceptor inteceptor);
-    }
-    public interface BodyDecoderSetter {
-        void set(BodyDecoder bodyDecoder);
-    }
-    public interface RespEncoderSetter {
-        void set(RespEncoder respEncoder);
-    }
-    public interface FileHandlerSetter {
-        void set(FileHandler fileHandler);
-    }
-    public interface ErrorHandlerSetter {
-        void set(ErrorHandler errorHandler);
-    }
 }
