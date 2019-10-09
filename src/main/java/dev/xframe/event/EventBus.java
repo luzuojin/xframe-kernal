@@ -3,7 +3,7 @@ package dev.xframe.event;
 import java.util.Iterator;
 import java.util.List;
 
-import dev.xframe.tools.SyncCOWList;
+import dev.xframe.utils.SyncCOWList;
 
 public class EventBus implements Registrator {
 	

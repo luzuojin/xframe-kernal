@@ -18,7 +18,7 @@ import dev.xframe.modular.ModularInject;
 import dev.xframe.modular.ModularMethods;
 import dev.xframe.modular.ModularShare;
 import dev.xframe.modular.Module;
-import dev.xframe.tools.XSorter;
+import dev.xframe.utils.XSorter;
 
 /**
  * 分析各种annotation

@@ -9,7 +9,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.xframe.tools.CtHelper;
+import dev.xframe.utils.CtHelper;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.Modifier;

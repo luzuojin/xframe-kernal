@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 
 import com.google.protobuf.MessageLite;
 
-import dev.xframe.tools.XStrings;
+import dev.xframe.utils.XStrings;
 import io.netty.buffer.ByteBuf;
 
 /**

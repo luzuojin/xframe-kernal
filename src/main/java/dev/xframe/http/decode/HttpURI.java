@@ -2,7 +2,7 @@ package dev.xframe.http.decode;
 
 import java.net.URLDecoder;
 
-import dev.xframe.tools.XStrings;
+import dev.xframe.utils.XStrings;
 
 public class HttpURI extends QueryString {
 

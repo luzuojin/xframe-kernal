@@ -1,4 +1,4 @@
-package dev.xframe.tools;
+package dev.xframe.utils;
 
 import java.io.File;
 import java.io.InputStream;

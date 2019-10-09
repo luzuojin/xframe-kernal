@@ -7,7 +7,7 @@ import java.util.function.Function;
 
 import dev.xframe.injection.Injection.BeanContainer;
 import dev.xframe.injection.code.ProxyBuilder;
-import dev.xframe.tools.XStrings;
+import dev.xframe.utils.XStrings;
 
 public class Injector {
     

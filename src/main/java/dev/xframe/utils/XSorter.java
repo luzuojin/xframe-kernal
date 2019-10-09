@@ -1,4 +1,4 @@
-package dev.xframe.tools;
+package dev.xframe.utils;
 
 import java.util.Comparator;
 import java.util.List;

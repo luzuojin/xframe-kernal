@@ -8,7 +8,7 @@ import java.lang.management.ManagementFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.xframe.tools.XPaths;
+import dev.xframe.utils.XPaths;
 
 public class XInstrument {
     

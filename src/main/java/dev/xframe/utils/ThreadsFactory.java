@@ -1,4 +1,4 @@
-package dev.xframe.tools;
+package dev.xframe.utils;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;

@@ -11,8 +11,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import dev.xframe.tools.CtHelper;
-import dev.xframe.tools.CtParser;
+import dev.xframe.utils.CtHelper;
+import dev.xframe.utils.CtParser;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;

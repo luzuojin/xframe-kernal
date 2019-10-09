@@ -2,7 +2,7 @@ package dev.xframe.game.cmd;
 
 import dev.xframe.game.player.ModularPlayer;
 import dev.xframe.net.codec.IMessage;
-import dev.xframe.tools.Generic;
+import dev.xframe.utils.Generic;
 
 public abstract class PlayerCmdAction<T extends ModularPlayer, V> {
     

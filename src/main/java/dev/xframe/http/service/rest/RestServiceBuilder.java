@@ -13,7 +13,7 @@ import dev.xframe.http.service.ServiceContext;
 import dev.xframe.injection.Bean;
 import dev.xframe.injection.Inject;
 import dev.xframe.injection.Injection;
-import dev.xframe.tools.XStrings;
+import dev.xframe.utils.XStrings;
 
 @Bean
 public class RestServiceBuilder implements ServiceBuilder {

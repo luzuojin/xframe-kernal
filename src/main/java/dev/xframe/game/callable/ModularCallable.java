@@ -6,7 +6,7 @@ import java.util.Map;
 import dev.xframe.game.player.ModularPlayer;
 import dev.xframe.modular.ModularEnigne;
 import dev.xframe.modular.ModuleTypeLoader;
-import dev.xframe.tools.Generic;
+import dev.xframe.utils.Generic;
 
 /**
  * 

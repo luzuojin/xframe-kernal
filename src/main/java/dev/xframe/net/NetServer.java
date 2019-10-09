@@ -11,7 +11,7 @@ import dev.xframe.net.codec.MessageCrypt;
 import dev.xframe.net.codec.MessageCrypts;
 import dev.xframe.net.handler.NetMessageHandler;
 import dev.xframe.net.handler.ServerMessageHandler;
-import dev.xframe.tools.ThreadsFactory;
+import dev.xframe.utils.ThreadsFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.AdaptiveRecvByteBufAllocator;

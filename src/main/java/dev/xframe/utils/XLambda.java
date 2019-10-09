@@ -1,4 +1,4 @@
-package dev.xframe.tools;
+package dev.xframe.utils;
 
 import static java.lang.invoke.MethodHandles.Lookup.PACKAGE;
 import static java.lang.invoke.MethodHandles.Lookup.PRIVATE;

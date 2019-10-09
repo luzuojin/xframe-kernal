@@ -4,7 +4,7 @@ import dev.xframe.http.decode.HttpBody;
 import dev.xframe.http.decode.MultiPart;
 import dev.xframe.http.decode.QueryString;
 import dev.xframe.http.service.Request.Params;
-import dev.xframe.tools.XStrings;
+import dev.xframe.utils.XStrings;
 
 public interface BodyDecoder {
 	

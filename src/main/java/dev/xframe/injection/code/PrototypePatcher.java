@@ -3,7 +3,7 @@ package dev.xframe.injection.code;
 import dev.xframe.injection.Inject;
 import dev.xframe.injection.Injection;
 import dev.xframe.injection.Prototype;
-import dev.xframe.tools.CtHelper;
+import dev.xframe.utils.CtHelper;
 import javassist.CannotCompileException;
 import javassist.CtClass;
 import javassist.CtConstructor;

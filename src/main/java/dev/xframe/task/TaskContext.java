@@ -12,7 +12,7 @@ import java.util.function.Predicate;
 
 import dev.xframe.injection.Configurator;
 import dev.xframe.injection.Eventual;
-import dev.xframe.tools.ThreadsFactory;
+import dev.xframe.utils.ThreadsFactory;
 
 @Configurator
 public class TaskContext implements Eventual {

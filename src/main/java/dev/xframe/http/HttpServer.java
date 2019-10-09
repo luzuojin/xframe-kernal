@@ -7,7 +7,7 @@ import dev.xframe.http.service.ServiceContext;
 import dev.xframe.injection.Inject;
 import dev.xframe.injection.Injection;
 import dev.xframe.net.NetServer;
-import dev.xframe.tools.ThreadsFactory;
+import dev.xframe.utils.ThreadsFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.AdaptiveRecvByteBufAllocator;

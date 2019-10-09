@@ -16,7 +16,7 @@ import dev.xframe.http.service.Response;
 import dev.xframe.http.service.ServiceContext;
 import dev.xframe.http.service.Response.ContentType;
 import dev.xframe.http.service.ServiceContext.ServiceInvoker;
-import dev.xframe.tools.Mimetypes;
+import dev.xframe.utils.Mimetypes;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;

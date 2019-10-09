@@ -9,8 +9,8 @@ import dev.xframe.modular.ModularEnigne;
 import dev.xframe.modular.ModularInjection;
 import dev.xframe.modular.ModuleTypeLoader;
 import dev.xframe.net.codec.IMessage;
-import dev.xframe.tools.LiteParser;
-import dev.xframe.tools.XLambda;
+import dev.xframe.utils.LiteParser;
+import dev.xframe.utils.XLambda;
 
 public final class PlayerCmdActionCmd<T extends ModularPlayer> extends PlayerCommand<T>  {
 

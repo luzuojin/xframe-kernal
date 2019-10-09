@@ -3,7 +3,7 @@ package dev.xframe.http.decode;
 import java.util.List;
 import java.util.Set;
 
-import dev.xframe.tools.XStrings;
+import dev.xframe.utils.XStrings;
 
 public interface IParameters {
     

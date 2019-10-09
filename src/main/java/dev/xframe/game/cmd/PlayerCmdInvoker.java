@@ -7,7 +7,7 @@ import dev.xframe.game.player.Player;
 import dev.xframe.injection.Bean;
 import dev.xframe.injection.Providable;
 import dev.xframe.net.codec.IMessage;
-import dev.xframe.tools.XStrings;
+import dev.xframe.utils.XStrings;
 
 @Bean
 @Providable

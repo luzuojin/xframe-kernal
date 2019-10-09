@@ -3,7 +3,7 @@ package dev.xframe.http.service.uri;
 import java.util.HashMap;
 import java.util.Map;
 
-import dev.xframe.tools.XStrings;
+import dev.xframe.utils.XStrings;
 
 public class PathTemplate {
 	

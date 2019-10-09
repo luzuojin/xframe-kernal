@@ -4,7 +4,7 @@ import dev.xframe.game.player.ModularPlayer;
 import dev.xframe.modular.ModularEnigne;
 import dev.xframe.modular.ModuleTypeLoader;
 import dev.xframe.net.codec.IMessage;
-import dev.xframe.tools.Generic;
+import dev.xframe.utils.Generic;
 
 /**
  * module 入口

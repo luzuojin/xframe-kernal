@@ -2,7 +2,7 @@ package dev.xframe.event;
 
 import java.util.function.Consumer;
 
-import dev.xframe.tools.Generic;
+import dev.xframe.utils.Generic;
 
 public abstract class Subscriber {
     

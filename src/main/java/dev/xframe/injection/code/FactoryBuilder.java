@@ -6,7 +6,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import dev.xframe.tools.CtHelper;
+import dev.xframe.utils.CtHelper;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;

@@ -9,7 +9,7 @@ import dev.xframe.http.service.Response;
 import dev.xframe.injection.Configurator;
 import dev.xframe.injection.Loadable;
 import dev.xframe.injection.Providable;
-import dev.xframe.tools.XStrings;
+import dev.xframe.utils.XStrings;
 
 @Configurator
 @Providable

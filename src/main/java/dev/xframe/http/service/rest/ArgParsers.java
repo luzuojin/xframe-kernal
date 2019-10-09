@@ -8,7 +8,7 @@ import java.util.function.Function;
 
 import dev.xframe.http.service.Request;
 import dev.xframe.http.service.uri.PathMatcher;
-import dev.xframe.tools.XStrings;
+import dev.xframe.utils.XStrings;
 
 public class ArgParsers {
 	

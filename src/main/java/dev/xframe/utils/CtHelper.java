@@ -1,4 +1,4 @@
-package dev.xframe.tools;
+package dev.xframe.utils;
 
 import javassist.CannotCompileException;
 import javassist.CtClass;

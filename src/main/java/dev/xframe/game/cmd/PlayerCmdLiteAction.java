@@ -5,7 +5,7 @@ import com.google.protobuf.MessageLite;
 import dev.xframe.game.player.ModularPlayer;
 import dev.xframe.modular.ModularInject;
 import dev.xframe.net.codec.IMessage;
-import dev.xframe.tools.LiteParser;
+import dev.xframe.utils.LiteParser;
 
 public abstract class PlayerCmdLiteAction<T extends ModularPlayer, V, L extends MessageLite> extends PlayerCmdAction<T, V> {
 

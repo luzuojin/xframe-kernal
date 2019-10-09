@@ -1,7 +1,7 @@
 package dev.xframe.modular.code;
 
 import dev.xframe.modular.ModularEnigne;
-import dev.xframe.tools.CtHelper;
+import dev.xframe.utils.CtHelper;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;

@@ -1,4 +1,4 @@
-package dev.xframe.tools;
+package dev.xframe.utils;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

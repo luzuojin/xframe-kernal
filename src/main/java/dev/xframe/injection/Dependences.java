@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 import dev.xframe.injection.Injector.FieldInjector;
 import dev.xframe.injection.code.Codes;
-import dev.xframe.tools.XSorter;
+import dev.xframe.utils.XSorter;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtBehavior;

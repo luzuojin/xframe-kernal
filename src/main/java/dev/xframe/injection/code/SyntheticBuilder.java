@@ -6,8 +6,8 @@ import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 import dev.xframe.injection.Synthetic;
-import dev.xframe.tools.CtHelper;
-import dev.xframe.tools.CtParser;
+import dev.xframe.utils.CtHelper;
+import dev.xframe.utils.CtParser;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtField;
