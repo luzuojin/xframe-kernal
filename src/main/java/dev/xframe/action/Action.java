@@ -1,16 +1,13 @@
 package dev.xframe.action;
 
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.xframe.metric.Metrics;
+import dev.xframe.metric.Guage;
+import dev.xframe.metric.Scriber;
+import dev.xframe.utils.XTimeFormatter;
 
-public abstract class Action implements Runnable {
+public abstract class Action implements Runnable, Scriber {
     
     protected static final Logger logger = LoggerFactory.getLogger(Action.class);
     
@@ -35,18 +32,16 @@ public abstract class Action implements Runnable {
         try {
         	ActionLoop.setCurrent(loop);
             if(runable()) {
-                long create = this.createTime;
-                long start = System.currentTimeMillis();
+            	Guage g = Guage.of(getClazz()).creating(createTime).beginning();
                 this.exec();
-                long end = System.currentTimeMillis();
-                Metrics.gauge(getClazz(), create, start, end, this);
+                g.ending().apply();
             }
         } catch (Throwable e) {
             logger.error("Execute exception: " + getClazz().getName(), e);
             failure(e);
         } finally {
+        	loop.checkout(this);
         	ActionLoop.unsetCurrent();
-            loop.checkout(this);
             done();
         }
     }
@@ -73,13 +68,19 @@ public abstract class Action implements Runnable {
     	return this.getClass();
     }
     
-	public final int loopings() {
-		return loop.size();
+	@Override
+	public void onExecSlow(Guage g) {
+		logger.warn("Execute slow [" + g.name() + "] used: " + g.used() + ", waited: " + g.waited());
+	}
+
+	@Override
+	public void onWaitLong(Guage g) {
+		logger.warn("Execute slow [" + g.name() + "] used: " + g.used() + ", waited: " + g.waited() + ", size: " + loop.size());
 	}
 
 	@Override
     public String toString() {
-        return getClazz().getName() + "[" + DateTimeFormatter.ofPattern("HH:mm:ss").format(ZonedDateTime.ofInstant(Instant.ofEpochMilli(createTime), ZoneOffset.systemDefault())) + "]";
+        return getClazz().getName() + "[" + XTimeFormatter.from(createTime) + "]";
     }
 
 }
