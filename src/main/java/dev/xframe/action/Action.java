@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import dev.xframe.metric.Guage;
 import dev.xframe.metric.Scriber;
-import dev.xframe.utils.XTimeFormatter;
+import dev.xframe.utils.XDateFormatter;
 
 public abstract class Action implements Runnable, Scriber {
     
@@ -80,7 +80,7 @@ public abstract class Action implements Runnable, Scriber {
 
 	@Override
     public String toString() {
-        return getClazz().getName() + "[" + XTimeFormatter.from(createTime) + "]";
+        return getClazz().getName() + "[" + XDateFormatter.from(createTime) + "]";
     }
 
 }

@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.RandomAccessFile;
 import java.net.InetSocketAddress;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -13,10 +12,11 @@ import java.util.Map;
 import dev.xframe.http.service.Request;
 import dev.xframe.http.service.RequestInteceptor;
 import dev.xframe.http.service.Response;
-import dev.xframe.http.service.ServiceContext;
 import dev.xframe.http.service.Response.ContentType;
+import dev.xframe.http.service.ServiceContext;
 import dev.xframe.http.service.ServiceContext.ServiceInvoker;
 import dev.xframe.utils.Mimetypes;
+import dev.xframe.utils.XDateFormatter;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -166,7 +166,6 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
         response.headers().set(HttpHeaders.Names.CONTENT_ENCODING, "UTF-8");
     }
 
-   public static final String HTTP_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
    public static final int HTTP_CACHE_SECONDS = 60;
    
    @SuppressWarnings("resource")
@@ -180,8 +179,7 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
        // Cache Validation
        String ifModifiedSince = req.headers().get(HttpHeaders.Names.IF_MODIFIED_SINCE);
        if (ifModifiedSince != null && !ifModifiedSince.isEmpty()) {
-           SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
-           Date ifModifiedSinceDate = dateFormatter.parse(ifModifiedSince);
+           Date ifModifiedSinceDate = XDateFormatter.toDate(ifModifiedSince);
 
            // Only compare up to the second because the datetime format we send to the client
            // does not have milliseconds
@@ -233,27 +231,24 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
    
    protected void sendNotModified(ChannelHandlerContext ctx) {
        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_MODIFIED);
-       SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
 
        Calendar time = new GregorianCalendar();
-       response.headers().set(HttpHeaders.Names.DATE, dateFormatter.format(time.getTime()));
+       response.headers().set(HttpHeaders.Names.DATE, XDateFormatter.from(time));
 
        // Close the connection as soon as the error message is sent.
        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
    }
 
    protected void setDateAndCacheHeaders(HttpResponse response, File fileToCache) {
-       SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
-
        // Date header
        Calendar time = new GregorianCalendar();
-       response.headers().set(HttpHeaders.Names.DATE, dateFormatter.format(time.getTime()));
+       response.headers().set(HttpHeaders.Names.DATE, XDateFormatter.from(time));
 
        // Add cache headers
        time.add(Calendar.SECOND, HTTP_CACHE_SECONDS);
-       response.headers().set(HttpHeaders.Names.EXPIRES, dateFormatter.format(time.getTime()));
+       response.headers().set(HttpHeaders.Names.EXPIRES, XDateFormatter.from(time));
        response.headers().set(HttpHeaders.Names.CACHE_CONTROL, "private, max-age=" + HTTP_CACHE_SECONDS);
-       response.headers().set(HttpHeaders.Names.LAST_MODIFIED, dateFormatter.format(new Date(fileToCache.lastModified())));
+       response.headers().set(HttpHeaders.Names.LAST_MODIFIED, XDateFormatter.from(fileToCache.lastModified()));
    }
 
 }

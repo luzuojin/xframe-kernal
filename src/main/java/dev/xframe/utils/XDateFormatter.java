@@ -5,9 +5,10 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 import java.util.Date;
 
-public class XTimeFormatter {
+public class XDateFormatter {
 	
 	static DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -37,6 +38,10 @@ public class XTimeFormatter {
 	
 	public static String from(Instant instant) {
 		return DATETIME_FORMATTER.format(LocalDateTime.ofInstant(instant, ZoneId.systemDefault()));
+	}
+
+	public static String from(Calendar time) {
+		return from(time.toInstant());
 	}
 	
 }
