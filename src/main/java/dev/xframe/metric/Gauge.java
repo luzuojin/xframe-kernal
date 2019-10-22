@@ -1,12 +1,12 @@
 package dev.xframe.metric;
 
-public class Guage {
+public class Gauge {
 	
-	public static final Guage NIL = new Guage() {
-		public Guage creating(long createTime) {return this;}
-		public Guage creating() {return this;}
-		public Guage beginning() {return this;}
-		public Guage ending() {return this;}
+	public static final Gauge NIL = new Gauge() {
+		public Gauge creating(long createTime) {return this;}
+		public Gauge creating() {return this;}
+		public Gauge beginning() {return this;}
+		public Gauge ending() {return this;}
 	};
 	
 	Class<?> ident;
@@ -19,38 +19,38 @@ public class Guage {
 	
 	Scriber scriber = Scriber.NIL;
 	
-	public Guage() {
+	public Gauge() {
 	}
 	
-	public Guage(Class<?> ident) {
+	public Gauge(Class<?> ident) {
 		this.ident = ident;
 	}
 
-	public static Guage of(Class<?> ident) {
-		return Metrics.watching ? new Guage(ident) : NIL;
+	public static Gauge of(Class<?> ident) {
+		return Metrics.watching ? new Gauge(ident) : NIL;
 	}
 	
-	public Guage creating() {
+	public Gauge creating() {
 		creating(System.currentTimeMillis());
 		return this;
 	}
 	
-	public Guage creating(long createTime) {
+	public Gauge creating(long createTime) {
 		this.createTime = createTime;
 		return this;
 	}
 
-	public Guage beginning() {
+	public Gauge beginning() {
 		this.beginTime = System.currentTimeMillis();
 		return this;
 	}
 	
-	public Guage ending() {
+	public Gauge ending() {
 		this.endTime = System.currentTimeMillis();
 		return this;
 	}
 	
-	public Guage with(Scriber scriber) {
+	public Gauge with(Scriber scriber) {
 		this.scriber = scriber;
 		return this;
 	}

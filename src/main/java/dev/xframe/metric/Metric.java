@@ -56,7 +56,7 @@ public class Metric {
     	updateMax(wat, wait);
     }
     
-	public void apply(Guage g) {
+	public void apply(Gauge g) {
 		long used = g.used();
 		long waited = g.waited();
 		

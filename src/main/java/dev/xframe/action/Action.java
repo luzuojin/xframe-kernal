@@ -3,7 +3,7 @@ package dev.xframe.action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.xframe.metric.Guage;
+import dev.xframe.metric.Gauge;
 import dev.xframe.metric.Scriber;
 import dev.xframe.utils.XDateFormatter;
 
@@ -32,7 +32,7 @@ public abstract class Action implements Runnable, Scriber {
         try {
         	ActionLoop.setCurrent(loop);
             if(runable()) {
-            	Guage g = Guage.of(getClazz()).creating(createTime).beginning();
+            	Gauge g = Gauge.of(getClazz()).creating(createTime).beginning();
                 this.exec();
                 g.ending().apply();
             }
@@ -69,12 +69,12 @@ public abstract class Action implements Runnable, Scriber {
     }
     
 	@Override
-	public void onExecSlow(Guage g) {
+	public void onExecSlow(Gauge g) {
 		logger.warn("Execute slow [" + g.name() + "] used: " + g.used() + ", waited: " + g.waited());
 	}
 
 	@Override
-	public void onWaitLong(Guage g) {
+	public void onWaitLong(Gauge g) {
 		logger.warn("Execute slow [" + g.name() + "] used: " + g.used() + ", waited: " + g.waited() + ", size: " + loop.size());
 	}
 

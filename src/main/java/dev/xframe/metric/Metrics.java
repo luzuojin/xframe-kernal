@@ -35,7 +35,7 @@ public class Metrics {
         watching = true;
     }
 
-	public static void apply(Guage g) {
+	public static void apply(Gauge g) {
 		if(watching) {
         	try {
         		get(g.ident).apply(g);
