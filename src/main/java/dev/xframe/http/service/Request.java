@@ -8,7 +8,6 @@ import java.util.Set;
 import dev.xframe.http.decode.HttpBody;
 import dev.xframe.http.decode.HttpURI;
 import dev.xframe.http.decode.IParameters;
-import dev.xframe.http.decode.QueryString;
 import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -35,9 +34,9 @@ public class Request implements IParameters {
     private List<Throwable> causes;
    
     public Request(InetAddress address, HttpRequest request) {
-        this(address, request.getUri(), request.headers(), request.getMethod());
+        this(address, request.uri(), request.headers(), request.method());
         this.request = request;
-        this.appendDecoderResult(this.request.getDecoderResult());
+        this.appendDecoderResult(this.request.decoderResult());
     }
     public Request(InetAddress address, String uri, HttpHeaders headers, HttpMethod method) {
         this.address = address;
@@ -51,7 +50,7 @@ public class Request implements IParameters {
     }
     
     public byte[] content() {
-        return this.body == null ? null : body.asBytes();
+        return this.body == null ? null : body.toBytes();
     }
     
     public HttpBody body() {
@@ -93,7 +92,7 @@ public class Request implements IParameters {
     }
     
     public String queryString() {
-        return uri.queryString();
+        return uri.rawQuery();
     }
     
     
@@ -104,8 +103,11 @@ public class Request implements IParameters {
         return uri.path();
     }
     
-    public String purePath() {
-        return uri.purePath();
+    /**
+     * @return trim '/'
+     */
+    public String trimmedPath() {
+        return uri.trimmedPath();
     }
     
     public Set<String> getParamNames() {
@@ -116,13 +118,13 @@ public class Request implements IParameters {
     }
     
     public void appendContent(HttpContent content) {
-        if(content.getDecoderResult().isSuccess()) {
+        if(content.decoderResult().isSuccess()) {
             if(this.body == null) {
                 this.body = new HttpBody(request);
             }
             this.body.offer(content);
         } else {
-            this.appendDecoderResult(content.getDecoderResult());
+            this.appendDecoderResult(content.decoderResult());
         }
     }
 
@@ -130,22 +132,4 @@ public class Request implements IParameters {
         return this.causes == null;
     }
     
-    public static class Params extends QueryString implements IParameters {
-        public Params(String uri) {
-            super(uri, false);
-        }
-        @Override
-        public Set<String> getParamNames() {
-            return parameters().keySet();
-        }
-        @Override
-        public List<String> getParamValues(String name) {
-            return parameters().get(name);
-        }
-        
-        public static Params decode(String queryString) {
-            return new Params(queryString);
-        }
-    }
-
 }

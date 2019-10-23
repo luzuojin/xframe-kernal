@@ -78,10 +78,10 @@ public final class MessageCrypts {
         }
 
         protected byte[] getCipher(ChannelHandlerContext ctx, AttributeKey<byte[]> key) {
-            byte[] cipher = ctx.attr(key).get();
+            byte[] cipher = ctx.channel().attr(key).get();
             if(cipher == null) {
                 cipher = initialCipher();
-                ctx.attr(key).set(cipher);
+                ctx.channel().attr(key).set(cipher);
             }
             return cipher;
         }

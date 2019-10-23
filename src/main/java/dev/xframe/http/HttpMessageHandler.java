@@ -26,11 +26,12 @@ import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.CharsetUtil;
@@ -61,7 +62,7 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
         if (msg instanceof HttpRequest) {
             HttpRequest request = (HttpRequest) msg;
             this.req = new Request(((InetSocketAddress)(ctx.channel().remoteAddress())).getAddress(), request);
-            if (HttpHeaders.is100ContinueExpected(request)) {
+            if (HttpUtil.is100ContinueExpected(request)) {
                 send100Continue(ctx);
             }
         }
@@ -84,7 +85,7 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
                 return;
             }
 
-            ServiceInvoker invoker = this.ctx.get(req.purePath());
+            ServiceInvoker invoker = this.ctx.get(req.trimmedPath());
             if(invoker == null) {
                 sendAsFile(ctx);
             } else {
@@ -151,19 +152,19 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
    }
 
    protected void setContentHeaders(FullHttpResponse response, Response resp) {
-       response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, resp.content.readableBytes());
+       response.headers().set(HttpHeaderNames.CONTENT_LENGTH, resp.content.readableBytes());
        for(Map.Entry<String, String> header : resp.headers.entrySet()) {
            response.headers().set(header.getKey(), header.getValue());
        }
    }
 
     protected void setContentType(HttpResponse response, String contentType) {
-    	response.headers().set(HttpHeaders.Names.ACCESS_CONTROL_MAX_AGE, "86400");
-        response.headers().set(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
-        response.headers().set(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_HEADERS, "*");
-        response.headers().set(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_METHODS, "*");
-        response.headers().set(HttpHeaders.Names.CONTENT_TYPE, contentType);
-        response.headers().set(HttpHeaders.Names.CONTENT_ENCODING, "UTF-8");
+    	response.headers().set(HttpHeaderNames.ACCESS_CONTROL_MAX_AGE, "86400");
+        response.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+        response.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_HEADERS, "*");
+        response.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_METHODS, "*");
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, contentType);
+        response.headers().set(HttpHeaderNames.CONTENT_ENCODING, "UTF-8");
     }
 
    public static final int HTTP_CACHE_SECONDS = 60;
@@ -177,7 +178,7 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
        }
 
        // Cache Validation
-       String ifModifiedSince = req.headers().get(HttpHeaders.Names.IF_MODIFIED_SINCE);
+       String ifModifiedSince = req.headers().get(HttpHeaderNames.IF_MODIFIED_SINCE);
        if (ifModifiedSince != null && !ifModifiedSince.isEmpty()) {
            Date ifModifiedSinceDate = XDateFormatter.toDate(ifModifiedSince);
 
@@ -204,7 +205,7 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
        
        setContentType(response, Mimetypes.get(file.getName()));
        
-       response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, fileLength);
+       response.headers().set(HttpHeaderNames.CONTENT_LENGTH, fileLength);
        
        setDateAndCacheHeaders(response, file);
        // Write the initial line and the header.
@@ -233,7 +234,7 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_MODIFIED);
 
        Calendar time = new GregorianCalendar();
-       response.headers().set(HttpHeaders.Names.DATE, XDateFormatter.from(time));
+       response.headers().set(HttpHeaderNames.DATE, XDateFormatter.from(time));
 
        // Close the connection as soon as the error message is sent.
        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
@@ -242,13 +243,13 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
    protected void setDateAndCacheHeaders(HttpResponse response, File fileToCache) {
        // Date header
        Calendar time = new GregorianCalendar();
-       response.headers().set(HttpHeaders.Names.DATE, XDateFormatter.from(time));
+       response.headers().set(HttpHeaderNames.DATE, XDateFormatter.from(time));
 
        // Add cache headers
        time.add(Calendar.SECOND, HTTP_CACHE_SECONDS);
-       response.headers().set(HttpHeaders.Names.EXPIRES, XDateFormatter.from(time));
-       response.headers().set(HttpHeaders.Names.CACHE_CONTROL, "private, max-age=" + HTTP_CACHE_SECONDS);
-       response.headers().set(HttpHeaders.Names.LAST_MODIFIED, XDateFormatter.from(fileToCache.lastModified()));
+       response.headers().set(HttpHeaderNames.EXPIRES, XDateFormatter.from(time));
+       response.headers().set(HttpHeaderNames.CACHE_CONTROL, "private, max-age=" + HTTP_CACHE_SECONDS);
+       response.headers().set(HttpHeaderNames.LAST_MODIFIED, XDateFormatter.from(fileToCache.lastModified()));
    }
 
 }

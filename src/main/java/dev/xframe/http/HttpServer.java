@@ -68,7 +68,7 @@ public class HttpServer {
                     .childOption(ChannelOption.SO_SNDBUF, 4086)//系统sockets发送数据buff的大小
                     .childOption(ChannelOption.SO_RCVBUF, 2048)//---接收
                     .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)//使用bytebuf池, 默认不使用
-                    .childOption(ChannelOption.RCVBUF_ALLOCATOR, AdaptiveRecvByteBufAllocator.DEFAULT)//使用bytebuf池, 默认不使用
+                    .childOption(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator())//使用bytebuf池, 默认不使用
                     .option(ChannelOption.SO_REUSEADDR, true)//端口重用,如果开启则在上一个进程未关闭情况下也能正常启动
                     .option(ChannelOption.SO_BACKLOG, 64);//最大等待连接的connection数量
         

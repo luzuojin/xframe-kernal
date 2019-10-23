@@ -32,7 +32,7 @@ public class Session4Client extends Session4Server {
     public boolean reconnect() {
         if (this.isActive()) return true;
         if (isConnecting.get()) return false;
-        if (bootstrap.group().isShutdown()) return false;
+        if (bootstrap.config().group().isShutdown()) return false;
         
         try {
             if(isConnecting.compareAndSet(false, true)) {
