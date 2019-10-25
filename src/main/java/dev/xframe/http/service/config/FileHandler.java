@@ -1,4 +1,4 @@
-package dev.xframe.http.service;
+package dev.xframe.http.service.config;
 
 /**
  * 

@@ -3,10 +3,15 @@ package dev.xframe.http.service;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
-import dev.xframe.http.service.uri.PathMap;
-import dev.xframe.http.service.uri.PathMatcher;
-import dev.xframe.http.service.uri.PathPattern;
-import dev.xframe.http.service.uri.PathTemplate;
+import dev.xframe.http.service.config.ConflictHandler;
+import dev.xframe.http.service.config.ErrorHandler;
+import dev.xframe.http.service.config.FileHandler;
+import dev.xframe.http.service.config.RequestInteceptor;
+import dev.xframe.http.service.config.ServiceConfig;
+import dev.xframe.http.service.path.PathMap;
+import dev.xframe.http.service.path.PathMatcher;
+import dev.xframe.http.service.path.PathPattern;
+import dev.xframe.http.service.path.PathTemplate;
 import dev.xframe.injection.Bean;
 import dev.xframe.injection.Eventual;
 import dev.xframe.injection.Inject;
@@ -25,7 +30,7 @@ public class ServiceContext implements Eventual {
     
     private PathMap<Pair> services;
     
-    private ServiceConflictHandler conflictHandler;
+    private ConflictHandler conflictHandler;
     
     public ServiceContext() {
         services = new PathMap<>();
@@ -36,7 +41,7 @@ public class ServiceContext implements Eventual {
     	registService(path, service, conflictHandler);
     }
     
-	public void registService(String path, Service service, ServiceConflictHandler conflictHandler) {
+	public void registService(String path, Service service, ConflictHandler conflictHandler) {
     	PathTemplate temp = new PathTemplate(path);
     	PathPattern pattern = new PathPattern(temp);
     	Pair old = services.put(temp.mapping(), new Pair(pattern, service));
@@ -102,7 +107,7 @@ public class ServiceContext implements Eventual {
 		throw new IllegalArgumentException(String.format("conflict path %s in [%s:%s]", path, s1, s2));
 	}
 
-	public void registServices(List<Class<?>> clazzes, ServiceConflictHandler conflictHandler) {
+	public void registServices(List<Class<?>> clazzes, ConflictHandler conflictHandler) {
 		for (Class<?> clazz : clazzes) registService(clazz, conflictHandler);
 	}
 	
@@ -110,10 +115,10 @@ public class ServiceContext implements Eventual {
 		registService(clazz, conflictHandler);
 	}
 	
-    public void registService(Class<?> clazz, ServiceConflictHandler conflictHandler) {
+    public void registService(Class<?> clazz, ConflictHandler conflictHandler) {
         String path = Service.findPath(clazz);
         if(path != null && !Modifier.isAbstract(clazz.getModifiers()) && !Modifier.isInterface(clazz.getModifiers())) {
-            ServiceConflictHandler osch = this.conflictHandler;
+            ConflictHandler osch = this.conflictHandler;
             this.conflictHandler = conflictHandler;
             registService(path, builder.build(clazz), conflictHandler);
             this.conflictHandler = osch;

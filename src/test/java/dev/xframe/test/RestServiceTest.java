@@ -9,11 +9,11 @@ import dev.xframe.http.service.Request;
 import dev.xframe.http.service.Response;
 import dev.xframe.http.service.Rest;
 import dev.xframe.http.service.ServiceContext;
-import dev.xframe.http.service.rest.BodyDecoder;
+import dev.xframe.http.service.config.BodyDecoder;
+import dev.xframe.http.service.config.RespEncoder;
+import dev.xframe.http.service.config.ServiceConfigSetter;
 import dev.xframe.http.service.rest.HttpArgs;
 import dev.xframe.http.service.rest.HttpMethods;
-import dev.xframe.http.service.rest.RespEncoder;
-import dev.xframe.http.service.rest.RestConfigSetter;
 import dev.xframe.http.service.rest.RestServiceBuilder;
 import dev.xframe.injection.ApplicationContext;
 import dev.xframe.injection.Injection;
@@ -47,7 +47,7 @@ public class RestServiceTest {
     }
 	
 	public static void main(String[] args) throws Exception {
-		RestConfigSetter configurer = new RestConfigSetter(){
+		ServiceConfigSetter configurer = new ServiceConfigSetter(){
             @Override
             public void setBodyDecoder(Consumer<BodyDecoder> setter) {
                 setter.accept((t, body) -> Integer.parseInt(new String(body)));

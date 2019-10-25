@@ -1,10 +1,7 @@
-package dev.xframe.http.service.rest;
+package dev.xframe.http.service.config;
 
 import java.util.function.Consumer;
 
-import dev.xframe.http.service.ErrorHandler;
-import dev.xframe.http.service.FileHandler;
-import dev.xframe.http.service.RequestInteceptor;
 import dev.xframe.http.service.Response;
 import dev.xframe.injection.Configurator;
 import dev.xframe.injection.Loadable;
@@ -13,7 +10,7 @@ import dev.xframe.utils.XStrings;
 
 @Configurator
 @Providable
-public class RestConfigSetter implements RestConfig, Loadable {
+public class ServiceConfigSetter implements ServiceConfig, Loadable {
     
     private RequestInteceptor inteceptor;
     private ErrorHandler errorhandler;

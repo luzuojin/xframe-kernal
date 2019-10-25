@@ -10,11 +10,11 @@ import java.util.GregorianCalendar;
 import java.util.Map;
 
 import dev.xframe.http.service.Request;
-import dev.xframe.http.service.RequestInteceptor;
 import dev.xframe.http.service.Response;
 import dev.xframe.http.service.Response.ContentType;
 import dev.xframe.http.service.ServiceContext;
 import dev.xframe.http.service.ServiceContext.ServiceInvoker;
+import dev.xframe.http.service.config.RequestInteceptor;
 import dev.xframe.utils.Mimetypes;
 import dev.xframe.utils.XDateFormatter;
 import io.netty.buffer.Unpooled;

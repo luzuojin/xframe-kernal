@@ -1,4 +1,4 @@
-package dev.xframe.http.service.uri;
+package dev.xframe.http.service.path;
 
 import java.util.Map;
 import java.util.regex.Matcher;

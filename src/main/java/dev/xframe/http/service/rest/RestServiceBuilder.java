@@ -9,6 +9,7 @@ import dev.xframe.http.service.Rest;
 import dev.xframe.http.service.Service;
 import dev.xframe.http.service.ServiceBuilder;
 import dev.xframe.http.service.ServiceContext;
+import dev.xframe.http.service.config.ServiceConfig;
 import dev.xframe.injection.Bean;
 import dev.xframe.injection.Inject;
 import dev.xframe.utils.XStrings;
@@ -17,7 +18,7 @@ import dev.xframe.utils.XStrings;
 public class RestServiceBuilder extends ServiceBuilder {
 	
 	@Inject
-	private RestConfig config;
+	private ServiceConfig config;
 	@Inject(lazy=true)
 	private ServiceContext serviceCtx;
 	

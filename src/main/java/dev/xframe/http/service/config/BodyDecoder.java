@@ -1,4 +1,4 @@
-package dev.xframe.http.service.rest;
+package dev.xframe.http.service.config;
 
 import dev.xframe.http.decode.HttpBody;
 import dev.xframe.http.decode.MultiPart;

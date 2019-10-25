@@ -6,7 +6,8 @@ import java.lang.reflect.Parameter;
 import java.util.Arrays;
 
 import dev.xframe.http.service.Request;
-import dev.xframe.http.service.uri.PathMatcher;
+import dev.xframe.http.service.config.BodyDecoder;
+import dev.xframe.http.service.path.PathMatcher;
 
 public class RestServiceAdapter implements RestService  {
 	

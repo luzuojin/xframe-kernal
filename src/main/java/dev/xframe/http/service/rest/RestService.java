@@ -2,7 +2,7 @@ package dev.xframe.http.service.rest;
 
 import dev.xframe.http.service.Request;
 import dev.xframe.http.service.Response;
-import dev.xframe.http.service.uri.PathMatcher;
+import dev.xframe.http.service.path.PathMatcher;
 
 public interface RestService {
 	

@@ -1,6 +1,6 @@
 package dev.xframe.http.service;
 
-import dev.xframe.http.service.uri.PathMatcher;
+import dev.xframe.http.service.path.PathMatcher;
 
 /**
  * 
