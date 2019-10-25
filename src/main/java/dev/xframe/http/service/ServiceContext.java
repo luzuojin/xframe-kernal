@@ -3,7 +3,6 @@ package dev.xframe.http.service;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
-import dev.xframe.http.service.config.ConflictHandler;
 import dev.xframe.http.service.config.ErrorHandler;
 import dev.xframe.http.service.config.FileHandler;
 import dev.xframe.http.service.config.RequestInteceptor;
@@ -124,5 +123,13 @@ public class ServiceContext implements Eventual {
             this.conflictHandler = osch;
         }
     }
+    
+    @FunctionalInterface
+    public static interface ConflictHandler {
+    	
+    	public void handle(String path, Service s1, Service s2);
+
+    }
+
 
 }
