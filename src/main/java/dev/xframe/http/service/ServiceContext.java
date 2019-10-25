@@ -7,11 +7,9 @@ import dev.xframe.http.service.uri.PathMap;
 import dev.xframe.http.service.uri.PathMatcher;
 import dev.xframe.http.service.uri.PathPattern;
 import dev.xframe.http.service.uri.PathTemplate;
-import dev.xframe.injection.ApplicationContext;
 import dev.xframe.injection.Bean;
 import dev.xframe.injection.Eventual;
 import dev.xframe.injection.Inject;
-import dev.xframe.injection.Injection;
 import dev.xframe.injection.code.Codes;
 
 /**
@@ -22,6 +20,8 @@ public class ServiceContext implements Eventual {
     
     @Inject
     private ServiceConfig config;
+    @Inject
+    private ServiceBuilder builder;
     
     private PathMap<Pair> services;
     
@@ -109,22 +109,14 @@ public class ServiceContext implements Eventual {
 	public void registService(Class<?> clazz) {
 		registService(clazz, conflictHandler);
 	}
+	
     public void registService(Class<?> clazz, ServiceConflictHandler conflictHandler) {
-        Http ann = clazz.getAnnotation(Http.class);
-        if(ann != null && !Modifier.isAbstract(clazz.getModifiers()) && !Modifier.isInterface(clazz.getModifiers())) {
+        String path = builder.findPath(clazz);
+        if(path != null && !Modifier.isAbstract(clazz.getModifiers()) && !Modifier.isInterface(clazz.getModifiers())) {
             ServiceConflictHandler osch = this.conflictHandler;
             this.conflictHandler = conflictHandler;
-            registService(ann.value(), (Service) Injection.inject(newInstance(clazz)), conflictHandler);
+            registService(path, builder.build(clazz), conflictHandler);
             this.conflictHandler = osch;
-        }
-    }
-
-    private Service newInstance(Class<?> clazz) {
-        try {
-            ServiceBuilder builder = ApplicationContext.fetchBean(ServiceBuilder.class);
-            return  (builder == null ? (Service) clazz.newInstance() : builder.build(clazz));
-        } catch (Exception e) {
-            throw new IllegalArgumentException(clazz.getName(), e);
         }
     }
 

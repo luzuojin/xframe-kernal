@@ -4,80 +4,63 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import dev.xframe.http.service.Http;
+import dev.xframe.http.service.Rest;
 import dev.xframe.http.service.Service;
 import dev.xframe.http.service.ServiceBuilder;
 import dev.xframe.http.service.ServiceContext;
 import dev.xframe.injection.Bean;
 import dev.xframe.injection.Inject;
-import dev.xframe.injection.Injection;
 import dev.xframe.utils.XStrings;
 
 @Bean
-public class RestServiceBuilder implements ServiceBuilder {
+public class RestServiceBuilder extends ServiceBuilder {
 	
 	@Inject
 	private RestConfig config;
 	@Inject(lazy=true)
-	private ServiceContext serviceContext;
+	private ServiceContext serviceCtx;
 	
-    public void setConfiguration(RestConfig config) {
-        this.config = config;
-    }
-
-    public void setServiceContext(ServiceContext serviceContext) {
-		this.serviceContext = serviceContext;
-	}
-
 	@Override
-    public Service build(Class<?> clazz) throws Exception {
-        if(RestService.class.isAssignableFrom(clazz)) {
-            return build4Rest(clazz);
-        }
-        return (Service) clazz.newInstance();
+    public Service build(Class<?> clazz) {
+        return clazz.isAnnotationPresent(Rest.class) ? build4Rest(clazz) : super.build(clazz);
     }
 
 	public Service build4Rest(Class<?> clazz) {
-		RestService service = (RestService) Injection.makeInstanceAndInject(clazz);
-		buildSubResServices(clazz, service);
-		return buildInvoker(buildAdapter(service, findMethods(clazz, false)));
+		Object origin = newOrigin(clazz);
+		buildSubServices(clazz, origin);
+		return buildService(origin, findMethods(clazz, false));
 	}
 
-	private void buildSubResServices(Class<?> clazz, RestService service) {
-        Arrays.stream(findMethods(clazz, true)).collect(Collectors.groupingBy(cm->findSubRes(clazz, cm))).forEach((k, v) -> {
-            //check repeated http methods
-            serviceContext.registService(k, buildInvoker(buildAdapter(service, v.toArray(new Method[0]))));
-        });
+	private void buildSubServices(Class<?> clazz, Object origin) {
+        Arrays.stream(findMethods(clazz, true)).forEach(m->serviceCtx.registService(findPath(clazz, m), buildService(origin, m)));
 	}
 
-    private String findSubRes(Class<?> clazz, Method m) {
-    	return XStrings.trim(clazz.getAnnotation(Http.class).value(), '/') + '/' + XStrings.trim(findMethodRes(m), '/');
-    }
-
-	private RestServiceInvoker buildInvoker(RestService service) {
+	private Service buildService(Object origin, Method... methods) {
+		return buildRestInvoker(buildRestAdapter(origin, methods));
+	}
+	
+	private RestServiceInvoker buildRestInvoker(RestService service) {
 		return new RestServiceInvoker(service, config.getRespEncoder());
 	}
 	
-	private RestService buildAdapter(RestService origin, Method[] methods) {
+	private RestService buildRestAdapter(Object origin, Method... methods) {
 		Method m = methods.length == 1 ? methods[0] : null;
 		return RestServiceAdapter.of(m, origin, config.getBodyDecoder());
 	}
 
-	private Method[] findMethods(Class<?> clazz, boolean subRes) {
-		List<Method> r = new ArrayList<>();
-		Method[] ms = clazz.getDeclaredMethods();
-		for (Method m : ms) {
-		    String res = findMethodRes(m);
-		    if(res != null && (XStrings.isEmpty(res) != subRes)) {
-		        r.add(m);
-		    }
-		}
-		return r.toArray(new Method[0]);
-	}
-	
-	private String findMethodRes(Method m) {
+    private String findPath(Class<?> clazz, Method m) {
+    	return XStrings.trim(findPath(clazz), '/') + '/' + XStrings.trim(findSubPath(m), '/');
+    }
+    
+    public String findPath(Class<?> clazz) {
+    	if(clazz.isAnnotationPresent(Rest.class)) {
+    		return clazz.getAnnotation(Rest.class).value();
+    	}
+    	return super.findPath(clazz);
+    }
+
+	private String findSubPath(Method m) {
 		if(m.isAnnotationPresent(HttpMethods.GET.class)) {
             return m.getAnnotation(HttpMethods.GET.class).value();
 	    }
@@ -96,5 +79,16 @@ public class RestServiceBuilder implements ServiceBuilder {
 	    return null;
 	}
 	
+	private Method[] findMethods(Class<?> clazz, boolean sub) {
+		List<Method> r = new ArrayList<>();
+		Method[] ms = clazz.getDeclaredMethods();
+		for (Method m : ms) {
+		    String p = findSubPath(m);
+		    if(p != null && (XStrings.isEmpty(p) != sub)) {
+		        r.add(m);
+		    }
+		}
+		return r.toArray(new Method[0]);
+	}
 
 }

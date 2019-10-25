@@ -5,16 +5,15 @@ import java.util.function.Consumer;
 import org.junit.Ignore;
 
 import dev.xframe.http.decode.HttpBody;
-import dev.xframe.http.service.Http;
 import dev.xframe.http.service.Request;
 import dev.xframe.http.service.Response;
+import dev.xframe.http.service.Rest;
 import dev.xframe.http.service.ServiceContext;
 import dev.xframe.http.service.rest.BodyDecoder;
 import dev.xframe.http.service.rest.HttpArgs;
 import dev.xframe.http.service.rest.HttpMethods;
 import dev.xframe.http.service.rest.RespEncoder;
 import dev.xframe.http.service.rest.RestConfigSetter;
-import dev.xframe.http.service.rest.RestService;
 import dev.xframe.http.service.rest.RestServiceBuilder;
 import dev.xframe.injection.ApplicationContext;
 import dev.xframe.injection.Injection;
@@ -22,8 +21,8 @@ import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpMethod;
 
 @Ignore
-@Http("something")
-public class RestServiceTest implements RestService {
+@Rest("something")
+public class RestServiceTest {
     
     @HttpMethods.GET("/b")
 	public String dosomething0(@HttpArgs.Param int a, @HttpArgs.Header long b, @HttpArgs.Body int x) {

@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)    
 public @interface HttpMethods {//use @interface for completion
-    
+	
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)    
     public @interface GET {
