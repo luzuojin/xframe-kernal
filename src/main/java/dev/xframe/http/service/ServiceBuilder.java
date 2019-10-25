@@ -8,13 +8,6 @@ import dev.xframe.injection.Providable;
 @Providable
 public class ServiceBuilder {
 	
-	public String findPath(Class<?> clazz) {
-		if(clazz.isAnnotationPresent(Http.class)) {
-			return clazz.getAnnotation(Http.class).value();
-		}
-		return null;
-	}
-
     public Service build(Class<?> clazz) {
     	return (Service) newOrigin(clazz);
     }

@@ -111,7 +111,7 @@ public class ServiceContext implements Eventual {
 	}
 	
     public void registService(Class<?> clazz, ServiceConflictHandler conflictHandler) {
-        String path = builder.findPath(clazz);
+        String path = Service.findPath(clazz);
         if(path != null && !Modifier.isAbstract(clazz.getModifiers()) && !Modifier.isInterface(clazz.getModifiers())) {
             ServiceConflictHandler osch = this.conflictHandler;
             this.conflictHandler = conflictHandler;

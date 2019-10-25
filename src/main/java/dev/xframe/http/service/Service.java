@@ -10,7 +10,7 @@ import dev.xframe.http.service.uri.PathMatcher;
  */
 public interface Service {
 	
-	public default Response service(Request req, PathMatcher matcher) {
+	default Response service(Request req, PathMatcher matcher) {
 		return service(req);
 	}
     
@@ -19,5 +19,15 @@ public interface Service {
      * @return resp (just support String)
      */
     public Response service(Request req);
-
+    
+    public static String findPath(Class<?> c) {
+    	if(c.isAnnotationPresent(Http.class)) {
+    		return c.getAnnotation(Http.class).value();
+    	}
+    	if(c.isAnnotationPresent(Rest.class)) {
+    		return c.getAnnotation(Rest.class).value();
+    	}
+    	return null;
+    }
+    
 }

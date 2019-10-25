@@ -50,16 +50,9 @@ public class RestServiceBuilder extends ServiceBuilder {
 	}
 
     private String findPath(Class<?> clazz, Method m) {
-    	return XStrings.trim(findPath(clazz), '/') + '/' + XStrings.trim(findSubPath(m), '/');
+    	return XStrings.trim(Service.findPath(clazz), '/') + '/' + XStrings.trim(findSubPath(m), '/');
     }
     
-    public String findPath(Class<?> clazz) {
-    	if(clazz.isAnnotationPresent(Rest.class)) {
-    		return clazz.getAnnotation(Rest.class).value();
-    	}
-    	return super.findPath(clazz);
-    }
-
 	private String findSubPath(Method m) {
 		if(m.isAnnotationPresent(HttpMethods.GET.class)) {
             return m.getAnnotation(HttpMethods.GET.class).value();
