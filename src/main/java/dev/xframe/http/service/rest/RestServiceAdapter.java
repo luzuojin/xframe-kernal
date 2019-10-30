@@ -16,16 +16,16 @@ public class RestServiceAdapter implements RestService  {
 	protected Method method;
 	protected ArgParser[] parsers;
 	
-	protected final Object doInvoke(Request req, PathMatcher matcher) {
+	protected final Object doInvoke(Request req, PathMatcher matcher) throws Throwable {
 		try {
-			Object[] args = new Object[parsers.length];
-			for (int i = 0; i < args.length; i++) {
-				args[i] = parsers[i].parse(req, matcher);
-			}
-			return method.invoke(delegate, args);
-		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			throw new IllegalArgumentException(e);
-		}
+            Object[] args = new Object[parsers.length];
+            for (int i = 0; i < args.length; i++) {
+            	args[i] = parsers[i].parse(req, matcher);
+            }
+            return method.invoke(delegate, args);
+        } catch (InvocationTargetException e) {
+            throw e.getCause();
+        }
 	}
 	
 	public static RestService of(Method method, Object delegate, BodyDecoder decoder) {
@@ -63,27 +63,27 @@ public class RestServiceAdapter implements RestService  {
 		}
 	}
 	public static class GetAdapter extends RestServiceAdapter {
-		public Object get(Request req, PathMatcher matcher) {
+		public Object get(Request req, PathMatcher matcher) throws Throwable {
 			return doInvoke(req, matcher);
 		}
 	}
 	public static class PutAdapter extends RestServiceAdapter {
-		public Object put(Request req, PathMatcher matcher) {
+		public Object put(Request req, PathMatcher matcher) throws Throwable {
 			return doInvoke(req, matcher);
 		}
 	}
 	public static class PostAdapter extends RestServiceAdapter {
-		public Object post(Request req, PathMatcher matcher) {
+		public Object post(Request req, PathMatcher matcher) throws Throwable {
 			return doInvoke(req, matcher);
 		}
 	}
 	public static class DeleteAdapter extends RestServiceAdapter {
-		public Object delete(Request req, PathMatcher matcher) {
+		public Object delete(Request req, PathMatcher matcher) throws Throwable {
 			return doInvoke(req, matcher);
 		}
 	}
 	public static class OptionsAdapter extends RestServiceAdapter {
-		public Object options(Request req, PathMatcher matcher) {
+		public Object options(Request req, PathMatcher matcher) throws Throwable {
 			return doInvoke(req, matcher);
 		}
 	}

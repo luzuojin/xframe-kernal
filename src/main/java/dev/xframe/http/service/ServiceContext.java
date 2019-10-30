@@ -54,7 +54,7 @@ public class ServiceContext implements Eventual {
     		this.matcher = matcher;
     		this.service = service;
 		}
-    	public Response invoke(Request req) {
+    	public Response invoke(Request req) throws Throwable {
     		return service.service(req, matcher);
     	}
     }

@@ -46,7 +46,7 @@ public class RestServiceTest {
         return String.valueOf(x);
     }
 	
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws Throwable {
 		ServiceConfigSetter configurer = new ServiceConfigSetter(){
             @Override
             public void setBodyDecoder(Consumer<BodyDecoder> setter) {
@@ -87,7 +87,7 @@ public class RestServiceTest {
         }));
 	}
 
-	private static Response doService(Request request) {
+	private static Response doService(Request request) throws Throwable {
 		return ApplicationContext.fetchBean(ServiceContext.class).get(request.path()).invoke(request);
 	}
 
