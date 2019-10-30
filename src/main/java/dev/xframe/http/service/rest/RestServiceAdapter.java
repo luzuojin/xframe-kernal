@@ -1,6 +1,7 @@
 package dev.xframe.http.service.rest;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
@@ -22,7 +23,7 @@ public class RestServiceAdapter implements RestService  {
 				args[i] = parsers[i].parse(req, matcher);
 			}
 			return method.invoke(delegate, args);
-		} catch (Throwable e) {
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			throw new IllegalArgumentException(e);
 		}
 	}
