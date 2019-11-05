@@ -1,4 +1,4 @@
-package dev.xframe.net.sever;
+package dev.xframe.net.server;
 
 import dev.xframe.net.LifecycleListener;
 import dev.xframe.net.MessageInterceptor;

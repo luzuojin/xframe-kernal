@@ -1,4 +1,4 @@
-package dev.xframe.net.sever;
+package dev.xframe.net.server;
 
 import java.util.concurrent.TimeUnit;
 
