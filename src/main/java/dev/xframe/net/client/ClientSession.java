@@ -7,13 +7,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.xframe.net.LifecycleListener;
-import dev.xframe.net.server.ServerSession;
+import dev.xframe.net.session.ChannelSession;
 import dev.xframe.net.session.Session;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 
-public class ClientSession extends ServerSession {
+public class ClientSession extends ChannelSession {
     
     private static final Logger logger = LoggerFactory.getLogger(ClientSession.class);
     
