@@ -2,7 +2,7 @@ package dev.xframe.net;
 
 import dev.xframe.injection.Inject;
 import dev.xframe.injection.Injection;
-import dev.xframe.net.NetChannelInitializer.ClientInitializer;
+import dev.xframe.net.client.ClientChannelInitializer;
 import dev.xframe.net.client.ClientLifecycleListener;
 import dev.xframe.net.client.ClientMessageHandler;
 import dev.xframe.net.client.ClientMessageInterceptor;
@@ -74,7 +74,7 @@ public class NetClient {
             .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)//使用bytebuf池, 默认不使用
             .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator())//使用bytebuf池, 默认不使用
             .option(ChannelOption.WRITE_BUFFER_WATER_MARK, WriteBufferWaterMark.DEFAULT)//消息缓冲区
-            .handler(new ClientInitializer(dispatcher, crypt, heartbeat));
+            .handler(new ClientChannelInitializer(dispatcher, crypt, heartbeat));
             
         }
         return this;
