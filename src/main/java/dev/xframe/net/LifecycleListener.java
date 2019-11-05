@@ -1,11 +1,9 @@
 package dev.xframe.net;
 
-import dev.xframe.injection.Synthetic;
 import dev.xframe.net.cmd.Command;
 import dev.xframe.net.codec.IMessage;
 import dev.xframe.net.session.Session;
 
-@Synthetic
 public interface LifecycleListener {
     
     public void onSessionRegister(Session session);
@@ -15,7 +13,9 @@ public interface LifecycleListener {
     public void onMessageSending(Session session, IMessage message);
     
     public void onSessionUnRegister(Session session);
-
+    
     public void onExceptionCaught(Session session, Command cmd, IMessage req, Throwable ex);
+
+    public void onMessageFlushSlow(Session session);
 
 }

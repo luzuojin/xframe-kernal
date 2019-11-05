@@ -8,6 +8,7 @@ import dev.xframe.http.decode.HttpBody;
 import dev.xframe.http.service.Request;
 import dev.xframe.http.service.Response;
 import dev.xframe.http.service.Rest;
+import dev.xframe.http.service.ServiceBuilder;
 import dev.xframe.http.service.ServiceContext;
 import dev.xframe.http.service.config.BodyDecoder;
 import dev.xframe.http.service.config.RespEncoder;
@@ -59,6 +60,7 @@ public class RestServiceTest {
 		};
 		configurer.load();
 		ApplicationContext.registBean(configurer);
+		ApplicationContext.registBean(Injection.makeInstanceAndInject(ServiceBuilder.class));
 		ApplicationContext.registBean(Injection.makeInstanceAndInject(RestServiceBuilder.class));
 		ApplicationContext.registBean(Injection.makeInstanceAndInject(ServiceContext.class));
 		ApplicationContext.fetchBean(ServiceContext.class).registService(RestServiceTest.class);

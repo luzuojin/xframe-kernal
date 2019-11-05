@@ -14,7 +14,6 @@ public interface MessageInterceptor {
     
     /**
      * @param session 
-     * @param code
      * @param req
      * @return True已被拦截 不做后续处理
      *          False 继续处理

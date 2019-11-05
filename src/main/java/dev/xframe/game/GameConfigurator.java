@@ -62,7 +62,6 @@ public final class GameConfigurator implements Loadable {
             
             ApplicationContext.registBean(PlayerFactory.class, factory);
             ApplicationContext.registBean(PlayerContext.class, context);
-            ApplicationContext.registBean(CommandBuilder.class, newCommandBuilder());
             
             logger.info("Load compelete modular and logics threads[{}]", threads);
         }
@@ -71,7 +70,6 @@ public final class GameConfigurator implements Loadable {
         
         protected abstract PlayerFactory newPlayerFactory();
         
-        protected abstract CommandBuilder newCommandBuilder();
     }
     
     class PlayerInjectFactory implements PlayerFactory {
@@ -107,16 +105,6 @@ public final class GameConfigurator implements Loadable {
                 }
             };
         }
-        @Override
-        protected CommandBuilder newCommandBuilder() {
-            return clazz -> {
-                try {
-                    return (Command) clazz.newInstance();
-                } catch (Throwable e) {
-                    throw new IllegalArgumentException(clazz.getName(), e);
-                }
-            };
-        }
     }
     
     class ModularConfigurator extends AbstConfigurator {
@@ -128,19 +116,15 @@ public final class GameConfigurator implements Loadable {
         protected void configure0(Class<?> assemble, List<Class<?>> clazzes) {
             ModularEnigne.initialize(assemble, clazzes);
             ApplicationContext.registBean(ModuleLoader.class, ModularEnigne.getMLoader());
+            ApplicationContext.fetchBean(CommandBuilder.class)
+                .regist(c->PlayerCmdAction.class.isAssignableFrom(c), this::newCmdActionCmd);
         }
-        @Override
-        protected CommandBuilder newCommandBuilder() {
-            return clazz -> {
-                try {
-                    if(PlayerCmdAction.class.isAssignableFrom(clazz)) {
-                        return new PlayerCmdActionCmd<>(clazz);
-                    }
-                    return (Command) clazz.newInstance();
-                } catch (Throwable e) {
-                    throw new IllegalArgumentException(clazz.getName(), e);
-                }
-            };
+        protected Command newCmdActionCmd(Class<?> c) {
+            try {
+                return new PlayerCmdActionCmd<>(c);
+            } catch (Throwable e) {
+                throw new IllegalArgumentException(c.getName(), e);
+            }
         }
     }
 

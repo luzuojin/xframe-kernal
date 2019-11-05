@@ -1,19 +1,33 @@
 package dev.xframe.http.service;
 
-import dev.xframe.injection.Bean;
-import dev.xframe.injection.Injection;
-import dev.xframe.injection.Providable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
-@Bean
-@Providable
+import dev.xframe.injection.Configurator;
+import dev.xframe.injection.Injection;
+
+@Configurator
 public class ServiceBuilder {
+    
+    private Map<Predicate<Class<?>>, Function<Class<?>, Service>> builders = new HashMap<>(4);
+
+    public void regist(Predicate<Class<?>> predicate, Function<Class<?>, Service> builder) {
+        builders.put(predicate, builder);
+    }
 	
     public Service build(Class<?> clazz) {
-    	return (Service) newOrigin(clazz);
+        for (Map.Entry<Predicate<Class<?>>, Function<Class<?>, Service>> entry : builders.entrySet()) {
+            if(entry.getKey().test(clazz)) {
+                return entry.getValue().apply(clazz);
+            }
+        }
+    	return build0(clazz);
     }
 
-	protected Object newOrigin(Class<?> clazz) {
-		return Injection.makeInstanceAndInject(clazz);
+	private Service build0(Class<?> clazz) {
+		return (Service) Injection.makeInstanceAndInject(clazz);
 	}
     
 }

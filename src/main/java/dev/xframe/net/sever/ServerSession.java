@@ -1,7 +1,9 @@
-package dev.xframe.net.session;
+package dev.xframe.net.sever;
 
 import dev.xframe.net.LifecycleListener;
 import dev.xframe.net.codec.IMessage;
+import dev.xframe.net.session.SendingListener;
+import dev.xframe.net.session.Session;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
@@ -11,17 +13,17 @@ import io.netty.channel.ChannelFutureListener;
  * @author luzj
  *
  */
-public class Session4Server extends Session {
+public class ServerSession extends Session {
 
     protected long id;
     protected Channel channel;
     protected LifecycleListener listener;
     
-    protected Session4Server(LifecycleListener listener) {
+    protected ServerSession(LifecycleListener listener) {
         this.listener = listener;
     }
     
-    public Session4Server(Channel channel, LifecycleListener listener) {
+    public ServerSession(Channel channel, LifecycleListener listener) {
         this(listener);
         this.bindChannel(channel);
     }

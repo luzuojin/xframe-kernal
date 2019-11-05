@@ -1,4 +1,4 @@
-package dev.xframe.net.session;
+package dev.xframe.net.client;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -7,20 +7,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.xframe.net.LifecycleListener;
+import dev.xframe.net.session.Session;
+import dev.xframe.net.sever.ServerSession;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 
-public class Session4Client extends Session4Server {
+public class ClientSession extends ServerSession {
     
-    private static final Logger logger = LoggerFactory.getLogger(Session4Client.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClientSession.class);
     
     private final Bootstrap bootstrap;
     private final String host;
     private final int port;
     private AtomicBoolean isConnecting;
     
-    public Session4Client(LifecycleListener listener, Bootstrap bootstrap, String host, int port) {
+    public ClientSession(LifecycleListener listener, Bootstrap bootstrap, String host, int port) {
         super(listener);
         this.bootstrap = bootstrap;
         this.host = host;

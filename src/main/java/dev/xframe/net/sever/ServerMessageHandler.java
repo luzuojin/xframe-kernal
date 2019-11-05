@@ -1,10 +1,10 @@
-package dev.xframe.net.handler;
+package dev.xframe.net.sever;
 
 import dev.xframe.net.LifecycleListener;
 import dev.xframe.net.MessageInterceptor;
+import dev.xframe.net.NetMessageHandler;
 import dev.xframe.net.cmd.CommandContext;
 import dev.xframe.net.session.Session;
-import dev.xframe.net.session.Session4Server;
 import io.netty.channel.ChannelHandlerContext;
 
 public class ServerMessageHandler extends NetMessageHandler {
@@ -15,7 +15,7 @@ public class ServerMessageHandler extends NetMessageHandler {
 
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-        Session session = new Session4Server(ctx.channel(), listener);
+        Session session = new ServerSession(ctx.channel(), listener);
         listener.onSessionRegister(session);
     }
     

@@ -8,7 +8,6 @@ import java.util.Map;
 import dev.xframe.injection.Bean;
 import dev.xframe.injection.Eventual;
 import dev.xframe.injection.Inject;
-import dev.xframe.injection.Injection;
 import dev.xframe.injection.code.Codes;
 
 /**
@@ -17,8 +16,9 @@ import dev.xframe.injection.code.Codes;
  */
 @Bean
 public class CommandContext implements Eventual {
-    @Inject(nullable=true)
+    @Inject
     private CommandBuilder builder;
+    
     private Map<Integer, Command> cmds;
     
     public CommandContext() {
@@ -51,15 +51,7 @@ public class CommandContext implements Eventual {
     public void registCommand(Class<?> clazz) {
         Cmd ann = clazz.getAnnotation(Cmd.class);
         if(ann != null && !Modifier.isAbstract(clazz.getModifiers()) && !Modifier.isInterface(clazz.getModifiers())) {
-            registCmd(ann.value(), (Command) Injection.inject(newInstance(clazz)));
-        }
-    }
-
-    private Command newInstance(Class<?> clazz) {
-        try {
-            return  (builder == null ? (Command) clazz.newInstance() : builder.build(clazz));
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new IllegalArgumentException(clazz.getName(), e);
+            registCmd(ann.value(), builder.build(clazz));
         }
     }
 

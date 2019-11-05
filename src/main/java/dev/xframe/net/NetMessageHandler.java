@@ -1,10 +1,8 @@
-package dev.xframe.net.handler;
+package dev.xframe.net;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.xframe.net.LifecycleListener;
-import dev.xframe.net.MessageInterceptor;
 import dev.xframe.net.cmd.Command;
 import dev.xframe.net.cmd.CommandContext;
 import dev.xframe.net.codec.IMessage;
@@ -70,6 +68,13 @@ public class NetMessageHandler extends ChannelInboundHandlerAdapter {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         logger.warn("Channel closed", cause);
         ctx.close();
+    }
+
+    @Override
+    public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
+        if(!ctx.channel().isWritable()) {
+            listener.onMessageFlushSlow(Session.get(ctx));
+        }
     }
 
 }

@@ -1,7 +1,8 @@
-package dev.xframe.net.handler;
+package dev.xframe.net.client;
 
 import dev.xframe.net.LifecycleListener;
 import dev.xframe.net.MessageInterceptor;
+import dev.xframe.net.NetMessageHandler;
 import dev.xframe.net.cmd.CommandContext;
 import io.netty.channel.ChannelHandlerContext;
 

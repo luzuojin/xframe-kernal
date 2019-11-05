@@ -3,19 +3,23 @@ package dev.xframe.net;
 import dev.xframe.injection.Inject;
 import dev.xframe.injection.Injection;
 import dev.xframe.net.NetChannelInitializer.ClientInitializer;
+import dev.xframe.net.client.ClientLifecycleListener;
+import dev.xframe.net.client.ClientMessageHandler;
+import dev.xframe.net.client.ClientMessageInterceptor;
+import dev.xframe.net.client.ClientSession;
 import dev.xframe.net.cmd.CommandContext;
 import dev.xframe.net.codec.IMessage;
 import dev.xframe.net.codec.Message;
 import dev.xframe.net.codec.MessageCrypt;
-import dev.xframe.net.handler.ClientMessageHandler;
-import dev.xframe.net.handler.NetMessageHandler;
 import dev.xframe.net.session.Session;
-import dev.xframe.net.session.Session4Client;
 import dev.xframe.utils.ThreadsFactory;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.AdaptiveRecvByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.WriteBufferWaterMark;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
@@ -24,9 +28,9 @@ public class NetClient {
     @Inject
     private CommandContext cmdCtx;
     @Inject
-    private LifecycleListener listener;
+    private ClientLifecycleListener listener;
     @Inject
-    private MessageInterceptor interceptor;
+    private ClientMessageInterceptor interceptor;
     
     private EventLoopGroup group;
     private Bootstrap bootstrap;
@@ -65,6 +69,11 @@ public class NetClient {
             this.bootstrap.group(group)
             .channel(NioSocketChannel.class)
             .option(ChannelOption.TCP_NODELAY, true)
+            .option(ChannelOption.SO_SNDBUF, 2048)//系统sockets发送数据buff的大小(k)
+            .option(ChannelOption.SO_RCVBUF, 2048)//---接收(k)
+            .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)//使用bytebuf池, 默认不使用
+            .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator())//使用bytebuf池, 默认不使用
+            .option(ChannelOption.WRITE_BUFFER_WATER_MARK, WriteBufferWaterMark.DEFAULT)//消息缓冲区
             .handler(new ClientInitializer(dispatcher, crypt, heartbeat));
             
         }
@@ -75,9 +84,9 @@ public class NetClient {
         return build0(host, port, sessionId);
     }
 
-    private Session4Client build0(String host, int port, long sessionId) {
+    private ClientSession build0(String host, int port, long sessionId) {
         this.initial();
-        Session4Client session = new Session4Client(listener, bootstrap, host, port);
+        ClientSession session = new ClientSession(listener, bootstrap, host, port);
         session.bind(sessionId);
         return session;
     }
