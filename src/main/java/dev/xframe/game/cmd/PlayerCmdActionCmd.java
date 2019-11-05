@@ -22,13 +22,17 @@ public final class PlayerCmdActionCmd<T extends ModularPlayer> extends PlayerCom
     final PlayerCmdInvoker<T> invoker;
     
     @SuppressWarnings("unchecked")
-    public PlayerCmdActionCmd(Class<?> clazz) throws Throwable {
-        this.clazz = clazz;
-        this.getter = XLambda.createByConstructor(clazz);
-        this.loader = ModularEnigne.getLoader(PlayerCmdAction.getModuleType(clazz));
-        this.injector = ModularInjection.build(clazz);
-        this.liteParser = PlayerCmdLiteAction.class.isAssignableFrom(clazz) ? new LiteParser(clazz, PlayerCmdLiteAction.class) : null;
-        this.invoker = ApplicationContext.fetchBean(PlayerCmdInvoker.class);
+    public PlayerCmdActionCmd(Class<?> clazz) {
+        try {
+            this.clazz = clazz;
+            this.getter = XLambda.createByConstructor(clazz);
+            this.loader = ModularEnigne.getLoader(PlayerCmdAction.getModuleType(clazz));
+            this.injector = ModularInjection.build(clazz);
+            this.liteParser = PlayerCmdLiteAction.class.isAssignableFrom(clazz) ? new LiteParser(clazz, PlayerCmdLiteAction.class) : null;
+            this.invoker = ApplicationContext.fetchBean(PlayerCmdInvoker.class);
+        } catch (Throwable e) {
+            throw new IllegalArgumentException(clazz.getName(), e);
+        }
     }
     
     @Override

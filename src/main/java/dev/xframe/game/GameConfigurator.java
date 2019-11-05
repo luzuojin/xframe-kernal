@@ -23,7 +23,6 @@ import dev.xframe.modular.ModularEnigne;
 import dev.xframe.modular.ModuleContainer;
 import dev.xframe.modular.ModuleLoader;
 import dev.xframe.modular.code.MFactoryBuilder;
-import dev.xframe.net.cmd.Command;
 import dev.xframe.net.cmd.CommandBuilder;
 
 @Configurator
@@ -117,14 +116,7 @@ public final class GameConfigurator implements Loadable {
             ModularEnigne.initialize(assemble, clazzes);
             ApplicationContext.registBean(ModuleLoader.class, ModularEnigne.getMLoader());
             ApplicationContext.fetchBean(CommandBuilder.class)
-                .regist(c->PlayerCmdAction.class.isAssignableFrom(c), this::newCmdActionCmd);
-        }
-        protected Command newCmdActionCmd(Class<?> c) {
-            try {
-                return new PlayerCmdActionCmd<>(c);
-            } catch (Throwable e) {
-                throw new IllegalArgumentException(c.getName(), e);
-            }
+                .regist(c->PlayerCmdAction.class.isAssignableFrom(c), PlayerCmdActionCmd::new);
         }
     }
 
