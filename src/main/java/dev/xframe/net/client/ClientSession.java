@@ -43,7 +43,7 @@ public class ClientSession extends ChannelSession {
                     future.await(1, TimeUnit.SECONDS);
                     Channel channel = future.channel();
                     if(channel != null && channel.isActive()) {
-                        bindChannel(channel);
+                        initial(channel);
                     } else {
                         logFailure(future.cause());
                     }
@@ -58,18 +58,16 @@ public class ClientSession extends ChannelSession {
         return this.isActive();
     }
     
-    
-    @Override
-    protected void bindChannel(Channel channel) {
-        super.bindChannel(channel);
-        listener.onSessionRegister(this);
-    }
-
     public Session syncConnect() throws InterruptedException {
         if (!isActive()) {
-            bindChannel(bootstrap.connect(host, port).sync().channel());
+            initial(bootstrap.connect(host, port).sync().channel());
         }
         return this;
+    }
+    
+    private void initial(Channel channel) {
+        bindChannel(channel);
+        listener.onSessionRegister(this);
     }
 
     private void logFailure(Throwable e) {

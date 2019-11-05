@@ -17,7 +17,6 @@ public class XInstrument {
     static boolean _loaded = false;
     static Instrumentation _inst;
     
-    @SuppressWarnings("restriction")
     synchronized static void loadAgent() {
         if(_inst == null && !_loaded) {
             try {
