@@ -40,9 +40,9 @@ public abstract class Action implements Runnable, Scriber {
             logger.error("Execute exception: " + getClazz().getName(), e);
             failure(e);
         } finally {
-        	loop.checkout(this);
-        	ActionLoop.unsetCurrent();
             done();
+            ActionLoop.unsetCurrent();
+        	loop.checkout(this);
         }
     }
     
