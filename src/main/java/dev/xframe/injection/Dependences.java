@@ -178,7 +178,8 @@ class Dependences {
                     behavior.getDeclaringClass().defrost();
                     behavior.instrument(new ExprEditor(){
                         public void edit(NewExpr e) throws CannotCompileException {
-                            refs.add(e.getClassName());
+                            if(Codes.isMatching(e.getClassName()))
+                                refs.add(e.getClassName());
                         }
                     });
                 }
