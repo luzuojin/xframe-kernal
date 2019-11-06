@@ -1,8 +1,5 @@
 package dev.xframe.injection;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,11 +7,11 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import dev.xframe.injection.code.Codes;
-import dev.xframe.injection.code.SyntheticBuilder;
 import dev.xframe.injection.code.Factory;
 import dev.xframe.injection.code.FactoryBuilder;
 import dev.xframe.injection.code.ProxyBuilder;
 import dev.xframe.injection.code.ProxyBuilder.IProxy;
+import dev.xframe.injection.code.SyntheticBuilder;
 
 public class ApplicationContext {
     
@@ -101,36 +98,16 @@ public class ApplicationContext {
 
     private static void initialize(List<Class<?>> classes) {
         loadFactories(classes);
-        loadConfigurators(classes);
-        loadRepositories(classes);
-        loadTemplates(classes);
-        loadBeans(classes);         //singleton beans And Prototypes(prototype set injector)
+        //singleton beans And Prototypes(prototype set injector)
+        loadBeans(classes);
     }
     
     private static void loadFactories(List<Class<?>> classes) {
         classes.stream().filter(c -> c.isInterface() && c.isAnnotationPresent(Factory.class)).forEach(clazz -> registBean(clazz, FactoryBuilder.build(clazz, classes)));
     }
     
-    private static void loadConfigurators(List<Class<?>> classes) {
-        new Dependences(classes).filter(instancableAndPresentBy(Configurator.class)).analyse().forEach(makeClassToBean());
-    }
-    
-    private static void loadRepositories(List<Class<?>> classes) {
-        new Dependences(classes).filter(instancableAndPresentBy(Repository.class)).analyse().forEach(makeClassToBean());
-    }
-
-    private static void loadTemplates(List<Class<?>> classes) {
-        new Dependences(classes).filter(instancableAndPresentBy(Templates.class)).analyse().forEach(makeClassToBean());
-    }
-    
     private static void loadBeans(List<Class<?>> classes) {
-        //@Prototype 已经处理过了(@see PrototypePatcher), 仅用来帮助分析依赖关系
-        new Dependences(classes).filter(instancableAndPresentBy(Bean.class, Prototype.class)).analyse().filter(c->c.isAnnotationPresent(Bean.class)).forEach(makeClassToBean());
-    }
-    
-    @SafeVarargs
-    private static Predicate<Class<?>> instancableAndPresentBy(Class<? extends Annotation>... annos) {
-        return c -> !Modifier.isAbstract(c.getModifiers()) && !Modifier.isInterface(c.getModifiers()) && Arrays.stream(annos).filter(a->c.isAnnotationPresent(a)).findAny().isPresent();
+        new Dependences(classes).analyse().forEach(makeClassToBean());
     }
     
     private static Consumer<Class<?>> makeClassToBean() {

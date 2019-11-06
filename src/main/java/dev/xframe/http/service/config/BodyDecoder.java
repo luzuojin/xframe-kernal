@@ -5,6 +5,7 @@ import dev.xframe.http.decode.MultiPart;
 import dev.xframe.http.decode.QueryString;
 import dev.xframe.utils.XStrings;
 
+@FunctionalInterface
 public interface BodyDecoder {
 	
     default Object decode(Class<?> type, HttpBody body) {

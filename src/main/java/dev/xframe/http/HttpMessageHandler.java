@@ -13,8 +13,7 @@ import dev.xframe.http.service.Request;
 import dev.xframe.http.service.Response;
 import dev.xframe.http.service.Response.ContentType;
 import dev.xframe.http.service.ServiceContext;
-import dev.xframe.http.service.ServiceContext.ServiceInvoker;
-import dev.xframe.http.service.config.RequestInteceptor;
+import dev.xframe.http.service.ServiceInvoker;
 import dev.xframe.utils.Mimetypes;
 import dev.xframe.utils.XDateFormatter;
 import io.netty.buffer.Unpooled;
@@ -78,13 +77,6 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
 
     protected void doRequest(ChannelHandlerContext ctx) {
         if(req.isSuccess()) {
-            RequestInteceptor interceptor = this.ctx.Interceptor();
-            Response intecept = interceptor.intecept(req);
-            if(intecept != null) {
-                sendResponse(ctx, intecept);
-                return;
-            }
-
             ServiceInvoker invoker = this.ctx.get(req.trimmedPath());
             if(invoker == null) {
                 sendAsFile(ctx);

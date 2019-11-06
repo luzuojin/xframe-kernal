@@ -12,7 +12,7 @@ import dev.xframe.utils.XStrings;
 @Providable
 public class ServiceConfigSetter implements ServiceConfig, Loadable {
     
-    private RequestInteceptor inteceptor;
+    private HttpInterceptor interceptor;
     private ErrorHandler errorhandler;
     private FileHandler fileHandler;
     
@@ -20,8 +20,8 @@ public class ServiceConfigSetter implements ServiceConfig, Loadable {
     private RespEncoder respEncoder;
     
     @Override
-    public final RequestInteceptor getInteceptor() {
-        return inteceptor;
+    public final HttpInterceptor getInterceptor() {
+        return interceptor;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class ServiceConfigSetter implements ServiceConfig, Loadable {
 
     @Override
     public final void load() {
-        setIncepetor(v->inteceptor=v);
+        setInterceptor(v->interceptor=v);
         setErrorHandler(v->errorhandler=v);
         setFileHandler(v->fileHandler=v);
         
@@ -54,8 +54,7 @@ public class ServiceConfigSetter implements ServiceConfig, Loadable {
         setRespEncoder(v->respEncoder=v);
     }
 
-    public void setIncepetor(Consumer<RequestInteceptor> setter) {
-        setter.accept(r -> null);
+    public void setInterceptor(Consumer<HttpInterceptor> setter) {
     }
 
     public void setErrorHandler(Consumer<ErrorHandler> setter) {

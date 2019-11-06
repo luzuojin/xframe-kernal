@@ -4,7 +4,7 @@ public interface ServiceConfig {
     
     ErrorHandler getErrorhandler();
 
-    RequestInteceptor getInteceptor();
+    HttpInterceptor getInterceptor();
     
     FileHandler getFileHandler();
     

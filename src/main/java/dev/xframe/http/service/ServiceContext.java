@@ -5,7 +5,6 @@ import java.util.List;
 
 import dev.xframe.http.service.config.ErrorHandler;
 import dev.xframe.http.service.config.FileHandler;
-import dev.xframe.http.service.config.RequestInteceptor;
 import dev.xframe.http.service.config.ServiceConfig;
 import dev.xframe.http.service.path.PathMap;
 import dev.xframe.http.service.path.PathMatcher;
@@ -47,18 +46,6 @@ public class ServiceContext implements Eventual {
     	if(old != null) conflictHandler.handle(path, old.serivce, service);
     }
     
-    public static class ServiceInvoker {
-    	final PathMatcher matcher;
-    	final Service service;
-    	ServiceInvoker(PathMatcher matcher, Service service) {
-    		this.matcher = matcher;
-    		this.service = service;
-		}
-    	public Response invoke(Request req) throws Throwable {
-    		return service.service(req, matcher);
-    	}
-    }
-    
     public static class Pair {
     	PathPattern pattern;
     	Service serivce;
@@ -73,7 +60,7 @@ public class ServiceContext implements Eventual {
     	if(pair != null) {
     		PathMatcher matcher = pair.pattern.compile(path);
     		if(matcher.find()) {
-    			return new ServiceInvoker(matcher, pair.serivce);
+    			return new ServiceInvoker(config.getInterceptor(), matcher, pair.serivce);
     		}
     	}
     	return null;
@@ -88,9 +75,6 @@ public class ServiceContext implements Eventual {
     }
     public ErrorHandler errorHandler() {
         return config.getErrorhandler();
-    }
-    public RequestInteceptor Interceptor() {
-        return config.getInteceptor();
     }
     
     @Override

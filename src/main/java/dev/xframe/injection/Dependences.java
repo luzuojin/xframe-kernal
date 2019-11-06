@@ -1,8 +1,9 @@
 package dev.xframe.injection;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,7 @@ class Dependences {
     
     private List<Class<?>> classes;
     
-    private Map<Class<?>, Injector> injectors;
+    private Map<Class<?>, DependenceInjector> injectors;
     
     private int index;
     
@@ -44,8 +45,12 @@ class Dependences {
     }
     
     public Dependences filter(Predicate<Class<?>> predicate) {
-        this.classes = classes.stream().filter(predicate).collect(Collectors.toList());
+        this.classes = filter(this.classes, predicate);
         return this;
+    }
+    
+    public List<Class<?>> filter(List<Class<?>> classes, Predicate<Class<?>> predicate) {
+        return classes.stream().filter(predicate).collect(Collectors.toList());
     }
     
     /**
@@ -69,7 +74,26 @@ class Dependences {
         return false;
     }
     
+    private static Predicate<Class<?>> annotated() {
+        return c -> !Modifier.isAbstract(c.getModifiers()) &&
+                    !Modifier.isInterface(c.getModifiers()) &&
+                    Arrays.stream(annos).filter(a->c.isAnnotationPresent(a)).findAny().isPresent();
+    }
+    @SuppressWarnings("unchecked")
+    private static Class<? extends Annotation>[] annos = new Class[] {Prototype.class, Configurator.class, Repository.class, Templates.class, Bean.class};
+    //load order
+    private static int annoOrder(Class<?> c) {
+        for (int i = 0; i < annos.length; i++) {
+            if(c.isAnnotationPresent(annos[i])) {
+                return annos.length - i;
+            }
+        }
+        return 0;
+    }
+    
     public Dependences analyse() {
+        filter(annotated());
+        
         List<Class<?>> provides = new ArrayList<>();
         List<Class<?>> analysed = new ArrayList<>();
         
@@ -78,46 +102,31 @@ class Dependences {
                 provides.add(clazz);
             } else {
                 analysed.add(clazz);
-                putUpwardIfNotPrototype(injectors, clazz, Injection.build(clazz));
+                putUpwardIfNotPrototype(injectors, clazz, new DependenceInjector(clazz));
             }
         }
         
         for (Class<?> provide : provides) {
             if(!isProvided(provide)) {
                 analysed.add(provide);
-                putUpwardIfNotPrototype(injectors, provide, Injection.build(provide));
+                putUpwardIfNotPrototype(injectors, provide, new DependenceInjector(provide));
             }
         }
-        
-        XSorter.bubble(analysed, new Comparator<Class<?>>() {//首先按字母排序,保证每次加载顺序一样
-            @Override
-            public int compare(Class<?> o1, Class<?> o2) {
-                return o1.getSimpleName().compareTo(o2.getSimpleName());
-            }
-        });
-        XSorter.bubble(analysed, new Comparator<Class<?>>() {//Prototype优先加载
-            @Override
-            public int compare(Class<?> o1, Class<?> o2) {
-                return o1.getAnnotation(Prototype.class) == null && o2.getAnnotation(Prototype.class) != null ? 1 : 0;//o2为Prototype o1不为Prototype, 换位置(o1 > o2)
-            }
-        });
+
+        //首先按字母排序,保证每次加载顺序一样
+        XSorter.bubble(analysed, (c1, c2) -> c1.getSimpleName().compareTo(c2.getSimpleName()));
+        //Annotation排序
+        XSorter.bubble(analysed, (c1, c2) -> Integer.compare(annoOrder(c2), annoOrder(c1)));
         
         for (Class<?> key : analysed) {
-            analyse0(key, new DependeceLink(null, null));
+            analyse0(key, new DependenceLink(null, null));
         }
         
-        XSorter.bubble(analysed, new Comparator<Class<?>>() {//把@Bean.prior放置Prototype后
-            @Override
-            public int compare(Class<?> o1, Class<?> o2) {
-                return o1.getAnnotation(Prototype.class) == null && o2.getAnnotation(Prototype.class) != null ? 1 : 0;//o2为Prototype o1不为Prototype, 换位置(o1 > o2)
-            }
-        });
-        XSorter.bubble(analysed, new Comparator<Class<?>>() {//按加载顺序加载
-            @Override
-            public int compare(Class<?> o1, Class<?> o2) {
-                return (o1.isAnnotationPresent(Prototype.class) ^ o2.isAnnotationPresent(Prototype.class)) ? 0 : injectors.get(o1).index - injectors.get(o2).index;
-            }
-        });
+        //@Prototype 已经处理过了(@see PrototypePatcher), 仅用来帮助分析依赖关系
+        filter(analysed, c->!c.isAnnotationPresent(Prototype.class));
+        
+        //按依赖顺序排序
+        XSorter.bubble(analysed, (c1, c2) -> Integer.compare(injectors.get(c1).index, injectors.get(c2).index));
         
         this.classes = analysed;
         return this;
@@ -127,19 +136,15 @@ class Dependences {
         for (Class<?> clazz : classes) c.accept(clazz);
     }
 
-    public Injector getInjector(Class<?> clazz) {
-        return injectors.get(clazz);
-    }
-    
-    private void analyse0(Class<?> key, DependeceLink parent) {
+    private void analyse0(Class<?> key, DependenceLink parent) {
         parent.checkCircularDependence();
-        Injector injector = injectors.get(key);
+        DependenceInjector injector = injectors.get(key);
         if(injector == null || injector.index > 0) return;//已经确定顺序或者不是bean(其他)
-        FieldInjector[] fields = injector.fields;
-        Arrays.stream(fields).filter(f->!f.isLazy).forEach(f->analyse0(f.type, new DependeceLink(parent, f.type)));
-        Dependence anno = injector.master.getAnnotation(Dependence.class);
-        if(anno != null) Arrays.stream(anno.value()).forEach(c->analyse0(c, new DependeceLink(parent, c)));
-        getRefPrototypes(injector.master).forEach(c->analyse0(c, new DependeceLink(parent, c)));;
+        FieldInjector[] fields = injector.fields();
+        Arrays.stream(fields).filter(f->!f.isLazy).forEach(f->analyse0(f.type, new DependenceLink(parent, f.type)));
+        Dependence anno = injector.master().getAnnotation(Dependence.class);
+        if(anno != null) Arrays.stream(anno.value()).forEach(c->analyse0(c, new DependenceLink(parent, c)));
+        getRefPrototypes(injector.master()).forEach(c->analyse0(c, new DependenceLink(parent, c)));;
         injector.index = ++index;
     }
     
@@ -191,17 +196,31 @@ class Dependences {
         }
         return behaviors;
     }
+    
+    static class DependenceInjector {
+        Injector injector;
+        int index;
+        public DependenceInjector(Class<?> c) {
+            injector = Injection.build(c);
+        }
+        public Class<?> master() {
+            return injector.master;
+        }
+        public FieldInjector[] fields() {
+            return injector.fields;
+        }
+    }
 
-    static class DependeceLink {
-        public final DependeceLink parent;
+    static class DependenceLink {
+        public final DependenceLink parent;
         public final Class<?> self;
-        public DependeceLink(DependeceLink parent, Class<?> self) {
+        public DependenceLink(DependenceLink parent, Class<?> self) {
             this.parent = parent;
             this.self = self;
         }
         public void checkCircularDependence() {
             if(this.self != null) {
-                DependeceLink link = this;
+                DependenceLink link = this;
                 StringBuilder linkStr = new StringBuilder();
                 while(link.parent != null && link.parent.self != null) {
                     linkStr.append(link.self.getName()).append(" ");

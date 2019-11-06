@@ -13,11 +13,12 @@ public class Injector {
     
     public final Class<?> master;
     public final FieldInjector[] fields;
-    public int index;
+    
     public Injector(Class<?> master, FieldInjector[] fields) {
         this.master = master;
         this.fields = fields;
     }
+    
     public <T> T inject(T bean, BeanContainer bc) {
         try {
             for (FieldInjector field : fields) {

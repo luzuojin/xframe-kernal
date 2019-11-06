@@ -6,6 +6,7 @@ package dev.xframe.http.service.config;
  * @author luzj
  *
  */
+@FunctionalInterface
 public interface FileHandler {
     
     /**
