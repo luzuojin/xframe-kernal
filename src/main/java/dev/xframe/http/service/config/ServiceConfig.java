@@ -6,8 +6,6 @@ public interface ServiceConfig {
 
     HttpInterceptor getInterceptor();
     
-    FileHandler getFileHandler();
-    
     RespEncoder getRespEncoder();
 
     BodyDecoder getBodyDecoder();

@@ -43,7 +43,7 @@ public class Response {
         return this;
     }
     
-    public static final Response NOT_FOUND = new Response("Service Not Found!!!");
+    public static final Response NOT_FOUND = new Response("Not Found!!!");
     public static final Response BAD_REQUEST = new Response("Bad Request!!!");
     public static final Response OPTIONS_DEFAULT = new Response("").setHeader("Allow", "*");
 

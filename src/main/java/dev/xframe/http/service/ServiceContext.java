@@ -3,8 +3,6 @@ package dev.xframe.http.service;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
-import dev.xframe.http.service.config.ErrorHandler;
-import dev.xframe.http.service.config.FileHandler;
 import dev.xframe.http.service.config.ServiceConfig;
 import dev.xframe.http.service.path.PathMap;
 import dev.xframe.http.service.path.PathMatcher;
@@ -70,11 +68,8 @@ public class ServiceContext implements Eventual {
         return services.size();
     }
     
-    public FileHandler fileHandler() {
-        return config.getFileHandler();
-    }
-    public ErrorHandler errorHandler() {
-        return config.getErrorhandler();
+    public ServiceConfig config() {
+        return config;
     }
     
     @Override

@@ -17,12 +17,12 @@ public class ServiceInvoker {
     
     public Response invoke(Request req) throws Throwable {
         if(interceptor == null) {
-            return service.service(req, matcher);
+            return service.exec(req, matcher);
         }
         //interceptor
         Response resp = interceptor.before(req);
         if(resp == null) {
-            resp = service.service(req, matcher);
+            resp = service.exec(req, matcher);
         }
         interceptor.after(req, resp);
         return resp;

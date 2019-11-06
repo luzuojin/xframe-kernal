@@ -10,15 +10,16 @@ import dev.xframe.http.service.path.PathMatcher;
  */
 public interface Service {
 	
-	default Response service(Request req, PathMatcher matcher) throws Throwable {
-		return service(req);
+	default Response exec(Request req, PathMatcher matcher) throws Throwable {
+		return exec(req);
 	}
     
     /**
      * @param req
      * @return resp (just support String)
      */
-    public Response service(Request req) throws Throwable;
+    public Response exec(Request req) throws Throwable;
+    
     
     public static String findPath(Class<?> c) {
     	if(c.isAnnotationPresent(Http.class)) {

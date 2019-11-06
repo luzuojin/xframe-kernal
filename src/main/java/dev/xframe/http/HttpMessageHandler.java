@@ -78,26 +78,22 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
     protected void doRequest(ChannelHandlerContext ctx) {
         if(req.isSuccess()) {
             ServiceInvoker invoker = this.ctx.get(req.trimmedPath());
-            if(invoker == null) {
-                sendAsFile(ctx);
+            if(invoker != null) {
+                doInvoke(ctx, invoker);
             } else {
-                doService(ctx, invoker);
+                sendNotFoudResponse(ctx);
             }
         } else {
             sendBadRequestResponse(ctx);
         }
     }
 
-    protected void doService(ChannelHandlerContext ctx, ServiceInvoker invoker) {
+    protected void doInvoke(ChannelHandlerContext ctx, ServiceInvoker invoker) {
         try {
             sendResponse(ctx, invoker.invoke(req));
         } catch (Throwable ex) {
-            sendResponse(ctx, this.ctx.errorHandler().handle(req, ex));
+            sendResponse(ctx, this.ctx.config().getErrorhandler().handle(req, ex));
         }
-    }
-
-    protected void sendAsFile(ChannelHandlerContext ctx) {
-        sendAsFile(ctx, this.ctx.fileHandler().getPath(req.path()));
     }
 
     protected void sendAsFile(ChannelHandlerContext ctx, String file) {
@@ -105,7 +101,7 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
             try {
                 sendFileResponse(ctx, file); 
             } catch (Throwable ex) {
-                sendResponse(ctx, this.ctx.errorHandler().handle(req, ex));
+                sendResponse(ctx, this.ctx.config().getErrorhandler().handle(req, ex));
             }
         } else {
             sendNotFoudResponse(ctx);

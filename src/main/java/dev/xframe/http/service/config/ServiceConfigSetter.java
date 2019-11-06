@@ -14,7 +14,6 @@ public class ServiceConfigSetter implements ServiceConfig, Loadable {
     
     private HttpInterceptor interceptor;
     private ErrorHandler errorhandler;
-    private FileHandler fileHandler;
     
     private BodyDecoder bodyDecoder;
     private RespEncoder respEncoder;
@@ -40,21 +39,16 @@ public class ServiceConfigSetter implements ServiceConfig, Loadable {
     }
     
     @Override
-    public final FileHandler getFileHandler() {
-        return fileHandler;
-    }
-
-    @Override
     public final void load() {
         setInterceptor(v->interceptor=v);
         setErrorHandler(v->errorhandler=v);
-        setFileHandler(v->fileHandler=v);
         
         setBodyDecoder(v->bodyDecoder=v);
         setRespEncoder(v->respEncoder=v);
     }
 
     public void setInterceptor(Consumer<HttpInterceptor> setter) {
+        setter.accept(new HttpInterceptor() {});
     }
 
     public void setErrorHandler(Consumer<ErrorHandler> setter) {
@@ -69,8 +63,4 @@ public class ServiceConfigSetter implements ServiceConfig, Loadable {
         setter.accept(o -> (Response) o);
     }
 
-    public void setFileHandler(Consumer<FileHandler> setter) {
-        setter.accept(p -> null);
-    }
-    
 }
