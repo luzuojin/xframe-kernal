@@ -6,9 +6,9 @@ import org.junit.runners.model.InitializationError;
 import dev.xframe.injection.ApplicationContext;
 import dev.xframe.injection.Injection;
 
-public class NebulaJunit4ClassRunner extends BlockJUnit4ClassRunner {
+public class Junit4ClassRunner extends BlockJUnit4ClassRunner {
     
-    public NebulaJunit4ClassRunner(Class<?> klass) throws InitializationError {
+    public Junit4ClassRunner(Class<?> klass) throws InitializationError {
         super(klass);
         this.init();
     }

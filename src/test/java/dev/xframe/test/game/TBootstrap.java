@@ -9,13 +9,13 @@ import dev.xframe.game.cmd.PlayerCommand;
 import dev.xframe.game.player.PlayerContext;
 import dev.xframe.injection.Inject;
 import dev.xframe.injection.junit.ContextScan;
-import dev.xframe.injection.junit.NebulaJunit4ClassRunner;
+import dev.xframe.injection.junit.Junit4ClassRunner;
 import dev.xframe.modular.ModuleType;
 import dev.xframe.net.cmd.CommandContext;
 import dev.xframe.net.codec.Message;
 import dev.xframe.test.game.GameProto.ValueMsg;
 
-@RunWith(NebulaJunit4ClassRunner.class)
+@RunWith(Junit4ClassRunner.class)
 @ContextScan(includes="dev.xframe.*", excludes="*.jar")
 public class TBootstrap {
     
