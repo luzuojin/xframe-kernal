@@ -5,9 +5,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class XPaths {
-	
+    
 	public static File toFile(String path) {
 		return new File(toPath(path));
 	}
@@ -58,5 +61,23 @@ public class XPaths {
 		}
 		return p;
 	}
+	
+	
+	public static List<String> listRelativizeFiles(String root) {
+        return listRelativizeFiles(toFile(root));
+    }
+    public static List<String> listRelativizeFiles(File root) {
+        return listFiles(new LinkedList<>(), root).stream().map(f->root.toPath().relativize(f.toPath()).toFile().getPath()).collect(Collectors.toList());
+    }
+    private static List<File> listFiles(List<File> fs, File root) {
+        for (File file : root.listFiles()) {
+            if(file.isDirectory()) {
+                listFiles(fs, file);
+            } else {
+                fs.add(file);
+            }
+        }
+        return fs;
+    }
 
 }
