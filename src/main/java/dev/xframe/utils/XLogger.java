@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
  */
 public class XLogger {
     
-    private static org.slf4j.Logger logger = getLogger(org.slf4j.Logger.class);
+    private static org.slf4j.Logger logger = getLogger(XLogger.class);
 
     public static org.slf4j.Logger getLogger(String name) {
         return LoggerFactory.getLogger(name);

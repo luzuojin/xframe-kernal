@@ -24,12 +24,12 @@ public class ServiceContext implements Eventual {
     @Inject
     private ServiceBuilder builder;
     
-    private PathMap<Pair> services;
+    private PathMap<Pair> paths;
     
     private ConflictHandler conflictHandler;
     
     public ServiceContext() {
-        services = new PathMap<>();
+        paths = new PathMap<>();
         conflictHandler = this::conflict;
     }
     
@@ -40,7 +40,7 @@ public class ServiceContext implements Eventual {
 	public void registService(String path, Service service, ConflictHandler conflictHandler) {
     	PathTemplate temp = new PathTemplate(path);
     	PathPattern pattern = new PathPattern(temp);
-    	Pair old = services.put(temp.mapping(), new Pair(pattern, service));
+    	Pair old = paths.put(temp.mapping(), new Pair(pattern, service));
     	if(old != null) conflictHandler.handle(path, old.serivce, service);
     }
     
@@ -54,7 +54,7 @@ public class ServiceContext implements Eventual {
     }
 
     public ServiceInvoker get(String path) {
-    	Pair pair = services.get(path);
+    	Pair pair = paths.get(path);
     	if(pair != null) {
     		PathMatcher matcher = pair.pattern.compile(path);
     		if(matcher.find()) {
@@ -65,7 +65,7 @@ public class ServiceContext implements Eventual {
     }
 
     public int size() {
-        return services.size();
+        return paths.size();
     }
     
     public ServiceConfig config() {
