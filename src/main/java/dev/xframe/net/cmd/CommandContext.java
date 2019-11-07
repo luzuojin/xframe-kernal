@@ -25,8 +25,8 @@ public class CommandContext implements Eventual {
         cmds = new HashMap<>();
     }
 
-    public void registCmd(int code, Command command) {
-        this.cmds.put(code, command);
+    public void registCmd(int code, Command cmd) {
+        this.cmds.put(code, cmd);
     }
 
     public Command get(int cmdCode) {
@@ -39,16 +39,16 @@ public class CommandContext implements Eventual {
     
     @Override
     public void eventuate() {
-        registCommands(Codes.getDeclaredClasses());        
+        defineCmds(Codes.getDeclaredClasses());        
     }
 
-	public void registCommands(List<Class<?>> clazzes) {
+	public void defineCmds(List<Class<?>> clazzes) {
 		for (Class<?> clazz : clazzes) {
-			registCommand(clazz);
+			defineCmd(clazz);
 		}
 	}
     
-    public void registCommand(Class<?> clazz) {
+    public void defineCmd(Class<?> clazz) {
         Cmd ann = clazz.getAnnotation(Cmd.class);
         if(ann != null && !Modifier.isAbstract(clazz.getModifiers()) && !Modifier.isInterface(clazz.getModifiers())) {
             registCmd(ann.value(), builder.build(clazz));

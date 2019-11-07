@@ -16,6 +16,8 @@ public class HttpBody implements LastHttpContent {
     HttpRequest request;
     
         ByteBuf byteBuf;
+        
+         Object body;
     
     public HttpBody(HttpRequest request) {
         this.request = request;
@@ -38,19 +40,27 @@ public class HttpBody implements LastHttpContent {
     }
     
     public byte[] toBytes() {
-        byte[] bytes = new byte[byteBuf.readableBytes()];
-        byteBuf.readBytes(bytes);
-        return bytes;
+        if(body == null) {
+            byte[] bytes = new byte[byteBuf.readableBytes()];
+            byteBuf.readBytes(bytes);
+            body = bytes;
+        }
+        return (byte[]) body;
     }
     
     public QueryString toQueryString() {
-        return new QueryString(byteBuf.toString(CharsetUtil.UTF_8));
+        if(body == null) {
+            body = new QueryString(byteBuf.toString(CharsetUtil.UTF_8));
+        }
+        return (QueryString) body;
     }
     
     public MultiPart toMultiPart() {
-        return new MultiPart(this);
+        if(body == null) {
+            body = new MultiPart(this);
+        }
+        return (MultiPart) body;
     }
-
     
 	@Override
 	public DecoderResult decoderResult() {

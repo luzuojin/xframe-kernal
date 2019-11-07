@@ -63,7 +63,7 @@ public class RestServiceTest {
 		ApplicationContext.registBean(Injection.makeInstanceAndInject(ServiceBuilder.class));
 		ApplicationContext.registBean(Injection.makeInstanceAndInject(RestServiceBuilder.class));
 		ApplicationContext.registBean(Injection.makeInstanceAndInject(ServiceContext.class));
-		ApplicationContext.fetchBean(ServiceContext.class).registService(RestServiceTest.class);
+		ApplicationContext.fetchBean(ServiceContext.class).defineService(RestServiceTest.class);
 		
 		printResp(doService(new Request(null, "something/2?a=2", null, HttpMethod.GET){
 			@Override

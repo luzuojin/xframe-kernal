@@ -74,26 +74,26 @@ public class ServiceContext implements Eventual {
     
     @Override
     public void eventuate() {
-        registServices(Codes.getDeclaredClasses());
+        defineServices(Codes.getDeclaredClasses());
     }
     
-    public void registServices(List<Class<?>> clazzes) {
-    	registServices(clazzes, conflictHandler);
+    public void defineServices(List<Class<?>> clazzes) {
+    	defineServices(clazzes, conflictHandler);
     }
     
     private void conflict(String path, Service s1, Service s2) {
 		throw new IllegalArgumentException(String.format("conflict path %s in [%s:%s]", path, s1, s2));
 	}
 
-	public void registServices(List<Class<?>> clazzes, ConflictHandler conflictHandler) {
-		for (Class<?> clazz : clazzes) registService(clazz, conflictHandler);
+	public void defineServices(List<Class<?>> clazzes, ConflictHandler conflictHandler) {
+		for (Class<?> clazz : clazzes) defineService(clazz, conflictHandler);
 	}
 	
-	public void registService(Class<?> clazz) {
-		registService(clazz, conflictHandler);
+	public void defineService(Class<?> clazz) {
+		defineService(clazz, conflictHandler);
 	}
 	
-    public void registService(Class<?> clazz, ConflictHandler conflictHandler) {
+    public void defineService(Class<?> clazz, ConflictHandler conflictHandler) {
         String path = Service.findPath(clazz);
         if(path != null && !Modifier.isAbstract(clazz.getModifiers()) && !Modifier.isInterface(clazz.getModifiers())) {
             ConflictHandler osch = this.conflictHandler;
