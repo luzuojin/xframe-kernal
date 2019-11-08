@@ -14,15 +14,15 @@ import dev.xframe.game.cmd.PlayerCmdActionCmd;
 import dev.xframe.game.player.Player;
 import dev.xframe.game.player.PlayerContext;
 import dev.xframe.game.player.PlayerFactory;
-import dev.xframe.injection.ApplicationContext;
-import dev.xframe.injection.Configurator;
-import dev.xframe.injection.Injection;
-import dev.xframe.injection.Loadable;
-import dev.xframe.injection.code.Codes;
-import dev.xframe.modular.ModularEnigne;
-import dev.xframe.modular.ModuleContainer;
-import dev.xframe.modular.ModuleLoader;
-import dev.xframe.modular.code.MFactoryBuilder;
+import dev.xframe.inject.ApplicationContext;
+import dev.xframe.inject.Configurator;
+import dev.xframe.inject.Injection;
+import dev.xframe.inject.Loadable;
+import dev.xframe.inject.code.Codes;
+import dev.xframe.module.ModularConext;
+import dev.xframe.module.ModuleContainer;
+import dev.xframe.module.ModuleLoader;
+import dev.xframe.module.code.MFactoryBuilder;
 import dev.xframe.net.cmd.CommandBuilder;
 
 @Configurator
@@ -113,8 +113,8 @@ public final class GameConfigurator implements Loadable {
         }
         @Override
         protected void configure0(Class<?> assemble, List<Class<?>> clazzes) {
-            ModularEnigne.initialize(assemble, clazzes);
-            ApplicationContext.registBean(ModuleLoader.class, ModularEnigne.getMLoader());
+            ModularConext.initialize(assemble, clazzes);
+            ApplicationContext.registBean(ModuleLoader.class, ModularConext.getMLoader());
             ApplicationContext.fetchBean(CommandBuilder.class)
                 .regist(c->PlayerCmdAction.class.isAssignableFrom(c), PlayerCmdActionCmd::new);
         }

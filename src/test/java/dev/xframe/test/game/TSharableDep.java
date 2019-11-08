@@ -1,6 +1,6 @@
 package dev.xframe.test.game;
 
-import dev.xframe.modular.ModularShare;
+import dev.xframe.module.ModularShare;
 
 @ModularShare
 public interface TSharableDep {

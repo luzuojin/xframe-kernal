@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import dev.xframe.game.player.ModularPlayer;
-import dev.xframe.modular.ModularEnigne;
-import dev.xframe.modular.ModuleTypeLoader;
+import dev.xframe.module.ModularConext;
+import dev.xframe.module.ModuleTypeLoader;
 import dev.xframe.utils.Generic;
 
 /**
@@ -22,7 +22,7 @@ public interface ModularCallable<T extends ModularPlayer, V> extends PlayerCalla
 	static ModuleTypeLoader getLoader(Class<?> clazz) {
 		ModuleTypeLoader loader = loaders.get(clazz);
 		if(loader == null) {
-			loader = ModularEnigne.getLoader(getModuleType(clazz));
+			loader = ModularConext.getLoader(getModuleType(clazz));
 			loaders.put(clazz, loader);
 		}
 		return loader;

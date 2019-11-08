@@ -1,8 +1,8 @@
 package dev.xframe.game.player;
 
 import dev.xframe.action.ActionLoop;
-import dev.xframe.modular.ModuleContainer;
-import dev.xframe.modular.ModuleType;
+import dev.xframe.module.ModuleContainer;
+import dev.xframe.module.ModuleType;
 
 public abstract class ModularPlayer extends Player implements ModuleContainer {
 

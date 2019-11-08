@@ -2,9 +2,9 @@ package dev.xframe.test.game;
 
 import org.junit.Assert;
 
-import dev.xframe.injection.Inject;
-import dev.xframe.injection.Loadable;
-import dev.xframe.injection.Repository;
+import dev.xframe.inject.Inject;
+import dev.xframe.inject.Loadable;
+import dev.xframe.inject.Repository;
 
 
 @Repository

@@ -1,6 +1,6 @@
 package dev.xframe.net;
 
-import dev.xframe.injection.Synthetic;
+import dev.xframe.inject.Synthetic;
 import dev.xframe.net.codec.IMessage;
 import dev.xframe.net.session.Session;
 

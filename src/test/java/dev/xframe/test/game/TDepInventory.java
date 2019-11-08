@@ -2,12 +2,12 @@ package dev.xframe.test.game;
 
 import org.junit.Assert;
 
-import dev.xframe.injection.Inject;
-import dev.xframe.injection.Loadable;
-import dev.xframe.modular.ModularDependence;
-import dev.xframe.modular.ModularInject;
-import dev.xframe.modular.Module;
-import dev.xframe.modular.ModuleType;
+import dev.xframe.inject.Inject;
+import dev.xframe.inject.Loadable;
+import dev.xframe.module.ModularDependence;
+import dev.xframe.module.ModularInject;
+import dev.xframe.module.Module;
+import dev.xframe.module.ModuleType;
 
 @ModularDependence(TSharablePlayer.class)
 @Module(ModuleType.TRANSIENT)

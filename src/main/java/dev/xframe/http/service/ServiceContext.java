@@ -8,10 +8,10 @@ import dev.xframe.http.service.path.PathMap;
 import dev.xframe.http.service.path.PathMatcher;
 import dev.xframe.http.service.path.PathPattern;
 import dev.xframe.http.service.path.PathTemplate;
-import dev.xframe.injection.Bean;
-import dev.xframe.injection.Eventual;
-import dev.xframe.injection.Inject;
-import dev.xframe.injection.code.Codes;
+import dev.xframe.inject.Bean;
+import dev.xframe.inject.Eventual;
+import dev.xframe.inject.Inject;
+import dev.xframe.inject.code.Codes;
 
 /**
  * @author luzj

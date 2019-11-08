@@ -10,8 +10,8 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
-import dev.xframe.injection.Configurator;
-import dev.xframe.injection.Eventual;
+import dev.xframe.inject.Configurator;
+import dev.xframe.inject.Eventual;
 import dev.xframe.utils.ThreadsFactory;
 
 @Configurator

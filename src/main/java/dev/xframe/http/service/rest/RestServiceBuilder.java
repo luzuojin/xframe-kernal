@@ -9,10 +9,10 @@ import dev.xframe.http.service.Service;
 import dev.xframe.http.service.ServiceBuilder;
 import dev.xframe.http.service.ServiceContext;
 import dev.xframe.http.service.config.ServiceConfig;
-import dev.xframe.injection.Bean;
-import dev.xframe.injection.Inject;
-import dev.xframe.injection.Injection;
-import dev.xframe.injection.Loadable;
+import dev.xframe.inject.Bean;
+import dev.xframe.inject.Inject;
+import dev.xframe.inject.Injection;
+import dev.xframe.inject.Loadable;
 import dev.xframe.utils.XStrings;
 
 @Bean

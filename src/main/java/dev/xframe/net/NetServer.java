@@ -3,8 +3,8 @@ package dev.xframe.net;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.xframe.injection.Inject;
-import dev.xframe.injection.Injection;
+import dev.xframe.inject.Inject;
+import dev.xframe.inject.Injection;
 import dev.xframe.net.cmd.CommandContext;
 import dev.xframe.net.codec.MessageCrypt;
 import dev.xframe.net.codec.MessageCrypts;

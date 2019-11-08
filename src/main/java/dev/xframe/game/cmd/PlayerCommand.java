@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import dev.xframe.game.PlayerLoader;
 import dev.xframe.game.player.Player;
-import dev.xframe.injection.Inject;
+import dev.xframe.inject.Inject;
 import dev.xframe.net.cmd.Command;
 import dev.xframe.net.codec.IMessage;
 import dev.xframe.net.session.Session;

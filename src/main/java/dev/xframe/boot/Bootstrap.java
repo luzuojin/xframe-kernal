@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.xframe.http.HttpServer;
-import dev.xframe.injection.ApplicationContext;
+import dev.xframe.inject.ApplicationContext;
 import dev.xframe.net.NetServer;
 import dev.xframe.utils.XProcess;
 

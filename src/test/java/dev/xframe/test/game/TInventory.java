@@ -1,10 +1,10 @@
 package dev.xframe.test.game;
 
 import dev.xframe.event.Registry;
-import dev.xframe.modular.ModularInject;
-import dev.xframe.modular.ModularMethods;
-import dev.xframe.modular.Module;
-import dev.xframe.modular.ModuleType;
+import dev.xframe.module.ModularInject;
+import dev.xframe.module.ModularMethods;
+import dev.xframe.module.Module;
+import dev.xframe.module.ModuleType;
 
 @Module(ModuleType.TRANSIENT)
 public interface TInventory {

@@ -3,7 +3,7 @@ package dev.xframe.test.game;
 import org.junit.Assert;
 
 import dev.xframe.game.cmd.DirectModularLiteCmd;
-import dev.xframe.injection.Inject;
+import dev.xframe.inject.Inject;
 import dev.xframe.net.cmd.Cmd;
 import dev.xframe.test.game.GameProto.ValueMsg;
 

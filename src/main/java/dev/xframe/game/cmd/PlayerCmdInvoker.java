@@ -4,8 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.xframe.game.player.Player;
-import dev.xframe.injection.Bean;
-import dev.xframe.injection.Providable;
+import dev.xframe.inject.Bean;
+import dev.xframe.inject.Providable;
 import dev.xframe.net.codec.IMessage;
 import dev.xframe.utils.XStrings;
 

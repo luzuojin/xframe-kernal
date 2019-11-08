@@ -2,7 +2,7 @@ package dev.xframe.test.game;
 
 import org.junit.Assert;
 
-import dev.xframe.injection.Inject;
+import dev.xframe.inject.Inject;
 
 public class TPrototype extends TPrototypeAbst {
     

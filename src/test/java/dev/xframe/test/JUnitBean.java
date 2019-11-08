@@ -1,6 +1,6 @@
 package dev.xframe.test;
 
-import dev.xframe.injection.Bean;
+import dev.xframe.inject.Bean;
 
 @Bean
 public class JUnitBean {

@@ -4,9 +4,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import dev.xframe.injection.Inject;
-import dev.xframe.injection.junit.ContextScan;
-import dev.xframe.injection.junit.Junit4ClassRunner;
+import dev.xframe.inject.Inject;
+import dev.xframe.inject.junit.ContextScan;
+import dev.xframe.inject.junit.Junit4ClassRunner;
 
 
 @RunWith(Junit4ClassRunner.class)

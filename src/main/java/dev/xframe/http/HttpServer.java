@@ -4,8 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.xframe.http.service.ServiceContext;
-import dev.xframe.injection.Inject;
-import dev.xframe.injection.Injection;
+import dev.xframe.inject.Inject;
+import dev.xframe.inject.Injection;
 import dev.xframe.net.NetServer;
 import dev.xframe.utils.ThreadsFactory;
 import io.netty.bootstrap.ServerBootstrap;

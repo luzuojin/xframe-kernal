@@ -1,9 +1,9 @@
 package dev.xframe.game.player;
 
 import dev.xframe.game.PlayerLoader;
-import dev.xframe.injection.Bean;
-import dev.xframe.injection.Inject;
-import dev.xframe.injection.Providable;
+import dev.xframe.inject.Bean;
+import dev.xframe.inject.Inject;
+import dev.xframe.inject.Providable;
 
 @Bean
 @Providable

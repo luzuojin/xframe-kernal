@@ -16,8 +16,8 @@ import dev.xframe.http.service.config.ServiceConfigSetter;
 import dev.xframe.http.service.rest.HttpArgs;
 import dev.xframe.http.service.rest.HttpMethods;
 import dev.xframe.http.service.rest.RestServiceBuilder;
-import dev.xframe.injection.ApplicationContext;
-import dev.xframe.injection.Injection;
+import dev.xframe.inject.ApplicationContext;
+import dev.xframe.inject.Injection;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpMethod;
 

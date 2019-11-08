@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import dev.xframe.injection.Configurator;
-import dev.xframe.injection.Injection;
+import dev.xframe.inject.Configurator;
+import dev.xframe.inject.Injection;
 
 @Configurator
 public class CommandBuilder {

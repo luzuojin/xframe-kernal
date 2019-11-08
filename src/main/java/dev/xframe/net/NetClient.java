@@ -1,7 +1,7 @@
 package dev.xframe.net;
 
-import dev.xframe.injection.Inject;
-import dev.xframe.injection.Injection;
+import dev.xframe.inject.Inject;
+import dev.xframe.inject.Injection;
 import dev.xframe.net.client.ClientChannelInitializer;
 import dev.xframe.net.client.ClientLifecycleListener;
 import dev.xframe.net.client.ClientMessageHandler;

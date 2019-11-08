@@ -1,6 +1,6 @@
 package dev.xframe.test.game;
 
-import dev.xframe.injection.Configurator;
+import dev.xframe.inject.Configurator;
 
 @Configurator
 public class TJdbcTemplate {

@@ -3,7 +3,7 @@ package dev.xframe.net.session;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
-import dev.xframe.injection.Bean;
+import dev.xframe.inject.Bean;
 import dev.xframe.net.codec.IMessage;
 
 @Bean

@@ -1,6 +1,6 @@
 package dev.xframe.test.game;
 
-import dev.xframe.injection.Inject;
+import dev.xframe.inject.Inject;
 
 public abstract class TAbsRepo {
 

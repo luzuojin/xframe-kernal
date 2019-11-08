@@ -2,8 +2,8 @@ package dev.xframe.test.game;
 
 import java.util.function.Consumer;
 
-import dev.xframe.modular.ModularAgent;
-import dev.xframe.modular.ModularHelper;
+import dev.xframe.module.ModularAgent;
+import dev.xframe.module.ModularHelper;
 
 @ModularAgent(invokable=false)
 public interface TAgent {

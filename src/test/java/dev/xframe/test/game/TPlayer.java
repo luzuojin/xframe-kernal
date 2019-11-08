@@ -6,8 +6,8 @@ import dev.xframe.event.Registrator;
 import dev.xframe.event.Subscriber;
 import dev.xframe.game.Assemble;
 import dev.xframe.game.player.ModularPlayer;
-import dev.xframe.modular.ModularInject;
-import dev.xframe.modular.ModuleType;
+import dev.xframe.module.ModularInject;
+import dev.xframe.module.ModuleType;
 
 @Assemble
 public class TPlayer extends ModularPlayer implements Registrator {

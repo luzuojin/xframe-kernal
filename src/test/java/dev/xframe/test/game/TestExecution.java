@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.junit.Assert;
 
-import dev.xframe.injection.Configurator;
+import dev.xframe.inject.Configurator;
 
 @Configurator
 public class TestExecution {

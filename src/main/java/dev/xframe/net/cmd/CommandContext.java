@@ -5,10 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import dev.xframe.injection.Bean;
-import dev.xframe.injection.Eventual;
-import dev.xframe.injection.Inject;
-import dev.xframe.injection.code.Codes;
+import dev.xframe.inject.Bean;
+import dev.xframe.inject.Eventual;
+import dev.xframe.inject.Inject;
+import dev.xframe.inject.code.Codes;
 
 /**
  * 命令集合 遍历所有文件,找出含有@cmd annotation的命令类

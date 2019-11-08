@@ -2,7 +2,7 @@ package dev.xframe.test.game;
 
 import org.junit.Assert;
 
-import dev.xframe.injection.code.JavaBean;
+import dev.xframe.inject.code.JavaBean;
 
 @JavaBean
 public class TInfo {

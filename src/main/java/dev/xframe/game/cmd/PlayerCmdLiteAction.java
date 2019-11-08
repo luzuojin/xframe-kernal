@@ -3,7 +3,7 @@ package dev.xframe.game.cmd;
 import com.google.protobuf.MessageLite;
 
 import dev.xframe.game.player.ModularPlayer;
-import dev.xframe.modular.ModularInject;
+import dev.xframe.module.ModularInject;
 import dev.xframe.net.codec.IMessage;
 import dev.xframe.utils.LiteParser;
 

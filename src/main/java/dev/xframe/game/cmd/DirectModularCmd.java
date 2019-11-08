@@ -1,7 +1,7 @@
 package dev.xframe.game.cmd;
 
 import dev.xframe.game.player.ModularPlayer;
-import dev.xframe.injection.Inject;
+import dev.xframe.inject.Inject;
 import dev.xframe.net.codec.IMessage;
 
 /**

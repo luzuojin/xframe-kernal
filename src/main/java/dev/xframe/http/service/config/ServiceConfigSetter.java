@@ -3,9 +3,9 @@ package dev.xframe.http.service.config;
 import java.util.function.Consumer;
 
 import dev.xframe.http.service.Response;
-import dev.xframe.injection.Configurator;
-import dev.xframe.injection.Loadable;
-import dev.xframe.injection.Providable;
+import dev.xframe.inject.Configurator;
+import dev.xframe.inject.Loadable;
+import dev.xframe.inject.Providable;
 import dev.xframe.utils.XStrings;
 
 @Configurator
