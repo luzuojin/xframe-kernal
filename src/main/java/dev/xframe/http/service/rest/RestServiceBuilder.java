@@ -2,7 +2,10 @@ package dev.xframe.http.service.rest;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import dev.xframe.http.service.Rest;
 import dev.xframe.http.service.Service;
@@ -33,31 +36,31 @@ public class RestServiceBuilder implements Loadable {
 	public Service build(Class<?> clazz) {
 		Object origin = Injection.makeInstanceAndInject(clazz);
 		
-		Method mres = null;
-        for (Method m : findMethods(clazz)) {
-            if(XStrings.isEmpty(findSubPath(m))) {
-                mres = m;
+		List<Method> mres = Collections.emptyList();
+        for (Map.Entry<String, List<Method>> e : findMethods(clazz).entrySet()) {
+            if(XStrings.isEmpty(e.getKey())) {
+                mres = e.getValue();
                 continue;
             }
-            serviceCtx.registService(findPath(clazz, m), buildService(origin, m));
+            serviceCtx.registService(toFullPath(clazz, e.getKey()), buildService(origin, e.getValue()));
         }
         return buildService(origin, mres);
 	}
 
-	private Service buildService(Object origin, Method method) {
-		return buildRestInvoker(buildRestAdapter(origin, method));
+	private Service buildService(Object origin, List<Method> methods) {
+		return buildRestInvoker(buildRestAdapter(origin, methods));
 	}
 	
 	private RestServiceInvoker buildRestInvoker(RestService service) {
 		return new RestServiceInvoker(service, config.getRespEncoder());
 	}
 	
-	private RestService buildRestAdapter(Object origin, Method method) {
-		return RestServiceAdapter.of(method, origin, config.getBodyDecoder());
+	private RestService buildRestAdapter(Object origin, List<Method> methods) {
+		return RestServiceAdapter.of(methods, origin, config.getBodyDecoder());
 	}
 
-    private String findPath(Class<?> clazz, Method m) {
-    	return XStrings.trim(Service.findPath(clazz), '/') + '/' + XStrings.trim(findSubPath(m), '/');
+    private String toFullPath(Class<?> clazz, String sub) {
+    	return XStrings.trim(Service.findPath(clazz), '/') + '/' + sub;
     }
     
 	private String findSubPath(Method m) {
@@ -79,16 +82,25 @@ public class RestServiceBuilder implements Loadable {
 	    return null;
 	}
 	
-	private List<Method> findMethods(Class<?> clazz) {
-		List<Method> r = new ArrayList<>();
+	private Map<String, List<Method>> findMethods(Class<?> clazz) {
+		Map<String, List<Method>> r = new HashMap<>();
 		Method[] ms = clazz.getDeclaredMethods();
 		for (Method m : ms) {
 		    String p = findSubPath(m);
 		    if(p != null) {
-		        r.add(m);
+		        addTo(r, XStrings.trim(p, '/'), m);
 		    }
 		}
 		return r;
 	}
+
+    private void addTo(Map<String, List<Method>> r, String k, Method m) {
+        List<Method> v = r.get(k);
+        if(v == null) {
+            v = new ArrayList<>();
+            r.put(k, v);
+        }
+        v.add(m);
+    }
 
 }
