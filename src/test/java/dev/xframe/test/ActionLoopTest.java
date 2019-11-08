@@ -14,7 +14,7 @@ public class ActionLoopTest {
         ActionExecutor executor = ActionExecutors.newFixed("Test", 2);
         for (int i = 0; i < 10; i++) {
             final int j = i;
-            ActionLoop loop = new ActionLoop(executor);
+            ActionLoop loop = executor.newLoop();
             (new Action(loop) {
                 @Override
                 protected void exec() {

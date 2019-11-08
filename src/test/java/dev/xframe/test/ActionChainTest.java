@@ -15,7 +15,7 @@ public class ActionChainTest {
     
     public static void main(String[] args) throws InterruptedException {
         ActionExecutor executor = ActionExecutors.newFixed("T", 1);
-        ActionLoop loop = new ActionLoop(executor);
+        ActionLoop loop = executor.newLoop();
         ActionChain chain = new ActionChain();
         
         chain.append(new Action(loop) {

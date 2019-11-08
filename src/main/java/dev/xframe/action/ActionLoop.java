@@ -9,7 +9,7 @@ public class ActionLoop {
     private ConcurrentLinkedQueue<Runnable> queue;
     private AtomicBoolean isRunning;
     
-    public ActionLoop(ActionExecutor executor) {
+    ActionLoop(ActionExecutor executor) {
         this.executor = executor;
         this.queue = new ConcurrentLinkedQueue<>();
         this.isRunning = new AtomicBoolean(false);
