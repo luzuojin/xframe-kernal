@@ -27,4 +27,12 @@ public class ModularHelper {
         return logger.isDebugEnabled();
     }
     
+    public static boolean isModularClass(Class<?> c) {
+    	return ModuleContainer.class.isAssignableFrom(c) ||
+    			c.isAnnotationPresent(Module.class) ||
+    			c.isAnnotationPresent(ModularShare.class) ||
+    			c.isAnnotationPresent(ModularAgent.class) ||
+    			c.isAnnotationPresent(Component.class);
+    }
+    
 }

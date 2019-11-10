@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 
 import javax.annotation.Resource;
 
+import dev.xframe.inject.Inject;
 import dev.xframe.inject.Injection;
 import dev.xframe.inject.Injector;
 import dev.xframe.inject.Injection.BeanContainer;
@@ -23,7 +24,7 @@ public class ModularInjection {
     }
 
     static FieldInjector build(Field field) {
-        if (field.isAnnotationPresent(ModularInject.class)) {
+        if (field.isAnnotationPresent(Inject.class) && ModularHelper.isModularClass(field.getType())) {
             return new ModularInjector(field);
         }
         return Injector.build(field);

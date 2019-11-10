@@ -4,7 +4,6 @@ import org.junit.Assert;
 
 import dev.xframe.game.cmd.PlayerCmdLiteAction;
 import dev.xframe.inject.Inject;
-import dev.xframe.module.ModularInject;
 import dev.xframe.net.cmd.Cmd;
 import dev.xframe.test.game.GameProto.ValueMsg;
 
@@ -15,9 +14,9 @@ public class TCmdAction extends PlayerCmdLiteAction<TPlayer, TPlayerInventory, V
     private TTemplates templates;
     @Inject
     private TestExecution execution;
-    @ModularInject
+    @Inject
     private TSharableDep dep;
-    @ModularInject
+    @Inject
     private TAgent agent;
 
     @Override

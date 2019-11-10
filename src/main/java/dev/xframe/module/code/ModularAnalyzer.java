@@ -10,11 +10,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import dev.xframe.inject.Dependence;
+import dev.xframe.inject.Inject;
 import dev.xframe.module.Component;
 import dev.xframe.module.ModularAgent;
-import dev.xframe.module.ModularDependence;
+import dev.xframe.module.ModularHelper;
 import dev.xframe.module.ModularIgnore;
-import dev.xframe.module.ModularInject;
 import dev.xframe.module.ModularMethods;
 import dev.xframe.module.ModularShare;
 import dev.xframe.module.Module;
@@ -118,8 +119,8 @@ public class ModularAnalyzer {
     }
 
     private static void getAnnoDependences(Class<?> clazz, Set<Class<?>> dependences) {
-        if(clazz.isAnnotationPresent(ModularDependence.class)) {
-            Arrays.stream(clazz.getAnnotation(ModularDependence.class).value()).forEach(dependences::add);
+        if(clazz.isAnnotationPresent(Dependence.class)) {
+            Arrays.stream(clazz.getAnnotation(Dependence.class).value()).filter(ModularHelper::isModularClass).forEach(dependences::add);
         }
     }
 
@@ -128,7 +129,7 @@ public class ModularAnalyzer {
         while(!Object.class.equals(t) && !t.isInterface()) {
             Field[] fields = t.getDeclaredFields();
             for (Field field : fields) {
-                if(field.isAnnotationPresent(ModularInject.class) && !field.getAnnotation(ModularInject.class).lazy() && !field.getType().isAssignableFrom(assemble) && !isAgent(field.getType())) {
+                if(ModularHelper.isModularClass(field.getType()) && field.isAnnotationPresent(Inject.class) && !field.getAnnotation(Inject.class).lazy() && !field.getType().isAssignableFrom(assemble) && !isAgent(field.getType())) {
                     dependences.add(field.getType());
                 }
             }

@@ -1,7 +1,7 @@
 ///assemble_name
 ${assemble_basic}$Assemble
 ///
-public class ${assemble_name} extends ${assemble_basic} implements dev.xframe.modular.ModuleTypeLoader.IModuleLoader{
+public class ${assemble_name} extends ${assemble_basic} implements dev.xframe.module.ModuleTypeLoader.IModuleLoader{
     
     ///logger_field
     static final org.slf4j.Logger _logger = org.slf4j.LoggerFactory.getLogger("${assemble_basic}");
@@ -19,9 +19,9 @@ public class ${assemble_name} extends ${assemble_basic} implements dev.xframe.mo
     ///
 
     ///load_method
-    public synchronized boolean load(dev.xframe.modular.ModuleType moduleType) {
+    public synchronized boolean load(dev.xframe.module.ModuleType moduleType) {
         try {
-            if (dev.xframe.modular.ModuleType.RESIDENT == moduleType) {
+            if (dev.xframe.module.ModuleType.RESIDENT == moduleType) {
                 ${multi_resident_load}
                 ///moudle_load_part
                 if (this._modules[${index}] == null) {
@@ -37,7 +37,7 @@ public class ${assemble_name} extends ${assemble_basic} implements dev.xframe.mo
                     ///
                     ${agent_setup_part}
                     ///agent_setup_part
-                    dev.xframe.modular.ModularHelper.appendAgent(this._modules[${agent_index}], ${local_name});
+                    dev.xframe.module.ModularHelper.appendAgent(this._modules[${agent_index}], ${local_name});
                     ///
                     this._modules[${index}] = ${local_name};
                 }
@@ -57,7 +57,7 @@ public class ${assemble_name} extends ${assemble_basic} implements dev.xframe.mo
     new ${module_class}()
     ///
     ///sharable_module_assign
-    new ${module_class}((dev.xframe.modular.ModuleContainer)this)
+    new ${module_class}((dev.xframe.module.ModuleContainer)this)
     ///
     
     ///direct_inject_assign
@@ -68,9 +68,9 @@ public class ${assemble_name} extends ${assemble_basic} implements dev.xframe.mo
     ///
 
     ///unload_method
-    public synchronized boolean unload(dev.xframe.modular.ModuleType moduleType) {
+    public synchronized boolean unload(dev.xframe.module.ModuleType moduleType) {
         try {
-            if (dev.xframe.modular.ModuleType.RESIDENT == moduleType) {
+            if (dev.xframe.module.ModuleType.RESIDENT == moduleType) {
                 ${multi_resident_unload}
                 ///module_unload_part
                 ${module_class} ${local_name} = (${module_class})this._modules[${index}];
@@ -89,7 +89,7 @@ public class ${assemble_name} extends ${assemble_basic} implements dev.xframe.mo
                 ///
                 ${agent_remove_part}
                 ///agent_remove_part
-                dev.xframe.modular.ModularHelper.removeAgent(this._modules[${agent_index}], ${local_name});
+                dev.xframe.module.ModularHelper.removeAgent(this._modules[${agent_index}], ${local_name});
                 ///
                 this._modules[${index}] = null;
                 ///

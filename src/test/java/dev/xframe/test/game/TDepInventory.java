@@ -2,22 +2,21 @@ package dev.xframe.test.game;
 
 import org.junit.Assert;
 
+import dev.xframe.inject.Dependence;
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.Loadable;
-import dev.xframe.module.ModularDependence;
-import dev.xframe.module.ModularInject;
 import dev.xframe.module.Module;
 import dev.xframe.module.ModuleType;
 
-@ModularDependence(TSharablePlayer.class)
+@Dependence(TSharablePlayer.class)
 @Module(ModuleType.TRANSIENT)
 public class TDepInventory implements TInventory, TSharableDep, Loadable, TAgent {
 
     @Inject
     private TestExecution testExecution;
-    @ModularInject
+    @Inject
     private TPlayer player;
-    @ModularInject
+    @Inject
     private TSharablePlayer sharablePlayer;
     
     public void load(TPlayer player) {

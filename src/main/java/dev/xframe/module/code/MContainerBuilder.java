@@ -11,10 +11,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import dev.xframe.inject.Inject;
 import dev.xframe.inject.code.SyntheticBuilder;
 import dev.xframe.module.Component;
 import dev.xframe.module.ModularAgent;
-import dev.xframe.module.ModularInject;
+import dev.xframe.module.ModularHelper;
 import dev.xframe.module.ModularMethods;
 import dev.xframe.module.ModularShare;
 import dev.xframe.module.Module;
@@ -56,7 +57,7 @@ public class MContainerBuilder {
 	private Map<Class<?>, Field> calcInjectFields(Class<?> mcClazz) {
 		Map<Class<?>, Field> injects = new HashMap<Class<?>, Field>();
 		for (Field field : mcClazz.getFields()) {
-			if(field.isAnnotationPresent(ModularInject.class)) {
+			if(field.isAnnotationPresent(Inject.class) && ModularHelper.isModularClass(field.getType())) {
 				Class<?> type = field.getType();
 				if(!type.isInterface()) throw new IllegalArgumentException("inject field must be an interface : " + type);
 				injects.put(type, field);
