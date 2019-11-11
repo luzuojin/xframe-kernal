@@ -7,86 +7,30 @@ import dev.xframe.utils.SyncCOWList;
 
 public class EventBus implements Registrator {
 	
-	static class Node extends SyncCOWList<Subscriber> {
-		final int type;
-		Node next;
-		public Node(int type) {
+	static class SubList extends SyncCOWList<Subscriber> {
+		int type;
+		SubList next;
+		public SubList(int type) {
 			this.type = type;
 		}
 	}
 	
-	int count;
-	Node[] nodes;
-	Dispatcher disper;
+	private int subListCount;
+	private SubList[] subLists;
+	private Dispatcher dispatcher;
 	
 	public EventBus() {
 		this(Dispatcher.direct());
 	}
 	public EventBus(Dispatcher dispatcher) {
-		this.nodes = new Node[16];
-		this.disper = dispatcher;
+		this.subLists = new SubList[16];
+		this.dispatcher = dispatcher;
 	}
 	
-	private int indexOf(int key) {
-		return key & (nodes.length - 1);
-	}
-	
-	private Node get(int key) {
-		Node node = nodes[indexOf(key)];
-		while(node != null) {
-			if(node.type == key) {
-				return node;
-			}
-			node = node.next;
-		}
-		return null;
-	}
-	
-	private void put(int key, Node val) {
-		put0(key, val);
-		
-		if(count > nodes.length) {
-			resize();
-		}
-	}
-
-	private void put0(int key, Node val) {
-		int i = indexOf(key);
-		Node node = nodes[i];
-		if(node == null) {
-			nodes[i] = val;
-		} else {
-			while(node.next != null) {
-				node = node.next;
-			}
-			node.next = val;
-		}
-		++ count;
-	}
-
-    private void resize() {
-    	Node[] old = increase();
-    	for(Node n : old) {
-			while(n != null) {
-				Node t = n.next;
-				n.next = null;//make pure
-				put0(n.type, n);
-				n = t;
-			}
-		}
-	}
-
-	private Node[] increase() {
-		Node[] old = nodes;
-		nodes = new Node[(old.length << 1)];
-    	count = 0;
-    	return old;
-	}
-
     public void post(Object evt) {
-        List<Subscriber> list = get(getEventType(evt));
+        List<Subscriber> list = get0(getEventType(evt));
         if(list != null && !list.isEmpty()) {
-        	disper.dispatch(list, evt);
+        	dispatcher.dispatch(list, evt);
         }
     }
 
@@ -99,41 +43,106 @@ public class EventBus implements Registrator {
         getOrNew(subscriber.type).add(subscriber);
     }
 
-    private List<Subscriber> getOrNew(int type) {
-        List<Subscriber> list = get(type);
+	@Override
+    public void unregist(int group) {
+		delSubsByType(group);
+    }
+	
+	public void unregist(Subscriber subscriber) {
+		delSub(subscriber);
+	}
+	
+	
+	private List<Subscriber> getOrNew(int type) {
+        List<Subscriber> list = get0(type);
         return list == null ? getOrNewSafely(type) : list;
     }
 
-    private synchronized List<Subscriber> getOrNewSafely(int type) {
-        Node list = get(type);
+    private synchronized List<Subscriber> getOrNewSafely(int type) {//只有new sublist时才会有并发问题 (其他时机的并发由cowlist处理)
+        SubList list = get0(type);
         if(list == null) {
-            list = new Node(type);
+            list = new SubList(type);
             put(type, list);
         }
         return list;
     }
+    
+    private int indexOf(int key) {
+        return key & (subLists.length - 1);
+    }
+    
+    private SubList get0(int key) {
+        SubList node = subLists[indexOf(key)];
+        while(node != null) {
+            if(node.type == key) {
+                return node;
+            }
+            node = node.next;
+        }
+        return null;
+    }
+    
+    private void put(int key, SubList val) {
+        put0(key, val);
+        
+        if(subListCount > subLists.length) {
+            resize();
+        }
+    }
 
-	@Override
-    public void unregist(int group) {
-		for(Node n : nodes) {
-			while(n != null) {
-				Iterator<Subscriber> it = n.iterator();
-				while(it.hasNext()) {
-	                Subscriber next = it.next();
-	                if(next.group == group) {
-	                    n.remove(next);
-	                }
-	            }
-				n = n.next;
-			}
-		}
+    private void put0(int key, SubList val) {
+        int i = indexOf(key);
+        SubList subList = subLists[i];
+        if(subList == null) {
+            subLists[i] = val;
+        } else {
+            while(subList.next != null) {
+                subList = subList.next;
+            }
+            subList.next = val;
+        }
+        ++ subListCount;
+    }
+
+    private void resize() {
+        SubList[] old = increase();
+        for(SubList s : old) {
+            while(s != null) {
+                SubList t = s.next;
+                s.next = null;//make pure
+                put0(s.type, s);
+                s = t;
+            }
+        }
+    }
+
+    private SubList[] increase() {
+        SubList[] old = subLists;
+        subLists = new SubList[(old.length << 1)];
+        subListCount = 0;
+        return old;
     }
 	
-	public void unregist(Subscriber subscriber) {
-		Node node = get(subscriber.type);
-		if(node != null && !node.isEmpty()) {
-			node.remove(subscriber);
+	private void delSubsByType(int group) {
+        for(SubList s : subLists) {
+            while(s != null) {
+                Iterator<Subscriber> it = s.iterator();
+                while(it.hasNext()) {
+                    Subscriber next = it.next();
+                    if(next.group == group) {
+                        s.remove(next);
+                    }
+                }
+                s = s.next;
+            }
+        }
+    }
+	
+    private void delSub(Subscriber subscriber) {
+        SubList subList = get0(subscriber.type);
+		if(subList != null && !subList.isEmpty()) {
+			subList.remove(subscriber);
 		}
-	}
+    }
 
 }
