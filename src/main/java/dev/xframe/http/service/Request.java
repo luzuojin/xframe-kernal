@@ -132,4 +132,10 @@ public class Request implements IParameters {
         return this.causes == null;
     }
     
+    //release all resources.
+	public void destroy() {
+		if(body != null)
+			body.destroy();
+	}
+    
 }

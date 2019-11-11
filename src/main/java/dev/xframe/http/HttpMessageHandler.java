@@ -70,22 +70,26 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
            req.appendContent((HttpContent) msg);
            
            if (msg instanceof LastHttpContent) {
-               doRequest(ctx);
+        	   doRequest(ctx);
            }
        }
    }
 
     protected void doRequest(ChannelHandlerContext ctx) {
-        if(req.isSuccess()) {
-            ServiceInvoker invoker = this.ctx.get(req.trimmedPath());
-            if(invoker != null) {
-                doInvoke(ctx, invoker);
-            } else {
-                sendNotFoudResponse(ctx);
-            }
-        } else {
-            sendBadRequestResponse(ctx);
-        }
+    	try {
+    		if(req.isSuccess()) {
+    			ServiceInvoker invoker = this.ctx.get(req.trimmedPath());
+    			if(invoker != null) {
+    				doInvoke(ctx, invoker);
+    			} else {
+    				sendNotFoudResponse(ctx);
+    			}
+    		} else {
+    			sendBadRequestResponse(ctx);
+    		}
+    	} finally {
+ 		   req.destroy();
+		}
     }
 
     protected void doInvoke(ChannelHandlerContext ctx, ServiceInvoker invoker) {
