@@ -6,7 +6,7 @@ import java.util.Set;
 
 import dev.xframe.http.decode.HttpBody;
 import dev.xframe.http.decode.HttpURI;
-import dev.xframe.http.decode.IParameters;
+import dev.xframe.http.decode.HttpParams;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
@@ -18,7 +18,7 @@ import io.netty.handler.codec.http.HttpMethod;
  * @author luzj
  *
  */
-public class Request implements IParameters {
+public class Request implements HttpParams {
     
     private boolean succ;
     

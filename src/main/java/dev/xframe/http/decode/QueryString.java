@@ -5,7 +5,7 @@ import java.util.Set;
 
 import io.netty.handler.codec.http.QueryStringDecoder;
 
-public class QueryString extends QueryStringDecoder implements IParameters {
+public class QueryString extends QueryStringDecoder implements HttpParams {
 
 	public QueryString(String uri) {
 		this(uri, false);

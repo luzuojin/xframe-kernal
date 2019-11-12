@@ -5,7 +5,7 @@ import java.util.Set;
 
 import dev.xframe.utils.XStrings;
 
-public interface IParameters {
+public interface HttpParams {
     
     Set<String>  getParamNames();
     List<String> getParamValues(String name);
