@@ -8,7 +8,7 @@ public class HttpURI extends QueryString {
         super(uri, true);
     }
     
-    public String trimmedPath() {
+    public String xpath() {
         return XStrings.trim(path(), '/');
     }
 

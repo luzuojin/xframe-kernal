@@ -23,14 +23,12 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.DefaultFileRegion;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.CharsetUtil;
@@ -49,8 +47,6 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
         this.ctx = ctx;
     }
     
-    private Request req;
-
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
         ctx.flush();
@@ -58,63 +54,52 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        if (msg instanceof HttpRequest) {
-            HttpRequest request = (HttpRequest) msg;
-            this.req = new Request(((InetSocketAddress)(ctx.channel().remoteAddress())).getAddress(), request);
-            if (HttpUtil.is100ContinueExpected(request)) {
-                send100Continue(ctx);
-            }
+        assert msg instanceof FullHttpRequest;
+        Request req = new Request(((InetSocketAddress)(ctx.channel().remoteAddress())).getAddress(), (FullHttpRequest)msg);
+        try {
+            doRequest(ctx, req);
+        } finally {
+            req.destroy();
         }
-
-       if (msg instanceof HttpContent) {
-           req.appendContent((HttpContent) msg);
            
-           if (msg instanceof LastHttpContent) {
-        	   doRequest(ctx);
-           }
-       }
    }
 
-    protected void doRequest(ChannelHandlerContext ctx) {
-    	try {
-    		if(req.isSuccess()) {
-    			ServiceInvoker invoker = this.ctx.get(req.trimmedPath());
-    			if(invoker != null) {
-    				doInvoke(ctx, invoker);
-    			} else {
-    				sendNotFoudResponse(ctx);
-    			}
-    		} else {
-    			sendBadRequestResponse(ctx);
-    		}
-    	} finally {
- 		   req.destroy();
-		}
-    }
-
-    protected void doInvoke(ChannelHandlerContext ctx, ServiceInvoker invoker) {
-        try {
-            sendResponse(ctx, invoker.invoke(req));
-        } catch (Throwable ex) {
-            sendResponse(ctx, this.ctx.config().getErrorhandler().handle(req, ex));
+    protected void doRequest(ChannelHandlerContext ctx, Request req) {
+        if(req.isSucc()) {
+            ServiceInvoker invoker = this.ctx.get(req.xpath());
+            if(invoker != null) {
+                doInvoke(ctx, req, invoker);
+            } else {
+                sendNotFoudResponse(ctx);
+            }
+        } else {
+            sendBadRequestResponse(ctx);
         }
     }
 
-    protected void sendAsFile(ChannelHandlerContext ctx, String file) {
+    protected void doInvoke(ChannelHandlerContext ctx, Request req, ServiceInvoker invoker) {
+        try {
+            sendResponse(ctx, req, invoker.invoke(req));
+        } catch (Throwable ex) {
+            sendResponse(ctx, req, this.ctx.config().getErrorhandler().handle(req, ex));
+        }
+    }
+
+    protected void sendAsFile(ChannelHandlerContext ctx, Request req, String file) {
         if(file != null) {
             try {
-                sendFileResponse(ctx, file); 
+                sendFileResponse(ctx, req, file); 
             } catch (Throwable ex) {
-                sendResponse(ctx, this.ctx.config().getErrorhandler().handle(req, ex));
+                sendResponse(ctx, req, this.ctx.config().getErrorhandler().handle(req, ex));
             }
         } else {
             sendNotFoudResponse(ctx);
         }
     }
 
-   protected void sendResponse(ChannelHandlerContext ctx, Response resp) {
+   protected void sendResponse(ChannelHandlerContext ctx, Request req, Response resp) {
        if(resp.type == ContentType.FILE) {
-           sendAsFile(ctx, resp.content.toString(CharsetUtil.UTF_8));
+           sendAsFile(ctx, req, resp.content.toString(CharsetUtil.UTF_8));
        } else {
            sendContentResponse(ctx, HttpResponseStatus.OK, resp);
        }
@@ -162,7 +147,7 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
    public static final int HTTP_CACHE_SECONDS = 60;
    
    @SuppressWarnings("resource")
-   protected void sendFileResponse(ChannelHandlerContext ctx, String path) throws Exception {
+   protected void sendFileResponse(ChannelHandlerContext ctx, Request req, String path) throws Exception {
        File file = new File(path);
        if (!file.exists() || !file.isFile() || file.isHidden()) {
            sendNotFoudResponse(ctx);
@@ -211,16 +196,6 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
        // Close the connection when the whole content is written out.
        ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT).addListener(ChannelFutureListener.CLOSE);
    }
-
-   protected void send100Continue(ChannelHandlerContext ctx) {
-       FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE);
-       ctx.write(response);
-   }
-
-   @Override
-   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-       ctx.close();
-   }
    
    protected void sendNotModified(ChannelHandlerContext ctx) {
        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_MODIFIED);
@@ -243,5 +218,11 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
        response.headers().set(HttpHeaderNames.CACHE_CONTROL, "private, max-age=" + HTTP_CACHE_SECONDS);
        response.headers().set(HttpHeaderNames.LAST_MODIFIED, XDateFormatter.from(fileToCache.lastModified()));
    }
+   
+   @Override
+   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+       ctx.close();
+   }
+
 
 }

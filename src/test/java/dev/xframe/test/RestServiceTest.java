@@ -18,6 +18,7 @@ import dev.xframe.http.service.rest.HttpMethods;
 import dev.xframe.http.service.rest.RestServiceBuilder;
 import dev.xframe.inject.ApplicationContext;
 import dev.xframe.inject.Injection;
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpMethod;
 
@@ -100,8 +101,12 @@ public class RestServiceTest {
 	}
 	
 	public static HttpBody of(byte[] bytes) {
-	    HttpBody body = new HttpBody(null);
-	    body.setByteBuf(Unpooled.copiedBuffer(bytes));
+	    ByteBuf buf = Unpooled.copiedBuffer(bytes);
+	    HttpBody body = new HttpBody(null) {
+            protected ByteBuf content() {
+                return buf;
+            }
+	    };
 	    return body;
 	}
 	

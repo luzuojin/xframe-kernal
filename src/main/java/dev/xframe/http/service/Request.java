@@ -1,18 +1,15 @@
 package dev.xframe.http.service;
 
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import dev.xframe.http.decode.HttpBody;
 import dev.xframe.http.decode.HttpURI;
 import dev.xframe.http.decode.IParameters;
-import io.netty.handler.codec.DecoderResult;
-import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpRequest;
 
 /**
  * 
@@ -23,48 +20,35 @@ import io.netty.handler.codec.http.HttpRequest;
  */
 public class Request implements IParameters {
     
+    private boolean succ;
+    
     private InetAddress address;
-    private HttpRequest request;
     private HttpHeaders headers;
     private HttpMethod method;
     
     private HttpBody body;
     private HttpURI uri;
     
-    private List<Throwable> causes;
-   
-    public Request(InetAddress address, HttpRequest request) {
+    public Request(InetAddress address, FullHttpRequest request) {
         this(address, request.uri(), request.headers(), request.method());
-        this.request = request;
-        this.appendDecoderResult(this.request.decoderResult());
+        this.succ = request.decoderResult().isSuccess();
+        this.body = new HttpBody(request);
     }
+    
     public Request(InetAddress address, String uri, HttpHeaders headers, HttpMethod method) {
         this.address = address;
         this.uri = new HttpURI(uri);
         this.headers = headers;
         this.method = method;
+        this.succ = true;
     }
 
-    public List<Throwable> causes() {
-        return causes;
-    }
-    
     public byte[] content() {
         return this.body == null ? null : body.toBytes();
     }
     
     public HttpBody body() {
         return this.body;
-    }
-
-    public void appendDecoderResult(DecoderResult dr) {
-        if(dr.isSuccess()) {
-            return;
-        }
-        if(causes == null) {
-            causes = new ArrayList<Throwable>();
-        }
-        causes.add(dr.cause());
     }
 
     public String remoteHost() {
@@ -95,7 +79,6 @@ public class Request implements IParameters {
         return uri.rawQuery();
     }
     
-    
     /**
      * Returns the decoded path string of the URI.
      */
@@ -106,8 +89,8 @@ public class Request implements IParameters {
     /**
      * @return trim '/'
      */
-    public String trimmedPath() {
-        return uri.trimmedPath();
+    public String xpath() {
+        return uri.xpath();
     }
     
     public Set<String> getParamNames() {
@@ -117,19 +100,8 @@ public class Request implements IParameters {
         return uri.parameters().get(name);
     }
     
-    public void appendContent(HttpContent content) {
-        if(content.decoderResult().isSuccess()) {
-            if(this.body == null) {
-                this.body = new HttpBody(request);
-            }
-            this.body.offer(content);
-        } else {
-            this.appendDecoderResult(content.decoderResult());
-        }
-    }
-
-    public boolean isSuccess() {
-        return this.causes == null;
+    public boolean isSucc() {
+        return succ;
     }
     
     //release all resources.
