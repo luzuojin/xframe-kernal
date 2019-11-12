@@ -3,6 +3,8 @@ package dev.xframe.action;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import dev.xframe.utils.XThreadLocal;
+
 public class ActionLoop {
     
     private ActionExecutor executor;
@@ -59,23 +61,15 @@ public class ActionLoop {
         return this == getCurrent();
     }
     
+    static XThreadLocal<ActionLoop> tloop = new XThreadLocal<>();
     static ActionLoop getCurrent() {
-    	Thread thread = Thread.currentThread();
-		return (thread instanceof ActionThread) ? ((ActionThread) thread).getAttach() : null;
+        return tloop.get();
     }
-    
     static void setCurrent(ActionLoop loop) {
-    	Thread thread = Thread.currentThread();
-    	if(thread instanceof ActionThread) {
-    		((ActionThread) thread).setAttach(loop);
-    	}
+        tloop.set(loop);
     }
-    
     static void unsetCurrent() {
-    	Thread thread = Thread.currentThread();
-    	if(thread instanceof ActionThread) {
-    		((ActionThread) thread).unsetAttach();
-    	}
+        tloop.remove();
     }
     
 }

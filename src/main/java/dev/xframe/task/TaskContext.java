@@ -12,7 +12,7 @@ import java.util.function.Predicate;
 
 import dev.xframe.inject.Configurator;
 import dev.xframe.inject.Eventual;
-import dev.xframe.utils.ThreadsFactory;
+import dev.xframe.utils.XThreadFactory;
 
 @Configurator
 public class TaskContext implements Eventual {
@@ -45,7 +45,7 @@ public class TaskContext implements Eventual {
     
     public void setup(int nthreads) {
         if(ctlPlus(CTL_SETUP)) {
-            executor = new ScheduledThreadPoolExecutor(nthreads, new ThreadsFactory("Tasks"));
+            executor = new ScheduledThreadPoolExecutor(nthreads, new XThreadFactory("tasks"));
             regist(Task.period("TaskFuturesCleaner", 10, this::clearTaskFutures));
         } else if(executor.getCorePoolSize() < nthreads){
             executor.setCorePoolSize(nthreads);

@@ -12,7 +12,7 @@ import dev.xframe.net.codec.IMessage;
 import dev.xframe.net.codec.Message;
 import dev.xframe.net.codec.MessageCrypt;
 import dev.xframe.net.session.Session;
-import dev.xframe.utils.ThreadsFactory;
+import dev.xframe.utils.XThreadFactory;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.AdaptiveRecvByteBufAllocator;
@@ -63,7 +63,7 @@ public class NetClient {
             Injection.inject(this);
             
             this.bootstrap = new Bootstrap();
-            this.group = new NioEventLoopGroup(threads, new ThreadsFactory("netty.client"));
+            this.group = new NioEventLoopGroup(threads, new XThreadFactory("netty.client"));
             NetMessageHandler dispatcher = new ClientMessageHandler(listener, cmdCtx, interceptor);
             
             this.bootstrap.group(group)

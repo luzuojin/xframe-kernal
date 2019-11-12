@@ -3,21 +3,20 @@ package dev.xframe.utils;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.netty.util.concurrent.DefaultThreadFactory;
-
 /**
- * @see DefaultThreadFactory 增加可辨识的线程名前缀
+ * 
  * @author luzj
  */
-public  class ThreadsFactory implements ThreadFactory {
+public class XThreadFactory implements ThreadFactory {
     
     protected final ThreadGroup group;
-    protected final AtomicInteger threadNumber = new AtomicInteger(1);
+    protected final AtomicInteger nextId;
     protected final String namePrefix;
 
-    public ThreadsFactory(String name) {
+    public XThreadFactory(String name) {
+        nextId = new AtomicInteger(1);
         group = new ThreadGroup(name);
-        namePrefix = name + "-thread-";
+        namePrefix = name;
     }
 
     public Thread newThread(Runnable r) {
@@ -30,11 +29,11 @@ public  class ThreadsFactory implements ThreadFactory {
     }
 
 	protected Thread newThread0(Runnable r) {
-		return new Thread(group, r, getThreadName());
+		return new XThread(group, r, getThreadName());
 	}
 
 	protected String getThreadName() {
-		return namePrefix + threadNumber.getAndIncrement();
+		return namePrefix + "-" + nextId.getAndIncrement();
 	}
     
 }

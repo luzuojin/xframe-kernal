@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.xframe.utils.ThreadsFactory;
+import dev.xframe.utils.XThreadFactory;
 
 public class ActionExecutors {
     
@@ -61,11 +61,7 @@ public class ActionExecutors {
                             poolSize, Integer.MAX_VALUE,  //pool size
                             5, TimeUnit.MINUTES, //alive time
                             new LinkedTransferQueue<>(),
-                            new ThreadsFactory(this.name){
-								protected Thread newThread0(Runnable target) {
-									return new ActionThread(group, target, getThreadName());
-								}
-                            },
+                            new XThreadFactory(this.name),
                             new DiscardPolicy());
             
             executors.add(this);

@@ -12,7 +12,7 @@ import dev.xframe.net.server.ServerChannelInitializer;
 import dev.xframe.net.server.ServerLifecycleListener;
 import dev.xframe.net.server.ServerMessageHandler;
 import dev.xframe.net.server.ServerMessageInterceptor;
-import dev.xframe.utils.ThreadsFactory;
+import dev.xframe.utils.XThreadFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.AdaptiveRecvByteBufAllocator;
@@ -68,8 +68,8 @@ public class NetServer {
 	public NetServer startup() {
 	    Injection.inject(this);
 	    
-	    bossGroup = new NioEventLoopGroup(1, new ThreadsFactory("netty.boss"));
-	    workerGroup = new NioEventLoopGroup(threads, new ThreadsFactory("netty.worker"));
+	    bossGroup = new NioEventLoopGroup(1, new XThreadFactory("netty.boss"));
+	    workerGroup = new NioEventLoopGroup(threads, new XThreadFactory("netty.worker"));
         NetMessageHandler dispatcher = new ServerMessageHandler(listener, cmdCtx, interceptor);
         
         ServerBootstrap bootstrap =
