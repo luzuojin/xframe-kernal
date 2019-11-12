@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import dev.xframe.http.service.ServiceContext;
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.Injection;
-import dev.xframe.net.NetServer;
 import dev.xframe.utils.ThreadsFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -24,7 +23,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
  */
 public class HttpServer {
     
-    private static Logger logger = LoggerFactory.getLogger(NetServer.class);
+    private static Logger logger = LoggerFactory.getLogger(HttpServer.class);
     
     public static int defaultThreads() {
         return Runtime.getRuntime().availableProcessors();
