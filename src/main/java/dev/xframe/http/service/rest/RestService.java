@@ -1,7 +1,7 @@
 package dev.xframe.http.service.rest;
 
-import dev.xframe.http.service.Request;
-import dev.xframe.http.service.Response;
+import dev.xframe.http.Request;
+import dev.xframe.http.response.Responses;
 import dev.xframe.http.service.path.PathMatcher;
 
 public interface RestService {
@@ -24,7 +24,7 @@ public interface RestService {
 	}
 	
 	public default Object options(Request req, PathMatcher matcher) throws Throwable {
-		return Response.OPTIONS_DEFAULT.retain();
+		return Responses.OPTIONS_DEF;
 	}
 
 }

@@ -1,8 +1,8 @@
 package dev.xframe.http.service.config;
 
-import dev.xframe.http.decode.HttpBody;
-import dev.xframe.http.decode.MultiPart;
-import dev.xframe.http.decode.QueryString;
+import dev.xframe.http.request.HttpBody;
+import dev.xframe.http.request.MultiPart;
+import dev.xframe.http.request.QueryString;
 import dev.xframe.utils.XStrings;
 
 @FunctionalInterface

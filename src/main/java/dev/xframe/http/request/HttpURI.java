@@ -1,4 +1,4 @@
-package dev.xframe.http.decode;
+package dev.xframe.http.request;
 
 import dev.xframe.utils.XStrings;
 

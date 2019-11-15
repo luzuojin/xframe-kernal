@@ -1,4 +1,4 @@
-package dev.xframe.http.decode;
+package dev.xframe.http.request;
 
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.multipart.HttpPostMultipartRequestDecoder;

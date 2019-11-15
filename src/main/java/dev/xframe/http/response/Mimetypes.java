@@ -1,4 +1,4 @@
-package dev.xframe.utils;
+package dev.xframe.http.response;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -10,7 +10,7 @@ import java.util.Properties;
 
 public class Mimetypes {
     
-    static final String TYPE_DEFAULT = "application/octet-stream";
+    static final String DEFAULT_MIME_TYPE = "application/octet-stream";
     
     static final Map<String, String> types = new HashMap<>();
     
@@ -37,9 +37,8 @@ public class Mimetypes {
                 }
             }
         }
-        return TYPE_DEFAULT;
+        return DEFAULT_MIME_TYPE;
     }
-
     
     static InputStream getResourceAsStream(String file) throws FileNotFoundException {
         InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(file);

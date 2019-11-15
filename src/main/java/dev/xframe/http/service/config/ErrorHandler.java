@@ -1,7 +1,7 @@
 package dev.xframe.http.service.config;
 
-import dev.xframe.http.service.Request;
-import dev.xframe.http.service.Response;
+import dev.xframe.http.Request;
+import dev.xframe.http.Response;
 
 @FunctionalInterface
 public interface ErrorHandler {

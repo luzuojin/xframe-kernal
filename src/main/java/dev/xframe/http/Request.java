@@ -1,12 +1,12 @@
-package dev.xframe.http.service;
+package dev.xframe.http;
 
 import java.net.InetAddress;
 import java.util.List;
 import java.util.Set;
 
-import dev.xframe.http.decode.HttpBody;
-import dev.xframe.http.decode.HttpURI;
-import dev.xframe.http.decode.HttpParams;
+import dev.xframe.http.request.HttpBody;
+import dev.xframe.http.request.HttpParams;
+import dev.xframe.http.request.HttpURI;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;

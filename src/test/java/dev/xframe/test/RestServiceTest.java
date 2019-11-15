@@ -4,9 +4,11 @@ import java.util.function.Consumer;
 
 import org.junit.Ignore;
 
-import dev.xframe.http.decode.HttpBody;
-import dev.xframe.http.service.Request;
-import dev.xframe.http.service.Response;
+import dev.xframe.http.Request;
+import dev.xframe.http.Response;
+import dev.xframe.http.request.HttpBody;
+import dev.xframe.http.response.Responses;
+import dev.xframe.http.response.SimpleResponse;
 import dev.xframe.http.service.Rest;
 import dev.xframe.http.service.ServiceBuilder;
 import dev.xframe.http.service.ServiceContext;
@@ -56,7 +58,7 @@ public class RestServiceTest {
             }
             @Override
             public void setRespEncoder(Consumer<RespEncoder> setter) {
-                setter.accept(resp -> new Response(resp.toString()));
+                setter.accept(resp -> Responses.of(resp.toString()));
             }
 		};
 		configurer.load();
@@ -95,8 +97,9 @@ public class RestServiceTest {
 	}
 
 	private static void printResp(Response resp) {
-		byte[] bytes = new byte[resp.content.readableBytes()];
-		resp.content.readBytes(bytes);
+		ByteBuf content = ((SimpleResponse) resp).content();
+		byte[] bytes = new byte[content.readableBytes()];
+		content.readBytes(bytes);
 		System.out.println(new String(bytes));
 	}
 	

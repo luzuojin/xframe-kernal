@@ -1,7 +1,7 @@
 package dev.xframe.http.service.rest;
 
-import dev.xframe.http.service.Request;
-import dev.xframe.http.service.Response;
+import dev.xframe.http.Request;
+import dev.xframe.http.Response;
 import dev.xframe.http.service.Service;
 import dev.xframe.http.service.config.RespEncoder;
 import dev.xframe.http.service.path.PathMatcher;

@@ -1,6 +1,6 @@
 package dev.xframe.http.service.config;
 
-import dev.xframe.http.service.Response;
+import dev.xframe.http.Response;
 
 @FunctionalInterface
 public interface RespEncoder {

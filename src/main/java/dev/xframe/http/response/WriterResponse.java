@@ -1,0 +1,51 @@
+package dev.xframe.http.response;
+
+import java.util.Map;
+
+import dev.xframe.http.Response;
+import io.netty.buffer.ByteBuf;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpVersion;
+
+abstract class WriterResponse extends Response implements ResponseWriter {
+	
+	public WriterResponse() {
+		setWriter(this);
+	}
+
+	protected HttpResponse newHttpResp() {
+		return new DefaultHttpResponse(HttpVersion.HTTP_1_1, status());
+	}
+	protected HttpResponse newHttpResp(ByteBuf content) {
+		return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status(), content);
+	}
+	
+	protected void setBasisHeaders(HttpResponse resp, long contentLength) {
+		setContentHeaders(resp, contentLength);
+		setAccessHeaders(resp);
+		setRespHeaders(resp);
+	}
+
+	private void setRespHeaders(HttpResponse resp) {
+		for(Map.Entry<String, String> header : headers().entrySet()) {
+			resp.headers().set(header.getKey(), header.getValue());
+		}
+	}
+	
+	private void setContentHeaders(HttpResponse resp, long contentLength) {
+		resp.headers().set(HttpHeaderNames.CONTENT_TYPE, contentType());
+		resp.headers().set(HttpHeaderNames.CONTENT_LENGTH, contentLength);
+	}
+	
+	private void setAccessHeaders(HttpResponse resp) {
+    	resp.headers().set(HttpHeaderNames.ACCESS_CONTROL_MAX_AGE, "86400");
+        resp.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+        resp.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_HEADERS, "*");
+        resp.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_METHODS, "*");
+        resp.headers().set(HttpHeaderNames.CONTENT_ENCODING, "UTF-8");
+    }
+
+}
