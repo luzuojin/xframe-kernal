@@ -18,6 +18,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.DefaultFileRegion;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
@@ -107,7 +108,7 @@ public abstract class FileResponse extends WriterResponse {
 			}
 			long fileLength = raf.length();
 
-			HttpResponse response = newHttpResp();
+			HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status());//not full
 
 			setBasisHeaders(response, fileLength);
 
@@ -171,13 +172,13 @@ public abstract class FileResponse extends WriterResponse {
 			ByteBuf content = data();
 			long length = content.readableBytes();
 			
-			HttpResponse response = HttpMethod.HEAD.equals(origin.method()) ? newHttpResp() : newHttpResp(content);
+			HttpResponse response = HttpMethod.HEAD.equals(origin.method()) ? newHttpResp(Unpooled.buffer(0)) : newHttpResp(content);
 
 			setBasisHeaders(response, length);
 			setDateAndCacheHeaders(response);
 
 			channel.write(response);
-			channel.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT).addListener(ChannelFutureListener.CLOSE);
+			channel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
 		}
 	}
 

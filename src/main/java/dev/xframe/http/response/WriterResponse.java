@@ -5,7 +5,6 @@ import java.util.Map;
 import dev.xframe.http.Response;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpVersion;
@@ -16,10 +15,7 @@ abstract class WriterResponse extends Response implements ResponseWriter {
 		setWriter(this);
 	}
 
-	protected HttpResponse newHttpResp() {
-		return new DefaultHttpResponse(HttpVersion.HTTP_1_1, status());
-	}
-	protected HttpResponse newHttpResp(ByteBuf content) {
+	protected HttpResponse newHttpResp(ByteBuf content) {//full
 		return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status(), content);
 	}
 	
