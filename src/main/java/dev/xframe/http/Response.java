@@ -37,7 +37,7 @@ public class Response {
 	}
     
     public String contentType() {
-    	return type.val();
+    	return type.val;
     }
     
     public HttpResponseStatus status() { 

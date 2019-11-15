@@ -89,7 +89,7 @@ public abstract class FileResponse extends WriterResponse {
 		public Sys(File file) {
 			assert file.exists() && !file.isHidden();
 			this.file = file;
-			this.set(new ContentType(Mimetypes.get(file.getName())));
+			this.set(ContentType.mime(file.getName()));
 		}
 		public long lastModified() {
 			return file.lastModified();
@@ -134,7 +134,7 @@ public abstract class FileResponse extends WriterResponse {
 		
 		public ClassPath(String file) {
 			this.file = file;
-			this.set(new ContentType(Mimetypes.get(file)));
+			this.set(ContentType.mime(file));
 			this.lastModified = System.currentTimeMillis();
 			this.setCacheTime(Integer.MAX_VALUE);
 		}
