@@ -120,7 +120,7 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
                status,
                resp.content);
 
-       setContentType(response, resp.type.val);
+       setContentType(response, resp.type.val());
        setContentHeaders(response, resp);
 
        // Write the response.

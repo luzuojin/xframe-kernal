@@ -15,7 +15,7 @@ import io.netty.util.CharsetUtil;
  */
 public class Response {
     
-    public final ContentType type;
+    public final IContentType type;
     public final ByteBuf content;
     public final Map<String, String> headers = new TreeMap<>();
     
@@ -23,12 +23,12 @@ public class Response {
         this(ContentType.TEXT, content);
     }
     
-    public Response(ContentType type, String content) {
+    public Response(IContentType type, String content) {
         this.type = type;
         this.content = Unpooled.copiedBuffer(content, CharsetUtil.UTF_8);
     }
     
-    public Response(ContentType type, byte[] content) {
+    public Response(IContentType type, byte[] content) {
         this.type = type;
         this.content = Unpooled.copiedBuffer(content);
     }
@@ -47,7 +47,7 @@ public class Response {
     public static final Response BAD_REQUEST = new Response("Bad Request!!!");
     public static final Response OPTIONS_DEFAULT = new Response("").setHeader("Allow", "*");
 
-    public static enum ContentType {
+    public static enum ContentType implements IContentType {
         TEXT    ("text/plain; charset=UTF-8"),
         HTML    ("text/html; charset=UTF-8"),
         JSON    ("application/json; charset=UTF-8"),
@@ -55,10 +55,20 @@ public class Response {
         BINARY  ("application/octet-stream"),
         FILE    ("application/octet-stream");
         
-        public final String val;
+        private final String val;
         private ContentType(String val) {
             this.val = val;
         }
+        @Override
+        public String val() {
+            return val;
+        }
     }
+    
+    @FunctionalInterface
+    public static interface IContentType {
+        String val();
+    }
+    
     
 }
