@@ -58,12 +58,16 @@ public class Response {
     	this.status = status;
     	return this;
     }
+    
+    public ResponseWriter writer() {
+    	return writer;
+    }
 
 	public final void writeTo(ChannelHandlerContext ctx, Request origin) {
 		writeTo(ctx.channel(), origin);
 	}
 	public final void writeTo(Channel channel, Request origin) {
-		writer.write(channel, origin);
+		writer().write(channel, origin);
 	}
 
 }

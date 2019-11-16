@@ -2,7 +2,6 @@ package dev.xframe.http.response;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
@@ -28,8 +27,11 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 
 public abstract class FileResponse extends WriterResponse {
-	
 	int cacheTime = 3600;//s (1h)
+	
+	public FileResponse(ContentType type) {
+		this.set(type);
+	}
 	
 	public abstract long lastModified();
 
@@ -67,12 +69,11 @@ public abstract class FileResponse extends WriterResponse {
 		try {
 			write0(channel, origin);
 		} catch (IOException e) {
-			e.printStackTrace();
 			Responses.BAD_REQUEST.writeTo(channel, origin);
 		}
 	}
 
-	protected void setDateAndCacheHeaders(HttpResponse response) {
+	protected void setCacheHeaders(HttpResponse response) {
 		// Date header
 		Calendar time = new GregorianCalendar();
 		response.headers().set(HttpHeaderNames.DATE, XDateFormatter.from(time));
@@ -88,10 +89,11 @@ public abstract class FileResponse extends WriterResponse {
 	public static class Sys extends FileResponse {
 		File file;
 		public Sys(File file) {
+			super(ContentType.mime(file.getName()));
 			assert file.exists() && !file.isHidden();
 			this.file = file;
-			this.set(ContentType.mime(file.getName()));
 		}
+		
 		public long lastModified() {
 			return file.lastModified();
 		}
@@ -99,20 +101,14 @@ public abstract class FileResponse extends WriterResponse {
 		@Override
 		@SuppressWarnings("resource")
 		protected void write0(Channel channel, Request origin) throws IOException {
-			RandomAccessFile raf;
-			try {
-				raf = new RandomAccessFile(file, "r");
-			} catch (FileNotFoundException ignore) {
-				Responses.NOT_FOUND.writeTo(channel, origin);
-				return;
-			}
+			RandomAccessFile raf = new RandomAccessFile(file, "r");
 			long fileLength = raf.length();
 
 			HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status());//not full
 
 			setBasisHeaders(response, fileLength);
-
-			setDateAndCacheHeaders(response);
+			setCacheHeaders(response);
+			
 			// Write the initial line and the header.
 			channel.write(response);
 
@@ -126,25 +122,52 @@ public abstract class FileResponse extends WriterResponse {
 		}
 	}
 	
-	//classpath jar
-	public static class ClassPath extends FileResponse {
-		String file;
-		long lastModified;
-		
-		volatile ByteBuf data;
-		
-		public ClassPath(String file) {
-			this.file = file;
-			this.set(ContentType.mime(file));
-			this.lastModified = System.currentTimeMillis();
+	public static class Binary extends FileResponse {
+		long modified;
+		byte[] data;
+		Binary(ContentType type) {
+			super(type);
+			this.modified = System.currentTimeMillis();
 			this.setCacheTime(Integer.MAX_VALUE);
+		}
+		public Binary(ContentType type, byte[] data) {
+			this(type);
+			this.data = data;
 		}
 		
 		public long lastModified() {
-			return System.currentTimeMillis();
+			return modified;
 		}
 		
-		private byte[] readBytes(InputStream input) throws IOException {
+		public byte[] data() throws IOException  {
+			return data;
+		}
+		public ByteBuf content() throws IOException {
+			return Unpooled.wrappedBuffer(data());
+		}
+		@Override
+		protected void write0(Channel channel, Request origin) throws IOException {
+			ByteBuf content = content();
+			long length = content.readableBytes();
+			
+			HttpResponse response = HttpMethod.HEAD.equals(origin.method()) ? newHttpResp(Unpooled.buffer(0)) : newHttpResp(content);
+
+			setBasisHeaders(response, length);
+			setCacheHeaders(response);
+
+			channel.write(response);
+			channel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+		}
+	}
+	
+	public static class ClassPath extends Binary {
+		String file;
+		public ClassPath(String file) {
+			super(ContentType.mime(file));
+			this.file = file;
+		}
+		private byte[] readBytes(String file) throws IOException {
+			InputStream input = getClass().getClassLoader().getResourceAsStream(file);
 	        ByteArrayOutputStream out = new ByteArrayOutputStream();
 	        int b;
 	        while((b = input.read()) != -1) {
@@ -153,32 +176,11 @@ public abstract class FileResponse extends WriterResponse {
 	        return out.toByteArray();
 	    }
 		
-		public ByteBuf data() throws IOException  {
-			if(data != null) {
-				return data.retain();
-			}
-			synchronized (this) {
-				if(data == null) {
-					InputStream input = this.getClass().getClassLoader().getResourceAsStream(file);
-					byte[] bytes = readBytes(input);
-					data = Unpooled.copiedBuffer(bytes);
-				}
-			}
-			return data.retain();
+		public byte[] data() throws IOException  {
+			return data == null ? setData() : data;
 		}
-		
-		@Override
-		protected void write0(Channel channel, Request origin) throws IOException {
-			ByteBuf content = data();
-			long length = content.readableBytes();
-			
-			HttpResponse response = HttpMethod.HEAD.equals(origin.method()) ? newHttpResp(Unpooled.buffer(0)) : newHttpResp(content);
-
-			setBasisHeaders(response, length);
-			setDateAndCacheHeaders(response);
-
-			channel.write(response);
-			channel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+		synchronized byte[] setData() throws IOException {
+			return data == null ? (data = readBytes(file)) : data;
 		}
 	}
 
