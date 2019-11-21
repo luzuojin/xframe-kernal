@@ -18,7 +18,7 @@ public class LiteParser {
 	
 	public LiteParser(Class<?> clazz, Class<?> gerenic) {
 		try {
-			func = XLambda.create(Function.class, Generic.parse(clazz, gerenic).getByType(MessageLite.class), "parseFrom", byte[].class);
+			func = XLambda.create(Function.class, XGeneric.parse(clazz, gerenic).getByType(MessageLite.class), "parseFrom", byte[].class);
 		} catch (Throwable e) {
 			throw XCaught.wrapException(e);
 		}

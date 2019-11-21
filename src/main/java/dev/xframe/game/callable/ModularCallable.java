@@ -6,7 +6,7 @@ import java.util.Map;
 import dev.xframe.game.player.ModularPlayer;
 import dev.xframe.module.ModularConext;
 import dev.xframe.module.ModuleTypeLoader;
-import dev.xframe.utils.Generic;
+import dev.xframe.utils.XGeneric;
 
 /**
  * 
@@ -29,7 +29,7 @@ public interface ModularCallable<T extends ModularPlayer, V> extends PlayerCalla
 	}
 
     static Class<?> getModuleType(Class<?> clazz) {
-        return Generic.parse(clazz, ModularCallable.class).getByName("V");
+        return XGeneric.parse(clazz, ModularCallable.class).getByName("V");
     }
     
     default void call(T player) {

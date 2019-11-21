@@ -18,7 +18,7 @@ public class XLogger {
     }
 
     private static org.slf4j.Logger getLoggerByCaller() {
-        return getLogger(Reflection.getCallerClass(2));
+        return getLogger(XReflection.getCallerClass(2));
     }
 
     public static boolean isTraceEnabled() {

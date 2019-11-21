@@ -4,7 +4,7 @@ import dev.xframe.game.player.ModularPlayer;
 import dev.xframe.module.ModularConext;
 import dev.xframe.module.ModuleTypeLoader;
 import dev.xframe.net.codec.IMessage;
-import dev.xframe.utils.Generic;
+import dev.xframe.utils.XGeneric;
 
 /**
  * module 入口
@@ -18,7 +18,7 @@ public abstract class ModularCommand<T extends ModularPlayer, V> extends PlayerC
     final ModuleTypeLoader loader = ModularConext.getLoader(getModuleType(this.getClass()));
 
     public static Class<?> getModuleType(Class<?> clazz) {
-        return Generic.parse(clazz, ModularCommand.class).getByName("V");
+        return XGeneric.parse(clazz, ModularCommand.class).getByName("V");
     }
 
     public final void exec(T player, IMessage req) throws Exception {

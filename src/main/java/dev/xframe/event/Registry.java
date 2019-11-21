@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 
-import dev.xframe.utils.Reflection;
+import dev.xframe.utils.XReflection;
 import dev.xframe.utils.XCaught;
 import dev.xframe.utils.XLambda;
 
@@ -76,7 +76,7 @@ public final class Registry {
         return group == null ? getGroupSafely(declared) : group.intValue();
     }
     public static int getGroup() {
-        return getGroup(Reflection.getCallerClass());
+        return getGroup(XReflection.getCallerClass());
     }
     
     private static synchronized int getGroupSafely(Class<?> declared) {

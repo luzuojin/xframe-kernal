@@ -10,10 +10,10 @@ import java.lang.reflect.TypeVariable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Generic {
+public class XGeneric {
 	
     final GElement[] elements;
-    Generic(GElement[] elements) {
+    XGeneric(GElement[] elements) {
         this.elements = elements;
     }
     public Class<?> getByName(String name) {
@@ -36,7 +36,7 @@ public class Generic {
     }
     
     public Class<?>[] getParameterTypes(Method method) {
-        return Generic.getParamterTypes(this, method);
+        return XGeneric.getParamterTypes(this, method);
     }
     
     
@@ -44,13 +44,13 @@ public class Generic {
         return clazz.getName() + '@' + variable.getName();
     }
     
-    private static Generic buildGeneric(Class<?> genericType, Map<String, Class<?>> map) {
+    private static XGeneric buildGeneric(Class<?> genericType, Map<String, Class<?>> map) {
         TypeVariable<?>[] typeParameters = genericType.getTypeParameters();
         GElement[] els = new GElement[typeParameters.length];
         for (int i = 0; i < typeParameters.length; i++) {
             els[i] = new GElement(typeParameters[i].getName(), map.get(keyName(genericType, typeParameters[i])));
         }
-        return new Generic(els);
+        return new XGeneric(els);
     }
     
     /**
@@ -59,7 +59,7 @@ public class Generic {
      * @param method
      * @return
      */
-    static Class<?>[] getParamterTypes(Generic generic, Method method) {
+    static Class<?>[] getParamterTypes(XGeneric generic, Method method) {
         Class<?>[] parameterTypes = method.getParameterTypes();
         Type[] genericParameterTypes = method.getGenericParameterTypes();
         Class<?>[] ret = new Class<?>[genericParameterTypes.length];
@@ -83,9 +83,9 @@ public class Generic {
      * @param genericType
      * @return
      */
-    public static Generic parse(Class<?> type, Class<?> genericType) {
+    public static XGeneric parse(Class<?> type, Class<?> genericType) {
     	if(!genericType.isAssignableFrom(type)) {
-    		return new Generic(new GElement[0]);
+    		return new XGeneric(new GElement[0]);
     	}
     	
         if(genericType.isInterface() && type.isSynthetic()) {
@@ -131,7 +131,7 @@ public class Generic {
 	}
 	
 	
-    private static Generic parseLambda(Class<?> type, Class<?> genericType) {
+    private static XGeneric parseLambda(Class<?> type, Class<?> genericType) {
         try {
             Map<String, Class<?>> map = new HashMap<>();
             

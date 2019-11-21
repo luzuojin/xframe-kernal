@@ -2,7 +2,7 @@ package dev.xframe.event;
 
 import java.util.function.Consumer;
 
-import dev.xframe.utils.Generic;
+import dev.xframe.utils.XGeneric;
 
 public abstract class Subscriber {
     
@@ -17,7 +17,7 @@ public abstract class Subscriber {
     public abstract void onEvent(Object event) throws Exception;
     
     public static <X> Subscriber of(int group, Consumer<X> sub) {
-    	Class<?> evtType = Generic.parse(sub.getClass(), Consumer.class).getOnlyType();
+    	Class<?> evtType = XGeneric.parse(sub.getClass(), Consumer.class).getOnlyType();
     	return new SimpleSubscriber<X>(group, evtType.getAnnotation(Event.class).value(), sub);
     }
     

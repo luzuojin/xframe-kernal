@@ -1,8 +1,8 @@
 package dev.xframe.utils;
 
-public class Reflection extends SecurityManager {
+public class XReflection extends SecurityManager {
 	
-	static final Reflection relection = new Reflection();
+	static final XReflection relection = new XReflection();
     @Override
     protected Class<?>[] getClassContext() {
         return super.getClassContext();
