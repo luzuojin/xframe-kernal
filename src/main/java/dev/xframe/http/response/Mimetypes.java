@@ -8,6 +8,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * @see mime.types copy from nginx mime.types
+ *
+ */
 public class Mimetypes {
     
     static final String DEFAULT_MIME_TYPE = "application/octet-stream";
@@ -17,7 +21,7 @@ public class Mimetypes {
     static {
         try {
             Properties properties = new Properties();
-            properties.load(getResourceAsStream("mimetypes.default"));
+            properties.load(getResourceAsStream("mime.types"));
             for(Object key : properties.keySet()) {
                 String keystr = key.toString();
                 types.put(keystr, properties.getProperty(keystr));
