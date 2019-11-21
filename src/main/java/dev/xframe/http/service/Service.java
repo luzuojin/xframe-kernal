@@ -12,7 +12,7 @@ import dev.xframe.http.service.path.PathMatcher;
  */
 public interface Service {
 	
-	default Response exec(Request req, PathMatcher matcher) throws Throwable {
+	default Response exec(Request req, PathMatcher matcher) throws Exception {
 		return exec(req);
 	}
     
@@ -20,7 +20,7 @@ public interface Service {
      * @param req
      * @return resp (just support String)
      */
-    public Response exec(Request req) throws Throwable;
+    public Response exec(Request req) throws Exception;
     
     
     public static String findPath(Class<?> c) {

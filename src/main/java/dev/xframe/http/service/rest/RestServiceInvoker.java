@@ -18,7 +18,7 @@ public class RestServiceInvoker implements Service {
 	}
 	
 	@Override
-	public Response exec(Request req, PathMatcher matcher) throws Throwable {
+	public Response exec(Request req, PathMatcher matcher) {
 		HttpMethod method = req.method();
 		if(HttpMethod.DELETE.equals(method)) {
 		    return respEncoder.encode(service.delete(req, matcher));
@@ -36,7 +36,7 @@ public class RestServiceInvoker implements Service {
 	}
 
 	@Override
-	public Response exec(Request req) throws Throwable {
+	public Response exec(Request req) {
 		return exec(req, PathMatcher.TRUE);//can`t be here
 	}
 

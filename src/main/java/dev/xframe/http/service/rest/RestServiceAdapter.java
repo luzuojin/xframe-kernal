@@ -9,6 +9,7 @@ import java.util.List;
 import dev.xframe.http.Request;
 import dev.xframe.http.service.config.BodyDecoder;
 import dev.xframe.http.service.path.PathMatcher;
+import dev.xframe.utils.XCaught;
 
 public class RestServiceAdapter implements RestService  {
 	
@@ -41,7 +42,7 @@ public class RestServiceAdapter implements RestService  {
     }
     
     @Override
-    public Object get(Request req, PathMatcher matcher) throws Throwable {
+    public Object get(Request req, PathMatcher matcher) {
         if(invokers[0] != null) {
             return invokers[0].doInvoke(delegate, req, matcher);
         }
@@ -49,7 +50,7 @@ public class RestServiceAdapter implements RestService  {
     }
 
     @Override
-    public Object put(Request req, PathMatcher matcher) throws Throwable {
+    public Object put(Request req, PathMatcher matcher) {
         if(invokers[1] != null) {
             return invokers[1].doInvoke(delegate, req, matcher);
         }
@@ -57,7 +58,7 @@ public class RestServiceAdapter implements RestService  {
     }
     
     @Override
-    public Object post(Request req, PathMatcher matcher) throws Throwable {
+    public Object post(Request req, PathMatcher matcher) {
         if(invokers[2] != null) {
             return invokers[2].doInvoke(delegate, req, matcher);
         }
@@ -65,7 +66,7 @@ public class RestServiceAdapter implements RestService  {
     }
 
     @Override
-    public Object delete(Request req, PathMatcher matcher) throws Throwable {
+    public Object delete(Request req, PathMatcher matcher) {
         if(invokers[3] != null) {
             return invokers[3].doInvoke(delegate, req, matcher);
         }
@@ -73,7 +74,7 @@ public class RestServiceAdapter implements RestService  {
     }
 
     @Override
-    public Object options(Request req, PathMatcher matcher) throws Throwable {
+    public Object options(Request req, PathMatcher matcher) {
         if(invokers[4] != null) {
             return invokers[4].doInvoke(delegate, req, matcher);
         }
@@ -88,7 +89,7 @@ public class RestServiceAdapter implements RestService  {
             this.method.setAccessible(true);
             this.parsers = newParsers(method.getParameters(), decoder);
         }
-        Object doInvoke(Object delegate, Request req, PathMatcher matcher) throws Throwable {
+        Object doInvoke(Object delegate, Request req, PathMatcher matcher) {
             try {
                 Object[] args = new Object[parsers.length];
                 for (int i = 0; i < args.length; i++) {
@@ -96,8 +97,11 @@ public class RestServiceAdapter implements RestService  {
                 }
                 return method.invoke(delegate, args);
             } catch (InvocationTargetException e) {
-                throw e.getCause();
+                XCaught.throwException(e.getCause());
+            } catch (Throwable e) {
+                XCaught.throwException(e);
             }
+            return null;
         }
     }
 
