@@ -8,6 +8,7 @@ import java.util.stream.IntStream;
 import dev.xframe.inject.Synthetic;
 import dev.xframe.utils.CtHelper;
 import dev.xframe.utils.CtParser;
+import dev.xframe.utils.XCaught;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtField;
@@ -31,7 +32,10 @@ public class SyntheticBuilder {
     public static Object buildBean(Class<?> syntheticClazz) {
         try {
             return buildClass(syntheticClazz).newInstance();
-        } catch (Exception e) {throw new IllegalArgumentException(e);}
+        } catch (Exception e) {
+            XCaught.throwException(e);
+            return null;
+        }
     }
     
     public synchronized static Class<?> buildClass(Class<?> clazz) {
@@ -98,7 +102,8 @@ public class SyntheticBuilder {
             }
             return proxyClass;
         } catch (Exception e) {
-            throw new IllegalArgumentException(e);
+            XCaught.throwException(e);
+            return null;
         }
     }
     

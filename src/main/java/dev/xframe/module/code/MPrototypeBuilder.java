@@ -4,6 +4,7 @@ import dev.xframe.inject.Prototype;
 import dev.xframe.inject.code.InjectionCode;
 import dev.xframe.module.ModularInjection;
 import dev.xframe.module.ModuleContainer;
+import dev.xframe.utils.XCaught;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtConstructor;
@@ -42,7 +43,8 @@ public class MPrototypeBuilder {
             
             return ct.toClass();
         } catch (Exception e) {
-            throw new IllegalArgumentException(e);
+            XCaught.throwException(e);
+            return null;
         }
     }
     

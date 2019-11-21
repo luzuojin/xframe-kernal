@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.xframe.inject.Injector.FieldInjector;
+import dev.xframe.utils.XCaught;
 
 public class Injection {
     
@@ -64,7 +65,7 @@ public class Injection {
             Object bean = con.newInstance();
             return bean;
         } catch (Throwable e) {
-            throw new IllegalArgumentException(clazz.getName(), e);
+            throw XCaught.wrapException(clazz.getName(), e);
         }
     }
 

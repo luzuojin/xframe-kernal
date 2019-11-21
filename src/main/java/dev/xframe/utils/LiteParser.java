@@ -20,7 +20,7 @@ public class LiteParser {
 		try {
 			func = XLambda.create(Function.class, Generic.parse(clazz, gerenic).getByType(MessageLite.class), "parseFrom", byte[].class);
 		} catch (Throwable e) {
-			throw new IllegalArgumentException(e);
+			throw XCaught.wrapException(e);
 		}
 	}
 	

@@ -7,6 +7,7 @@ import dev.xframe.module.code.MContainerBuilder;
 import dev.xframe.module.code.MLoaderBuilder;
 import dev.xframe.module.code.ModularAnalyzer;
 import dev.xframe.module.code.ModularElement;
+import dev.xframe.utils.XCaught;
 
 /**
  * 
@@ -36,7 +37,7 @@ public class ModularConext {
             infos.stream().filter(info->info.proxy!=null).forEach(info->clazzes.add(info.proxy));
             
         } catch (Throwable e) {
-            throw new IllegalArgumentException("Modular enigne initialize: ", e);
+            XCaught.throwException(e);
         }
 	}
 	

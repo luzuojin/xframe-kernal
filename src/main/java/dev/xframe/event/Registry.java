@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 
 import dev.xframe.utils.Reflection;
+import dev.xframe.utils.XCaught;
 import dev.xframe.utils.XLambda;
 
 /**
@@ -33,13 +34,13 @@ public final class Registry {
 	    final BiConsumer invoker;
 	    
 		public Declaring(int group, Method m) {
-	    	try {
+            try {
 				m.setAccessible(true);
 				this.group = group;
 				this.type = checkAndGetEventType(m);
 				this.invoker = XLambda.create(BiConsumer.class, m);
 			} catch (Throwable e) {
-				throw new IllegalArgumentException(e);
+				throw XCaught.wrapException(e);
 			}
 	    }
 		private int checkAndGetEventType(Method m) {

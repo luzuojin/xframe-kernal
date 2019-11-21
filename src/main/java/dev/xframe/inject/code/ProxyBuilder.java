@@ -13,6 +13,7 @@ import java.util.stream.IntStream;
 
 import dev.xframe.utils.CtHelper;
 import dev.xframe.utils.CtParser;
+import dev.xframe.utils.XCaught;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -75,7 +76,10 @@ public class ProxyBuilder {
                 proxyClass = ctClass.toClass();
             }
             return (T) proxyClass.getConstructor().newInstance();
-        } catch (Throwable e) {throw new IllegalArgumentException(e);}
+        } catch (Throwable e) {
+            XCaught.throwException(e);
+            return null;
+        }
     }
     
     private static Class<?> defineClass(String proxyName) {

@@ -24,6 +24,7 @@ import dev.xframe.module.ModuleContainer;
 import dev.xframe.module.ModuleLoader;
 import dev.xframe.module.code.MFactoryBuilder;
 import dev.xframe.net.cmd.CommandBuilder;
+import dev.xframe.utils.XCaught;
 
 @Configurator
 public final class GameConfigurator implements Loadable {
@@ -91,7 +92,7 @@ public final class GameConfigurator implements Loadable {
             try {
                 constructor = assemble.getConstructor(long.class, ActionLoop.class);
             } catch (Throwable e) {
-                throw new IllegalArgumentException(e);
+                XCaught.throwException(e);
             }
         }
         @Override
@@ -100,7 +101,7 @@ public final class GameConfigurator implements Loadable {
                 try {
                     return (Player) constructor.newInstance(playerId, loop);
                 } catch (Throwable e) {
-                    throw new IllegalArgumentException(e);
+                    throw XCaught.wrapException(e);
                 }
             };
         }

@@ -2,6 +2,7 @@ package dev.xframe.module.code;
 
 import dev.xframe.module.ModularConext;
 import dev.xframe.utils.CtHelper;
+import dev.xframe.utils.XCaught;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -40,7 +41,8 @@ public class MFactoryBuilder {
 
             return (T) (ct.toClass().newInstance());
         } catch (Exception e) {
-            throw new IllegalArgumentException(e);
+            XCaught.throwException(e);
+            return null;
         }
     }
     

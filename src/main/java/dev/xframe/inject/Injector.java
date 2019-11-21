@@ -7,6 +7,7 @@ import java.util.function.Function;
 
 import dev.xframe.inject.Injection.BeanContainer;
 import dev.xframe.inject.code.ProxyBuilder;
+import dev.xframe.utils.XCaught;
 import dev.xframe.utils.XStrings;
 
 public class Injector {
@@ -26,7 +27,8 @@ public class Injector {
             }
             return bean;
         } catch (Exception e) {
-            throw new IllegalArgumentException(e);
+            XCaught.throwException(e);
+            return bean;
         }
     }
     

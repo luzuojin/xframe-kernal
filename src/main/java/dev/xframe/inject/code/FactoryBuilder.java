@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import dev.xframe.utils.CtHelper;
+import dev.xframe.utils.XCaught;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -67,7 +68,8 @@ public class FactoryBuilder {
             
             return (ct.toClass().newInstance());
         } catch (Throwable e) {
-            throw new IllegalArgumentException(e);
+            XCaught.throwException(e);
+            return null;
         }
     }
     

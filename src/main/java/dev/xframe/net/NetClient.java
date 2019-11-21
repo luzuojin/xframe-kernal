@@ -12,6 +12,7 @@ import dev.xframe.net.codec.IMessage;
 import dev.xframe.net.codec.Message;
 import dev.xframe.net.codec.MessageCrypt;
 import dev.xframe.net.session.Session;
+import dev.xframe.utils.XCaught;
 import dev.xframe.utils.XThreadFactory;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -95,7 +96,8 @@ public class NetClient {
         try {
             return build0(host, port, sessionId).syncConnect();
         } catch (InterruptedException e) {
-            throw new IllegalArgumentException(e);
+            XCaught.throwException(e);
+            return null;
         }
     }
     

@@ -10,6 +10,7 @@ import dev.xframe.module.ModularInjection;
 import dev.xframe.module.ModuleTypeLoader;
 import dev.xframe.net.codec.IMessage;
 import dev.xframe.utils.LiteParser;
+import dev.xframe.utils.XCaught;
 import dev.xframe.utils.XLambda;
 
 public final class PlayerCmdActionCmd<T extends ModularPlayer> extends PlayerCommand<T>  {
@@ -31,7 +32,7 @@ public final class PlayerCmdActionCmd<T extends ModularPlayer> extends PlayerCom
             this.liteParser = PlayerCmdLiteAction.class.isAssignableFrom(clazz) ? new LiteParser(clazz, PlayerCmdLiteAction.class) : null;
             this.invoker = ApplicationContext.fetchBean(PlayerCmdInvoker.class);
         } catch (Throwable e) {
-            throw new IllegalArgumentException(clazz.getName(), e);
+            throw XCaught.wrapException(clazz.getName(), e);
         }
     }
     
