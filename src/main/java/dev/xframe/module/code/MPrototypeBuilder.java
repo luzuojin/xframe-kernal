@@ -1,13 +1,12 @@
 package dev.xframe.module.code;
 
+import java.util.Map;
+
 import dev.xframe.inject.Prototype;
-import dev.xframe.inject.code.InjectionCode;
-import dev.xframe.module.ModularInjection;
-import dev.xframe.module.ModuleContainer;
+import dev.xframe.utils.CtParser;
 import dev.xframe.utils.XCaught;
 import javassist.ClassPool;
 import javassist.CtClass;
-import javassist.CtConstructor;
 import javassist.CtField;
 import javassist.CtNewConstructor;
 import javassist.bytecode.AnnotationsAttribute;
@@ -23,13 +22,16 @@ import javassist.bytecode.annotation.Annotation;
  *
  */
 public class MPrototypeBuilder {
-    
+	
+    static final Map<String, String> cts = CtParser.parse("module.ct");
+	
     public static Class<?> build(Class<?> clazz) {
         try {
             ClassPool pool = ClassPool.getDefault();
             CtClass ctParent = pool.getCtClass(clazz.getName());
 
-            CtClass ct = pool.makeClass(clazz.getName() + "$Proxy");
+            String className = cts.get("module_name").replace("${module_basic}", clazz.getName());
+            CtClass ct = pool.makeClass(className);
             ct.setSuperclass(ctParent);
             
             ClassFile ccfile = ct.getClassFile();
@@ -39,23 +41,15 @@ public class MPrototypeBuilder {
             attr.addAnnotation(new Annotation(ccpool, pool.get(Prototype.class.getName())));
             ccfile.addAttribute(attr);
             
-            makeInjectCode(clazz, pool, ct);
+            ct.addField(CtField.make(cts.get("modular_injector_field").replace("${module_basic}", clazz.getName()), ct));
+            
+			ct.addConstructor(CtNewConstructor.make(cts.get("module_constructor").replace("${module_simple_name}", ct.getSimpleName()), ct));
             
             return ct.toClass();
         } catch (Exception e) {
             XCaught.throwException(e);
             return null;
         }
-    }
-    
-    static final InjectionCode CODE = new InjectionCode(ModularInjection.class);
-    
-    static void makeInjectCode(Class<?> clazz, ClassPool pool, CtClass ct) throws Exception {
-        ct.addField(CtField.make(CODE.field(clazz.getName()), ct));
-        
-        CtConstructor co = CtNewConstructor.make(new CtClass[]{pool.get(ModuleContainer.class.getName())}, new CtClass[0], ct);
-        co.setBody(CODE.call("this, %s, $1"));
-        ct.addConstructor(co);
     }
 
 }

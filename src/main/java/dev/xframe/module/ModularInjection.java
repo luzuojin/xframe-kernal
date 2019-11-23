@@ -2,20 +2,18 @@ package dev.xframe.module;
 
 import java.lang.reflect.Field;
 
-import javax.annotation.Resource;
-
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.Injection;
-import dev.xframe.inject.Injector;
 import dev.xframe.inject.Injection.BeanContainer;
+import dev.xframe.inject.Injector;
 import dev.xframe.inject.Injector.FieldInjector;
 
 public class ModularInjection {
 
-    public static @Resource Injector build(Class<?> clazz) {
+    public static Injector build(Class<?> clazz) {
         return Injection.build(clazz, ModularInjection::build);
     }
-    public static @Resource Object inject(Object bean, Injector injector, ModuleContainer mc) {
+    public static Object inject(Object bean, Injector injector, ModuleContainer mc) {
         return Injection.inject(bean, injector, beanContainer(mc));
     }
 

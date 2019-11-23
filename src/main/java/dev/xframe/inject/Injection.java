@@ -9,8 +9,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import javax.annotation.Resource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +30,7 @@ public class Injection {
     public static Injector get(Class<?> clazz) {
         return injectors.get(clazz);
     }
-    public static @Resource Injector build(Class<?> clazz) {
+    public static Injector build(Class<?> clazz) {
         return build(clazz, Injector::build);
     }
     public static Injector build(Class<?> clazz, Function<Field, FieldInjector> builder) {
@@ -69,7 +67,7 @@ public class Injection {
         }
     }
 
-    public static @Resource Object inject(Object bean, Injector injector) {
+    public static Object inject(Object bean, Injector injector) {
         return inject(bean, injector, defbc);
     }
     public static Object inject(Object bean, Injector injector, BeanContainer bc) {

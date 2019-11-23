@@ -1,0 +1,24 @@
+
+@Prototype
+public class XPrototype {
+
+	///injector_field
+	static final dev.xframe.inject.Injector _injector = dev.xframe.inject.Injection.build(${prototype.classname}.class);
+	///
+	public XPrototype() {
+		///injector_invoke
+		dev.xframe.inject.Injection.inject(this, _injector);
+		///
+	}
+	
+	
+	///modular_injector_field
+	static final dev.xframe.inject.Injector _injector = dev.xframe.module.ModularInjection.build(${prototype.classname}.class);
+	///
+	public XPrototype(ModuleContainer mc) {
+		///modular_injector_invoke
+		dev.xframe.module.ModularInjection.inject(this, _injector, $1);
+		///
+	}
+	
+}

@@ -1,9 +1,11 @@
 package dev.xframe.inject.code;
 
+import java.util.Map;
+
 import dev.xframe.inject.Inject;
-import dev.xframe.inject.Injection;
 import dev.xframe.inject.Prototype;
 import dev.xframe.utils.CtHelper;
+import dev.xframe.utils.CtParser;
 import javassist.CannotCompileException;
 import javassist.CtClass;
 import javassist.CtConstructor;
@@ -14,7 +16,7 @@ import javassist.expr.ExprEditor;
 
 public class PrototypePatcher implements Patcher {
     
-    private static final InjectionCode CODE = new InjectionCode(Injection.class);
+    static final Map<String, String> cts = CtParser.parse("prototype.ct");
     
     /**
      * 当前类是Prototype
@@ -46,7 +48,7 @@ public class PrototypePatcher implements Patcher {
 
     @Override
     public void patch(CtClass clazz) throws CannotCompileException, NotFoundException {
-        clazz.addField(CtField.make(CODE.field(clazz.getName()), clazz));
+        clazz.addField(CtField.make(cts.get("injector_field").replace("${prototype.classname}", clazz.getName()), clazz));
         
         CtConstructor[] constructors = clazz.getDeclaredConstructors();
         for (CtConstructor ctConstructor : constructors) {
@@ -59,7 +61,7 @@ public class PrototypePatcher implements Patcher {
                 }
             });
             if (superCall.is) {
-                ctConstructor.insertBeforeBody(CODE.call("this, %s"));
+                ctConstructor.insertBeforeBody(cts.get("injector_invoke"));
             }
         }
     }

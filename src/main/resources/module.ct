@@ -1,0 +1,18 @@
+
+///module_name
+${module_basic}$Proxy
+///
+@Prototype
+public class ${module_name} {
+	
+	///modular_injector_field
+	static final dev.xframe.inject.Injector _injector = dev.xframe.module.ModularInjection.build(${module_basic}.class);
+	///
+	
+	///module_constructor
+	public ${module_simple_name}(dev.xframe.module.ModuleContainer mc) {
+		dev.xframe.module.ModularInjection.inject(this, _injector, $1);
+	}
+	///
+	
+}
