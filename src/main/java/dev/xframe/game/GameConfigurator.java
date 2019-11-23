@@ -56,14 +56,14 @@ public final class GameConfigurator implements Loadable {
         public void configure(Class<?> assemble, final int threads, List<Class<?>> clazzes) {
             configure0(assemble, clazzes);
             
-            ActionExecutor executor = ActionExecutors.newFixed("logics", threads);//max: 2*threads
+            ActionExecutor executor = ActionExecutors.newFixed("logic", threads);//max: 2*threads
             PlayerFactory factory = new PlayerInjectFactory(newPlayerFactory());
             PlayerContext context = new PlayerContext(executor, factory);
             
             ApplicationContext.registBean(PlayerFactory.class, factory);
             ApplicationContext.registBean(PlayerContext.class, context);
             
-            logger.info("Load compelete modular and logics threads[{}]", threads);
+            logger.info("Load compelete modules with logic threads[{}]", threads);
         }
         
         protected abstract void configure0(Class<?> assemble, List<Class<?>> clazzes);
