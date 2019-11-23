@@ -3,9 +3,6 @@ package dev.xframe.game;
 import java.lang.reflect.Constructor;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import dev.xframe.action.ActionExecutor;
 import dev.xframe.action.ActionExecutors;
 import dev.xframe.action.ActionLoop;
@@ -16,6 +13,7 @@ import dev.xframe.game.player.PlayerContext;
 import dev.xframe.game.player.PlayerFactory;
 import dev.xframe.inject.ApplicationContext;
 import dev.xframe.inject.Configurator;
+import dev.xframe.inject.Inject;
 import dev.xframe.inject.Injection;
 import dev.xframe.inject.Loadable;
 import dev.xframe.inject.code.Codes;
@@ -25,11 +23,13 @@ import dev.xframe.module.ModuleLoader;
 import dev.xframe.module.code.MFactoryBuilder;
 import dev.xframe.net.cmd.CommandBuilder;
 import dev.xframe.utils.XCaught;
+import dev.xframe.utils.XLogger;
 
 @Configurator
 public final class GameConfigurator implements Loadable {
-    
-    private static final Logger logger = LoggerFactory.getLogger(GameConfigurator.class);
+	
+	@Inject
+	private CommandBuilder cmdBuilder;
     
     @Override
     public void load() {
@@ -63,7 +63,7 @@ public final class GameConfigurator implements Loadable {
             ApplicationContext.registBean(PlayerFactory.class, factory);
             ApplicationContext.registBean(PlayerContext.class, context);
             
-            logger.info("Load compelete modules with logic threads[{}]", threads);
+            XLogger.info("Load compelete modules with logic threads[{}]", threads);
         }
         
         protected abstract void configure0(Class<?> assemble, List<Class<?>> clazzes);
@@ -116,8 +116,7 @@ public final class GameConfigurator implements Loadable {
         protected void configure0(Class<?> assemble, List<Class<?>> clazzes) {
             ModularConext.initialize(assemble, clazzes);
             ApplicationContext.registBean(ModuleLoader.class, ModularConext.getMLoader());
-            ApplicationContext.fetchBean(CommandBuilder.class)
-                .regist(c->PlayerCmdAction.class.isAssignableFrom(c), PlayerCmdActionCmd::new);
+            cmdBuilder.regist(c->PlayerCmdAction.class.isAssignableFrom(c), PlayerCmdActionCmd::new);
         }
     }
 
