@@ -23,7 +23,6 @@ import dev.xframe.module.ModuleLoader;
 import dev.xframe.module.code.MFactoryBuilder;
 import dev.xframe.net.cmd.CommandBuilder;
 import dev.xframe.utils.XCaught;
-import dev.xframe.utils.XLogger;
 
 @Configurator
 public final class GameConfigurator implements Loadable {
@@ -62,8 +61,6 @@ public final class GameConfigurator implements Loadable {
             
             ApplicationContext.registBean(PlayerFactory.class, factory);
             ApplicationContext.registBean(PlayerContext.class, context);
-            
-            XLogger.info("Load compelete modules with logic threads[{}]", threads);
         }
         
         protected abstract void configure0(Class<?> assemble, List<Class<?>> clazzes);
