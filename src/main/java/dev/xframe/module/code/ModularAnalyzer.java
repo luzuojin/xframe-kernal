@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 import dev.xframe.inject.Dependence;
 import dev.xframe.inject.Inject;
-import dev.xframe.module.Component;
+import dev.xframe.module.ModularComponent;
 import dev.xframe.module.ModularAgent;
 import dev.xframe.module.ModularHelper;
 import dev.xframe.module.ModularIgnore;
@@ -45,7 +45,7 @@ public class ModularAnalyzer {
     }
 
     public static boolean isComponent(Class<?> clazz) {
-        return clazz.isAnnotationPresent(Component.class);
+        return clazz.isAnnotationPresent(ModularComponent.class);
     }
 
     public static boolean isModule(Class<?> clazz) {

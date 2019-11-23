@@ -1,6 +1,7 @@
 package dev.xframe.inject;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,7 +12,6 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import dev.xframe.inject.Injector.FieldInjector;
 import dev.xframe.inject.code.Codes;
 import dev.xframe.utils.XSorter;
 import javassist.CannotCompileException;
@@ -22,11 +22,11 @@ import javassist.NotFoundException;
 import javassist.expr.ExprEditor;
 import javassist.expr.NewExpr;
 
-class Dependences {
+public class Dependences {
     
     private List<Class<?>> classes;
     
-    private Map<Class<?>, DependenceInjector> injectors;
+    private Map<Class<?>, DependenceType> dTypes;
     
     private int index;
     
@@ -36,7 +36,7 @@ class Dependences {
         this.classes = classes;
         
         this.index = 0;
-        this.injectors = new HashMap<>();
+        this.dTypes = new HashMap<>();
         this.refPrototypes = new HashMap<>();
     }
     
@@ -59,7 +59,7 @@ class Dependences {
      * @return
      */
     private boolean isProvided(Class<?> clazz) {
-        if(injectors.containsKey(clazz)) return true;
+        if(dTypes.containsKey(clazz)) return true;
         
         Class<?>[] interfaces = clazz.getInterfaces();
         for (Class<?> interfaze : interfaces) {
@@ -102,14 +102,14 @@ class Dependences {
                 provides.add(clazz);
             } else {
                 analysed.add(clazz);
-                putUpwardIfNotPrototype(injectors, clazz, new DependenceInjector(clazz));
+                putUpwardIfNotPrototype(dTypes, clazz, new DependenceType(clazz));
             }
         }
         
         for (Class<?> provide : provides) {
             if(!isProvided(provide)) {
                 analysed.add(provide);
-                putUpwardIfNotPrototype(injectors, provide, new DependenceInjector(provide));
+                putUpwardIfNotPrototype(dTypes, provide, new DependenceType(provide));
             }
         }
 
@@ -126,7 +126,7 @@ class Dependences {
         filter(analysed, c->!c.isAnnotationPresent(Prototype.class));
         
         //按依赖顺序排序
-        XSorter.bubble(analysed, (c1, c2) -> Integer.compare(injectors.get(c1).index, injectors.get(c2).index));
+        XSorter.bubble(analysed, (c1, c2) -> Integer.compare(dTypes.get(c1).index, dTypes.get(c2).index));
         
         this.classes = analysed;
         return this;
@@ -138,14 +138,13 @@ class Dependences {
 
     private void analyse0(Class<?> key, DependenceLink parent) {
         parent.checkCircularDependence();
-        DependenceInjector injector = injectors.get(key);
-        if(injector == null || injector.index > 0) return;//已经确定顺序或者不是bean(其他)
-        FieldInjector[] fields = injector.fields();
-        Arrays.stream(fields).filter(f->!f.isLazy).forEach(f->analyse0(f.type, new DependenceLink(parent, f.type)));
-        Dependence anno = injector.master().getAnnotation(Dependence.class);
+        DependenceType dtype = dTypes.get(key);
+        if(dtype == null || dtype.index > 0) return;//已经确定顺序或者不是bean(其他)
+        dtype.fields.stream().filter(f->!f.isLazy).forEach(f->analyse0(f.type, new DependenceLink(parent, f.type)));
+        Dependence anno = dtype.type.getAnnotation(Dependence.class);
         if(anno != null) Arrays.stream(anno.value()).forEach(c->analyse0(c, new DependenceLink(parent, c)));
-        getRefPrototypes(injector.master()).forEach(c->analyse0(c, new DependenceLink(parent, c)));;
-        injector.index = ++index;
+        getRefPrototypes(dtype.type).forEach(c->analyse0(c, new DependenceLink(parent, c)));;
+        dtype.index = ++index;
     }
     
     public <T> void putUpwardIfNotPrototype(Map<Class<?>, T> map, Class<?> key, T val) {
@@ -169,7 +168,7 @@ class Dependences {
         if(!refPrototypes.containsKey(clazz)) {
             try {
                 ClassPool pool = ClassPool.getDefault();
-                CtClass ct = pool.get(clazz.getName());
+				CtClass ct = pool.get(clazz.getName());
                 
                 List<String> refs = new ArrayList<>();
                 List<CtBehavior> behaviors = getRefMethods(clazz, ct);
@@ -183,7 +182,7 @@ class Dependences {
                         }
                     });
                 }
-                refPrototypes.put(clazz, Codes.loadClasses(refs).stream().filter(c->c.isAnnotationPresent(Prototype.class)).collect(Collectors.toList()));
+                refPrototypes.put(clazz, classes.stream().filter(c->c.isAnnotationPresent(Prototype.class)&&refs.contains(c.getName())).collect(Collectors.toList()));
             } catch (NotFoundException | CannotCompileException e) {
                 //ignore
             }
@@ -198,18 +197,30 @@ class Dependences {
         return behaviors;
     }
     
-    static class DependenceInjector {
-        Injector injector;
+    static class DependenceType {
+        Class<?> type;
+        List<DependenceField> fields = new ArrayList<>();
         int index;
-        public DependenceInjector(Class<?> c) {
-            injector = Injection.build(c);
+        public DependenceType(Class<?> clazz) {
+        	Class<?> t = this.type = clazz;
+        	do {
+        		for (Field field : t.getDeclaredFields()) {
+        			if(field.isAnnotationPresent(Inject.class)) {
+        				this.fields.add(new DependenceField(field));
+        			}
+        		}
+        		t = t.getSuperclass();
+        	} while(!t.isAnnotationPresent(Prototype.class) && !Object.class.equals(t));
         }
-        public Class<?> master() {
-            return injector.master;
-        }
-        public FieldInjector[] fields() {
-            return injector.fields;
-        }
+    }
+    
+    static class DependenceField {
+    	Class<?> type;
+    	boolean isLazy;
+		public DependenceField(Field field) {
+			this.type = field.getType();
+			this.isLazy = field.getAnnotation(Inject.class).lazy();
+		}
     }
 
     static class DependenceLink {
@@ -226,7 +237,7 @@ class Dependences {
                 while(link.parent != null && link.parent.self != null) {
                     linkStr.append(link.self.getName()).append(" ");
                     if(this.self.equals(link.parent.self)) {
-                        throw new IllegalArgumentException(String.format("Circular dependence: %s", linkStr.append(this.self.getName())));
+                    	throw new IllegalArgumentException(String.format("Circular dependence: %s", linkStr.append(this.self.getName())));
                     }
                     link = link.parent;
                 }

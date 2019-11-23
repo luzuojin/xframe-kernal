@@ -32,7 +32,7 @@ public class ModularHelper {
     			c.isAnnotationPresent(Module.class) ||
     			c.isAnnotationPresent(ModularShare.class) ||
     			c.isAnnotationPresent(ModularAgent.class) ||
-    			c.isAnnotationPresent(Component.class);
+    			c.isAnnotationPresent(ModularComponent.class);
     }
     
 }

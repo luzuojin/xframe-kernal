@@ -13,7 +13,7 @@ import java.util.stream.IntStream;
 
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.code.SyntheticBuilder;
-import dev.xframe.module.Component;
+import dev.xframe.module.ModularComponent;
 import dev.xframe.module.ModularAgent;
 import dev.xframe.module.ModularHelper;
 import dev.xframe.module.ModularMethods;
@@ -223,7 +223,7 @@ public class MContainerBuilder {
     }
 
     private boolean isTransient(Class<?> clazz) {
-        return (clazz.isAnnotationPresent(Component.class) && clazz.getAnnotation(Component.class).value() == ModuleType.TRANSIENT) ||
+        return (clazz.isAnnotationPresent(ModularComponent.class) && clazz.getAnnotation(ModularComponent.class).value() == ModuleType.TRANSIENT) ||
                 clazz.isAnnotationPresent(Module.class) && clazz.getAnnotation(Module.class).value() == ModuleType.TRANSIENT;
     }
 	

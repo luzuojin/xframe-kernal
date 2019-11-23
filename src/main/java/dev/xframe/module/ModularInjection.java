@@ -49,7 +49,7 @@ public class ModularInjection {
         }
         void checkLegal() {
             if(ModuleContainer.class.isAssignableFrom(type) ||
-                    type.isAnnotationPresent(Component.class) ||
+                    type.isAnnotationPresent(ModularComponent.class) ||
                     type.isInterface() ||
                     declaringIsComponentAndPackageMatch()
                     ) {
@@ -58,7 +58,7 @@ public class ModularInjection {
             throw new IllegalArgumentException("Modular inject can`t be module impelements");
         }
         boolean declaringIsComponentAndPackageMatch() {
-            return field.getDeclaringClass().isAnnotationPresent(Component.class) && field.getDeclaringClass().getPackage().getName().startsWith(type.getPackage().getName());
+            return field.getDeclaringClass().isAnnotationPresent(ModularComponent.class) && field.getDeclaringClass().getPackage().getName().startsWith(type.getPackage().getName());
         }
         @Override
         protected Object get(BeanContainer bc) throws Exception {
