@@ -11,14 +11,4 @@ public class XPrototype {
 		///
 	}
 	
-	
-	///modular_injector_field
-	static final dev.xframe.inject.Injector _injector = dev.xframe.module.ModularInjection.build(${prototype.classname}.class);
-	///
-	public XPrototype(ModuleContainer mc) {
-		///modular_injector_invoke
-		dev.xframe.module.ModularInjection.inject(this, _injector, $1);
-		///
-	}
-	
 }
