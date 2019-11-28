@@ -1,12 +1,15 @@
 package dev.xframe.utils;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -92,25 +95,27 @@ public class XGeneric {
             return parseLambda(type, genericType);
         }
         
-        return buildGeneric(genericType, parse(type, new HashMap<>()));
+        return buildGeneric(genericType, parseNormal(type, new HashMap<>()));
     }
     
-    private static Map<String, Class<?>> parse(Class<?> clazz, Map<String, Class<?>> map) {
-		if(clazz == null || clazz.equals(Object.class)) return map;
-		
-		analyse(map, clazz.getGenericSuperclass());
-		for (Type genericInterfaze : clazz.getGenericInterfaces()) {
-			analyse(map, genericInterfaze);
+    private static Map<String, Class<?>> parseNormal(Class<?> clazz, Map<String, Class<?>> map) {
+		if(clazz == null || Object.class.equals(clazz)) {
+		    return map;
 		}
 		
-		parse(clazz.getSuperclass(), map);
+		parseGenericType(map, clazz.getGenericSuperclass());
+		for (Type genericInterfaze : clazz.getGenericInterfaces()) {
+			parseGenericType(map, genericInterfaze);
+		}
+		
+		parseNormal(clazz.getSuperclass(), map);
 		for (Class<?> interfaze : clazz.getInterfaces()) {
-			parse(interfaze, map);
+			parseNormal(interfaze, map);
 		}
 		return map;
 	}
 
-	private static void analyse(Map<String, Class<?>> genericInfos, Type generic) {
+	private static void parseGenericType(Map<String, Class<?>> map, Type generic) {
 		if(generic instanceof ParameterizedType) {
 			ParameterizedType genericType = (ParameterizedType) generic;
 			Class<?> type = (Class<?>) genericType.getRawType();
@@ -119,17 +124,25 @@ public class XGeneric {
 			Type[] typeArguments = genericType.getActualTypeArguments();
 			
 			for (int i = 0; i < typeArguments.length; i++) {
-				Type typeArgument = typeArguments[i];
-				if(typeArgument instanceof Class<?>) {
-					genericInfos.put(keyName(type, typeParameters[i]), (Class<?>) typeArguments[i]);
-				} else {
-					TypeVariable<?> variable = (TypeVariable<?>) typeArgument;
-					genericInfos.put(keyName(type, typeParameters[i]), genericInfos.get(keyName((Class<?>) variable.getGenericDeclaration(), variable)));
-				}
+			    map.put(keyName(type, typeParameters[i]), parseTypeArgument(map, typeArguments[i]));
 			}
 		}
 	}
-	
+    private static Class<?> parseTypeArgument(Map<String, Class<?>> map, Type typeArgument) {
+        if(typeArgument instanceof Class<?>) {
+            return (Class<?>) typeArgument;
+        } else if(typeArgument instanceof TypeVariable) {
+            TypeVariable<?> variable = (TypeVariable<?>) typeArgument;
+            return map.get(keyName((Class<?>) variable.getGenericDeclaration(), variable));
+        } else if(typeArgument instanceof GenericArrayType) {
+            return Array.newInstance(parseTypeArgument(map, ((GenericArrayType)typeArgument).getGenericComponentType()), 0).getClass();
+        } else if(typeArgument instanceof WildcardType){
+            //nothing
+        } else if(typeArgument instanceof ParameterizedType) {
+            return (Class<?>) ((ParameterizedType)typeArgument).getRawType();
+        }
+        return null;
+    }
 	
     private static XGeneric parseLambda(Class<?> type, Class<?> genericType) {
         try {
@@ -153,7 +166,7 @@ public class XGeneric {
     //下层先确定 同正常情况
     private static void analyseLambdaDownstream(Map<String, Class<?>> genericInfos, Class<?> genericType) {
         for (Type ginterfaze : genericType.getGenericInterfaces()) {
-            analyse(genericInfos, ginterfaze);
+            parseGenericType(genericInfos, ginterfaze);
         }
         for (Class<?> interfaze : genericType.getInterfaces()) {
             analyseLambdaDownstream(genericInfos, interfaze);
