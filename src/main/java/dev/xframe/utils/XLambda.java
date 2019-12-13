@@ -30,7 +30,7 @@ public class XLambda {
 	private static final int ALL_MODES = (PRIVATE | PROTECTED | PACKAGE | PUBLIC);
 	
 	@SuppressWarnings("unchecked")
-	public static <T> Supplier<T> createByConstructor(Class<?> clazz) throws Throwable {
+	public static <T> Supplier<T> createByConstructor(Class<?> clazz) {
 		return createByConstructor(Supplier.class, clazz);
 	}
 	public static <T> T createByConstructor(Class<T> lambdaInterface, Class<?> clazz, Class<?>... parameterTypes) {
