@@ -47,8 +47,7 @@ public class MPrototypeBuilder {
             
             return ct.toClass();
         } catch (Exception e) {
-            XCaught.throwException(e);
-            return null;
+            return XCaught.throwException(e);
         }
     }
 

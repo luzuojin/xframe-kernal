@@ -96,8 +96,7 @@ public class NetClient {
         try {
             return build0(host, port, sessionId).syncConnect();
         } catch (InterruptedException e) {
-            XCaught.throwException(e);
-            return null;
+            return XCaught.throwException(e);
         }
     }
     

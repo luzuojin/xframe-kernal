@@ -41,8 +41,7 @@ public class MFactoryBuilder {
 
             return (T) (ct.toClass().newInstance());
         } catch (Exception e) {
-            XCaught.throwException(e);
-            return null;
+            return XCaught.throwException(e);
         }
     }
     

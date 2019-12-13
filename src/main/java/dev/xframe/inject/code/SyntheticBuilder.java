@@ -33,8 +33,7 @@ public class SyntheticBuilder {
         try {
             return buildClass(syntheticClazz).newInstance();
         } catch (Exception e) {
-            XCaught.throwException(e);
-            return null;
+            return XCaught.throwException(e);
         }
     }
     
@@ -102,8 +101,7 @@ public class SyntheticBuilder {
             }
             return proxyClass;
         } catch (Exception e) {
-            XCaught.throwException(e);
-            return null;
+            return XCaught.throwException(e);
         }
     }
     

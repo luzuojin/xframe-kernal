@@ -23,9 +23,11 @@ public class XCaught {
     /**
      * 绕过编译检查 直接抛出原始Exception
      * @param e
+     * @return 只是为了通过编译, 不会真实执行到return
      */
-    public static void throwException(Throwable e) {
+    public static <T> T throwException(Throwable e) {
         XCaught.<RuntimeException>throwException0(e);
+        return null;
     }
     
     @SuppressWarnings("unchecked")

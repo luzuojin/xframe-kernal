@@ -68,8 +68,7 @@ public class FactoryBuilder {
             
             return (ct.toClass().newInstance());
         } catch (Throwable e) {
-            XCaught.throwException(e);
-            return null;
+            return XCaught.throwException(e);
         }
     }
     

@@ -33,38 +33,40 @@ public class XLambda {
 	public static <T> Supplier<T> createByConstructor(Class<?> clazz) throws Throwable {
 		return createByConstructor(Supplier.class, clazz);
 	}
-	public static <T> T createByConstructor(Class<T> lambdaInterface, Class<?> clazz, Class<?>... parameterTypes) throws Throwable {
-		Constructor<?> constructor = clazz.getDeclaredConstructor(parameterTypes);
-		constructor.setAccessible(true);
-		MethodHandles.Lookup lookup = createLookup(clazz);
-		MethodHandle methodHandle = lookup.unreflectConstructor(constructor);
-		return _create(lambdaInterface, lookup, methodHandle);
+	public static <T> T createByConstructor(Class<T> lambdaInterface, Class<?> clazz, Class<?>... parameterTypes) {
+		try {
+            Constructor<?> constructor = clazz.getDeclaredConstructor(parameterTypes);
+            constructor.setAccessible(true);
+            MethodHandles.Lookup lookup = createLookup(clazz);
+            MethodHandle methodHandle = lookup.unreflectConstructor(constructor);
+            return _create(lambdaInterface, lookup, methodHandle);
+        } catch (Throwable e) {
+            return XCaught.throwException(e);
+        }
 	}
 	
-	public static <T> T create(Class<T> lambdaInterface, Class<?> clazz, String methodName, Class<?>... parameterTypes) throws Throwable {
-		return create(lambdaInterface, getMethod(clazz, methodName, parameterTypes));
+	public static <T> T create(Class<T> lambdaInterface, Class<?> clazz, String methodName, Class<?>... parameterTypes) {
+		return create(lambdaInterface, XReflection.getMethod(clazz, methodName, parameterTypes));
 	}
-	public static <T> T createSpecial(Class<T> lambdaInterface, Class<?> clazz, String methodName, Class<?>... parameterTypes) throws Throwable {
-		return createSpecial(lambdaInterface, getMethod(clazz, methodName, parameterTypes));
-	}
-
-	private static Method getMethod(Class<?> clazz, String methodName, Class<?>... parameterTypes) throws Exception {
-		Method method = clazz.getMethod(methodName, parameterTypes);
-		method.setAccessible(true);
-		return method;
+	public static <T> T createSpecial(Class<T> lambdaInterface, Class<?> clazz, String methodName, Class<?>... parameterTypes) {
+		return createSpecial(lambdaInterface, XReflection.getMethod(clazz, methodName, parameterTypes));
 	}
 
-	public static <T> T create(Class<T> lambdaInterface, Method method) throws Throwable {
+	public static <T> T create(Class<T> lambdaInterface, Method method) {
 		return _create(lambdaInterface, method, false);
 	}
-	public static <T> T createSpecial(Class<T> lambdaInterface, Method method) throws Throwable {
+	public static <T> T createSpecial(Class<T> lambdaInterface, Method method) {
 		return _create(lambdaInterface, method, true);
 	}
 	
-	private static <T> T _create(Class<T> lambdaInterface, Method method, boolean invokeSpecial) throws Throwable {
-		MethodHandles.Lookup lookup = createLookup(method.getDeclaringClass());
-		MethodHandle methodHandle = invokeSpecial? lookup.unreflectSpecial(method, method.getDeclaringClass()) : lookup.unreflect(method);
-		return _create(lambdaInterface, lookup, methodHandle);
+	private static <T> T _create(Class<T> lambdaInterface, Method method, boolean invokeSpecial) {
+		try {
+            MethodHandles.Lookup lookup = createLookup(method.getDeclaringClass());
+            MethodHandle methodHandle = invokeSpecial? lookup.unreflectSpecial(method, method.getDeclaringClass()) : lookup.unreflect(method);
+            return _create(lambdaInterface, lookup, methodHandle);
+        } catch (Throwable e) {
+            return XCaught.throwException(e);//can`t return
+        }
 	}
 	
 	private static <T> T _create(Class<T> lambdaInterface, MethodHandles.Lookup lookup, MethodHandle methodHandle) throws LambdaConversionException, Throwable {
