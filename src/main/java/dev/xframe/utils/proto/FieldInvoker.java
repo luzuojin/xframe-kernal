@@ -7,21 +7,15 @@ import dev.xframe.utils.XReflection;
 
 public interface FieldInvoker {
 	
-	FieldInvoker Primitive = new FieldInvoker() {
-		public void set(Object obj, Object val) {
-			//donothing
-		}
-		public Object get(Object obj) {
-			return obj;
-		}
-	};
-
 	public Object get(Object obj);
 	
 	public void set(Object obj, Object val);
 
 	public static FieldInvoker of(Field f) {
 		return new PojoFieldBased(f);
+	}
+	public static FieldInvoker of(int index) {
+	    return new ArrayElementBased(index);
 	}
 	
 	/**

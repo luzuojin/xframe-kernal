@@ -101,7 +101,19 @@ public class FieldSchema {
 	public static FieldSchema of(Field f, int num) {
 		return of(FieldInvoker.of(f), f.getGenericType(), f.getName(), num);
 	}
-
+	
+	/**
+	 * using for Object[]
+	 * @param type
+	 * @param index
+	 * @return
+	 */
+	public static FieldSchema of(java.lang.reflect.Type type, int index) {
+	    int num = index+1;
+        String name = "val_" + num;
+        return of(FieldInvoker.of(index), type, name, num);
+	}
+	
 	public static FieldSchema of(FieldInvoker invoker, java.lang.reflect.Type type, String name, int num) {
 		Class<?> c = getRawType(type);
 		RepeatedHandler<?> h = null;
@@ -122,16 +134,6 @@ public class FieldSchema {
 		return (Class<?>) ((type instanceof Class) ? type : ((ParameterizedType) type).getRawType());
 	}
 	
-	public static Type getSchemaType(java.lang.reflect.Type type) {
-		Class<?> c = getRawType(type);
-		if(c.isArray() && !byte[].class.equals(c)) {
-			c = c.getComponentType();
-		} else if(Collection.class.isAssignableFrom(c)) {
-			c = (Class<?>) ((ParameterizedType) type).getActualTypeArguments()[0];
-		}
-		return getSchemaType(c);
-	}
-
 	public static Type getSchemaType(Class<?> c) {
 		return Arrays.stream(JavaType.values()).filter(j->j.matching(c)).findAny().orElse(JavaType.MESSAGE).pType;
 	}

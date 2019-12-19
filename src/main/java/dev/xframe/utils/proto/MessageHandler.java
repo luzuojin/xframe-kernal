@@ -36,7 +36,7 @@ interface MessageHandler {
 		}
 	};
 	
-	static MessageHandler of(FieldSchema schema, FieldDescriptor pField, Supplier<TypeSerializer> probable) {
+	static MessageHandler of(FieldDescriptor pField, Supplier<TypeSerializer> probable) {
 		return pField.getType() == FieldDescriptor.Type.MESSAGE ? new Typed(probable.get()) : IDENTITY;
 	}
 

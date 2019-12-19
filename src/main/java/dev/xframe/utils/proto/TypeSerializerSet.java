@@ -30,11 +30,15 @@ public class TypeSerializerSet implements Iterable<TypeSerializer> {
 	}
 	
 	void put(TypeSerializer serializer) {
-		serializers.put(serializer.name(), serializer);
+		serializers.put(serializer.getName(), serializer);
 	}
 	
 	public TypeSerializer get(Class<?> c) {
-		return serializers.get(c);
+		return serializers.get(TypeSerializer.Builder.naming(c));
+	}
+	
+	public TypeSerializer get(String name) {
+	    return serializers.get(name);
 	}
 	
 	public String getPackage() {
@@ -50,7 +54,7 @@ public class TypeSerializerSet implements Iterable<TypeSerializer> {
 		return serializers.values().iterator();
 	}
 	
-	static class Builder {
+	public static class Builder {
 		String packag = "dev.xframe";
 		public Builder setPackage(String packag) {
 			this.packag = packag;
@@ -71,7 +75,7 @@ public class TypeSerializerSet implements Iterable<TypeSerializer> {
 				.filter(f->f.type==Type.MESSAGE)
 				.filter(f->FieldSchema.getSchemaType(f.cType)==Type.MESSAGE)
 				.filter(f->!tsBuilders.containsKey(TypeSerializer.Builder.naming(f.cType)))
-				.forEach(f->add0(TypeSerializer.Builder.from(f.cType)));
+				.forEach(f->add0(TypeSerializer.Builder.of(f.cType)));
 		}
 		
 		private TypeSerializer.Builder getBuilder(Descriptor d) {
@@ -105,8 +109,11 @@ public class TypeSerializerSet implements Iterable<TypeSerializer> {
 			add0(builder);
 			return this;
 		}
-		public Builder add(java.lang.reflect.Type c) {
-			return add(TypeSerializer.Builder.from(c));
+		public Builder add(Class<?> c) {
+			return add(TypeSerializer.Builder.of(c));
+		}
+		public Builder add(String name, FieldSchema... fields) {
+		    return add(TypeSerializer.Builder.of(name, fields));
 		}
 	}
 	

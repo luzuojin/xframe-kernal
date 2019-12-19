@@ -24,13 +24,9 @@ public class FieldSerializer {
 	}
 	
 	public void build(DynamicMessage.Builder dynBuilder, Object obj) {
-		dynBuilder.setField(pField, getDataFromJava(obj));
+		dynBuilder.setField(pField, mHandler.fromJava(jField.get(obj)));
 	}
 
-	Object getDataFromJava(Object obj) {
-		return mHandler.fromJava(jField.get(obj));
-	}
-	
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	public static class Repeated extends FieldSerializer {
 		RepeatedHandler rHandler;
@@ -38,13 +34,13 @@ public class FieldSerializer {
 			super(jField, pField, mHandler);
 			this.rHandler = rHandler;
 		}
-		public void parse(Object obj, DynamicMessage dynMessage) {
+		Object getDataFromProto(DynamicMessage dynMessage) {
 			int len = dynMessage.getRepeatedFieldCount(pField);
 			Object data = rHandler.make(len);
 			for (int i = 0; i < len; i++) {
 				rHandler.add(data, i, mHandler.fromProto(dynMessage.getRepeatedField(pField, i)));
 			}
-			jField.set(obj, data);
+			return data;
 		}
 		public void build(DynamicMessage.Builder dynBuilder, Object obj) {
 			Object data = jField.get(obj);

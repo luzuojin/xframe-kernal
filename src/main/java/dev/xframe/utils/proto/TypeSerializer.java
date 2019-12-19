@@ -1,7 +1,6 @@
 package dev.xframe.utils.proto;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -29,7 +28,7 @@ public class TypeSerializer {
 	protected FieldSerializer[] fieldSerializers;
 	protected Supplier<Object> factory;
 	
-	public String name() {
+	public String getName() {
 		return typeDescriptor.getName();
 	}
 	
@@ -68,19 +67,7 @@ public class TypeSerializer {
 		return builder.build();
 	}
 	
-	static class Primitive extends TypeSerializer {
-		Primitive(Descriptor typeDescriptor, FieldSerializer[] fieldSerializers, Supplier<Object> factory) {
-			super(typeDescriptor, fieldSerializers, factory);
-		}
-		@Override
-		public <T> T parseFrom(DynamicMessage dynMessage) {
-			return (T) fieldSerializers[0].getDataFromProto(dynMessage);
-		}
-	}
-	
 	static class Builder {
-		static Supplier<Object> FACTORY_NIL = ()->null;
-		
 		String name;
 		Supplier<Object> factory;
 		FieldSchema[] fields;
@@ -120,9 +107,7 @@ public class TypeSerializer {
 		
 		public TypeSerializer buildSerializer(Function<Descriptor, Builder> probable) {
 			if(serializer == null) {
-				serializer = factory == FACTORY_NIL ?
-						new TypeSerializer.Primitive(descr, buildFieldSerializers(probable), factory)	:
-						new TypeSerializer(descr, buildFieldSerializers(probable), factory);
+				serializer = new TypeSerializer(descr, buildFieldSerializers(probable), factory);
 			}
 			return serializer;
 		}
@@ -134,12 +119,12 @@ public class TypeSerializer {
 		private FieldSerializer buildFieldSerializer(FieldDescriptor pField, Function<Descriptor, Builder> probable) {
 			FieldSchema schema = fields[pField.getNumber()-1];
 			return pField.isRepeated() ?
-				new FieldSerializer.Repeated(schema.invoker, pField, buildMessageHandler(pField, schema, probable), schema.rHandler) :
-				new FieldSerializer(schema.invoker, pField, buildMessageHandler(pField, schema, probable));
+				new FieldSerializer.Repeated(schema.invoker, pField, buildMessageHandler(pField, probable), schema.rHandler) :
+				new FieldSerializer(schema.invoker, pField, buildMessageHandler(pField, probable));
 		}
 
-		private MessageHandler buildMessageHandler(FieldDescriptor pField, FieldSchema schema, Function<Descriptor, Builder> probable) {
-			return MessageHandler.of(schema, pField, ()->probable.apply(pField.getMessageType()).buildSerializer(probable));
+		private MessageHandler buildMessageHandler(FieldDescriptor pField, Function<Descriptor, Builder> probable) {
+			return MessageHandler.of(pField, ()->probable.apply(pField.getMessageType()).buildSerializer(probable));
 		}
 		
 		
@@ -147,16 +132,10 @@ public class TypeSerializer {
 		public static String naming(Class<?> c) {
 			return c.getName().replace('.', '_').replace('$', '_');
 		}
-		public static Builder from(java.lang.reflect.Type type) {
-			Class<?> c = FieldSchema.getRawType(type);
-			if(FieldSchema.getSchemaType(type) == Type.MESSAGE) {
-				Field[] fields = getFields(c);
-				FieldSchema[] schemas = IntStream.range(0, fields.length).mapToObj(i->FieldSchema.of(fields[i], i+1)).toArray(FieldSchema[]::new);
-				return new Builder(naming(c), XLambda.createByConstructor(c), schemas);
-			} else {//primitive
-				FieldSchema[] schemas = new FieldSchema[]{FieldSchema.of(FieldInvoker.Primitive, type, "value", 1)};
-				return new Builder(naming(c), FACTORY_NIL, schemas);
-			}
+		public static Builder of(Class<?> c) {
+		    Field[] fields = getFields(c);
+		    FieldSchema[] schemas = IntStream.range(0, fields.length).mapToObj(i->FieldSchema.of(fields[i], i+1)).toArray(FieldSchema[]::new);
+		    return new Builder(naming(c), XLambda.createByConstructor(c), schemas);
 		}
 		private static Field[] getFields(Class<?> c) {
 			return getFields0(c, new LinkedHashMap<>()).values().stream().peek(f->f.setAccessible(true)).toArray(Field[]::new);
@@ -169,12 +148,10 @@ public class TypeSerializer {
 			return m;
 		}
 		
-		/*---method parameters---*/
-		public static String naming(Method m) {
-			return naming(m.getDeclaringClass()) + "_" + m.getName();
-		}
-		public static Builder from(Method m) {
-			return null;
+		/*---array---*/
+		public static Builder of(String name, FieldSchema[] fields) {
+		    int l = fields.length;
+			return new Builder(name, ()->new Object[l], fields);
 		}
 	}
 
