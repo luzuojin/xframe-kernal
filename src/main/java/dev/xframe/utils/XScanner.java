@@ -182,10 +182,10 @@ public class XScanner {
     }
     
     public static List<String> getClassPathes(String includes, String excludes) {
-        return getClassPathes(new ScanMatcher(includes, excludes));
+        return getClassPathes(newMatcher(includes, excludes));
     }
 
-	public static List<String> getClassPathes(ScanMatcher matcher) {
+	public static List<String> getClassPathes(Matcher matcher) {
 		List<String> ret = new ArrayList<>();
         try {
             Set<String> classPathes = getClassPathes();
@@ -200,10 +200,10 @@ public class XScanner {
 	}
 
     public static List<ClassEntry> scan(String includes, String excludes) {
-        return scan(new ScanMatcher(includes, excludes));
+        return scan(newMatcher(includes, excludes));
     }
 
-	public static List<ClassEntry> scan(ScanMatcher matcher) {
+	public static List<ClassEntry> scan(Matcher matcher) {
 		List<ClassEntry> ret = new ArrayList<ClassEntry>();
         try {
             for (String path : getClassPathes(matcher)) {
@@ -279,16 +279,25 @@ public class XScanner {
 		}
     }
 	
-	public static class ScanMatcher {
-		final SingleMatcher includes;
-		final SingleMatcher excludes;
-		public ScanMatcher(String includes, String excludes) {
-			this.includes = new SingleMatcher(includes);
-			this.excludes = new SingleMatcher(excludes);
-		}
-		public boolean match(String path) {
-			return includes.slack(path) && !excludes.strict(path);
-		}
+	public static Matcher newMatcher(String includes, String excludes) {
+	    return new BaseMatcher(includes, excludes);
+	}
+	
+	@FunctionalInterface
+	public static interface Matcher {
+	    public boolean match(String path);
+	}
+	
+	private static class BaseMatcher implements Matcher {
+	    private final SingleMatcher includes;
+        private final SingleMatcher excludes;
+        public BaseMatcher(String includes, String excludes) {
+            this.includes = new SingleMatcher(includes);
+            this.excludes = new SingleMatcher(excludes);
+        }
+        public boolean match(String path) {
+            return includes.slack(path) && !excludes.strict(path);
+        }
 	}
     
     private static class SingleMatcher {

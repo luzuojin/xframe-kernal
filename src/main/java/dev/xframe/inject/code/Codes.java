@@ -1,5 +1,7 @@
 package dev.xframe.inject.code;
 
+import static dev.xframe.utils.XScanner.newMatcher;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -12,13 +14,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.xframe.utils.XScanner;
 import dev.xframe.utils.XScanner.ClassEntry;
-import dev.xframe.utils.XScanner.ScanMatcher;
+import dev.xframe.utils.XScanner.Matcher;
 import javassist.CannotCompileException;
 import javassist.ClassMap;
 import javassist.ClassPath;
@@ -33,9 +37,13 @@ public class Codes {
 	private static Map<String, ClassEntry> classEntryMap = new HashMap<>();
 	private static Map<String, AtomicInteger> classVersionMap = new HashMap<>();
 	
-	private static ScanMatcher matcher = new ScanMatcher(null, null);
-
-	private static List<Class<?>> declaredClasses;
+	private static List<Matcher> matchers = Stream.of(newMatcher("dev.xframe.*", "dev.xframe.inject.junit.*")).collect(Collectors.toList());
+	
+	private static List<Class<?>> declares;
+	
+	private static boolean doMatching(String path) {
+	    return matchers.stream().filter(m->m.match(path)).findAny().isPresent();
+	}
 	
 	private static int addEntry(ClassEntry entry) {
 	    classEntryMap.put(entry.name, entry);
@@ -47,17 +55,13 @@ public class Codes {
 	}
 	
 	public static List<Class<?>> getClasses(String includes, String excludes) {
-		return getClasses(new ScanMatcher(includes, excludes));
+	    matchers.add(newMatcher(includes, excludes));
+		return getClasses0();
 	}
 
-	public static List<Class<?>> getClasses(ScanMatcher matcher) {
-		return getClasses0(matcher);
-	}
-
-	synchronized static List<Class<?>> getClasses0(ScanMatcher matcher) {
-	    if(declaredClasses == null) {
-	        Codes.matcher = matcher;
-	        List<ClassEntry> entries = XScanner.scan(matcher);
+	synchronized static List<Class<?>> getClasses0() {
+	    if(declares == null) {
+	        List<ClassEntry> entries = XScanner.scan(Codes::doMatching);
 	        List<String> names = new ArrayList<>();
 	        for (ClassEntry entry : entries) {
 	            addEntry(entry);
@@ -65,9 +69,9 @@ public class Codes {
 	        }
 	        
 	        Patchers.makePatch(names);
-	        declaredClasses = loadClasses(names);
+	        declares = loadClasses(names);
 	    }
-		return declaredClasses;
+		return declares;
 	}
 	
 	public static boolean isDeclared(String className) {
@@ -75,11 +79,11 @@ public class Codes {
 	}
 	
 	public static boolean isMatching(String className) {
-	    return matcher.match(className);
+	    return doMatching(className);
 	}
 	
 	public static List<Class<?>> getDeclaredClasses() {
-		return declaredClasses == null ? Collections.emptyList() : declaredClasses;
+		return declares == null ? Collections.emptyList() : declares;
 	}
 	
 	private static Class<?> defineClass(ClassPool pool, String name) {
@@ -150,7 +154,7 @@ public class Codes {
 	        	ref.replaceClassName(ctClass.getName(), newName(ctClass.getName(), ver));
 	        	ref.toClass();
 	        	cm.put(refClass, newName);
-		    } else if(matcher.match(refClass)) {//同应用内的类, 如果有就不加载, 没有加载
+		    } else if(doMatching(refClass)) {//同应用内的类, 如果有就不加载, 没有加载
                 defineClass(pool, refClass);
             }
         }
