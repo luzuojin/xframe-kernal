@@ -39,8 +39,6 @@ public class XScanner {
     // jar包内路径分隔符
     private static final String INSIDE_SEPARATOR = "!/";
     
-    private static final String PROTECTION_PATH = XPaths.toPath(XScanner.class.getProtectionDomain().getCodeSource().getLocation());
-    
     /**
      * 获取项目的所有classpath ，包括 APP_CLASS_PATH 和所有的jar文件
      */
@@ -190,7 +188,7 @@ public class XScanner {
         try {
             Set<String> classPathes = getClassPathes();
             for (String path : classPathes) {
-                if (!isJarFile(path) || PROTECTION_PATH.equals(path) || matcher.match(path))
+                if (!isJarFile(path) || matcher.match(path))
                 	ret.add(path);
             }
         } catch (Exception ex) {
@@ -208,7 +206,7 @@ public class XScanner {
         try {
             for (String path : getClassPathes(matcher)) {
                 for (ClassEntry clazz : getFromPath(path)) {
-                    if(PROTECTION_PATH.equals(path) || matcher.match(clazz.name)) {
+                    if(matcher.match(clazz.name)) {
                         ret.add(clazz);
                     }
                 }
