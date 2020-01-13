@@ -182,10 +182,10 @@ public class XScanner {
     }
     
     public static List<String> getClassPathes(String includes, String excludes) {
-        return getClassPathes(newMatcher(includes, excludes));
+        return getClassPathes(new ScanMatcher(includes, excludes));
     }
 
-	public static List<String> getClassPathes(Matcher matcher) {
+	public static List<String> getClassPathes(ScanMatcher matcher) {
 		List<String> ret = new ArrayList<>();
         try {
             Set<String> classPathes = getClassPathes();
@@ -200,10 +200,10 @@ public class XScanner {
 	}
 
     public static List<ClassEntry> scan(String includes, String excludes) {
-        return scan(newMatcher(includes, excludes));
+        return scan(new ScanMatcher(includes, excludes));
     }
 
-	public static List<ClassEntry> scan(Matcher matcher) {
+	public static List<ClassEntry> scan(ScanMatcher matcher) {
 		List<ClassEntry> ret = new ArrayList<ClassEntry>();
         try {
             for (String path : getClassPathes(matcher)) {
@@ -279,24 +279,20 @@ public class XScanner {
 		}
     }
 	
-	public static Matcher newMatcher(String includes, String excludes) {
-	    return new BaseMatcher(includes, excludes);
-	}
-	
-	@FunctionalInterface
-	public static interface Matcher {
-	    public boolean match(String path);
-	}
-	
-	private static class BaseMatcher implements Matcher {
+	public static class ScanMatcher {
 	    private final SingleMatcher includes;
         private final SingleMatcher excludes;
-        public BaseMatcher(String includes, String excludes) {
+        public ScanMatcher(String includes, String excludes) {
             this.includes = new SingleMatcher(includes);
             this.excludes = new SingleMatcher(excludes);
         }
         public boolean match(String path) {
             return includes.slack(path) && !excludes.strict(path);
+        }
+        public ScanMatcher merge(ScanMatcher matcher) {
+            includes.merge(matcher.includes);
+            excludes.merge(matcher.excludes);
+            return this;
         }
 	}
     
@@ -326,10 +322,14 @@ public class XScanner {
         public boolean slack(String path) {
         	return (isJarFile(path) ? jarMatcher : clsMatcher).match(path, true);
         }
+        public void merge(SingleMatcher matcher) {
+            jarMatcher.merge(matcher.jarMatcher);
+            clsMatcher.merge(matcher.clsMatcher);
+        }
     }
     
     private static class SimpleMatcher {
-    	final Pattern[] patterns;
+    	private Pattern[] patterns;
     	public SimpleMatcher(Pattern[] patterns) {
     		this.patterns = patterns == null ? new Pattern[0] : patterns;
 		}
@@ -342,6 +342,13 @@ public class XScanner {
             }
             return false;
         }
+    	public void merge(SimpleMatcher n) {
+    	    int oLen = patterns.length;
+    	    int cLen = n.patterns.length;
+    	    Pattern[] t = Arrays.copyOf(patterns, oLen + cLen);
+    	    System.arraycopy(n.patterns, 0, t, oLen, cLen);
+    	    patterns = t;
+    	}
     }
 
 }
