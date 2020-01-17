@@ -13,8 +13,8 @@ import java.util.stream.IntStream;
 
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.code.SyntheticBuilder;
-import dev.xframe.module.ModularComponent;
 import dev.xframe.module.ModularAgent;
+import dev.xframe.module.ModularComponent;
 import dev.xframe.module.ModularHelper;
 import dev.xframe.module.ModularMethods;
 import dev.xframe.module.ModularShare;
@@ -72,8 +72,12 @@ public class MContainerBuilder {
         return modules;
     }
 	private void putToInjectModules(Map<Class<?>, ModularElement> modules, Class<?> clazz, ModularElement me) {
-	    if(clazz == null || Object.class.equals(clazz)) return;
-	    if(clazz == me.clazz || clazz.isAnnotationPresent(ModularAgent.class) || clazz.isAnnotationPresent(ModularShare.class)) modules.put(clazz, me);
+	    if(clazz == null || Object.class.equals(clazz)) {
+	        return;
+	    }
+	    if(clazz == me.clazz || clazz.isAnnotationPresent(ModularShare.class)) {
+	        modules.put(clazz, me);
+	    }
 	    putToInjectModules(modules, clazz.getSuperclass(), me);
 	    Arrays.stream(clazz.getInterfaces()).forEach(c->putToInjectModules(modules, c, me));
     }
@@ -102,7 +106,6 @@ public class MContainerBuilder {
 		CtMethod method = CtNewMethod.make(cts.get("loadmodule_method"), cc);
         cc.addMethod(method);
         MODULES_LOAD_METHOD = method.getName();
-		
 		cc.addMethod(CtNewMethod.make(makeLoadMethodBody(mes), cc));
 		cc.addMethod(CtNewMethod.make(makeUnloadMethodBody(mes), cc));
 		cc.addMethod(CtNewMethod.make(makeSaveMethodBody(mes), cc));
@@ -186,7 +189,7 @@ public class MContainerBuilder {
 	}
 	
 	private String makeAgentParts(String ctKey, ModularElement me, String localName) {
-		List<ModularElement> agents = Arrays.stream(me.clazz.getInterfaces()).map(i->injectModules.get(i)).filter(i->i!=null&&i.isAgent).collect(Collectors.toList());
+        List<ModularElement> agents = Arrays.stream(me.clazz.getInterfaces()).map(i->injectModules.get(i)).filter(m->m!=null&&m.isAgent).collect(Collectors.toList());
 		if(!agents.isEmpty()) {
 			return String.join(",", agents.stream().map(agent->
 				cts.get(ctKey)
@@ -219,7 +222,8 @@ public class MContainerBuilder {
 	}
 
     private Class<?> buildAgent(ModularElement me) {
-        return SyntheticBuilder.buildClass(me.clazz, me.clazz.getAnnotation(ModularAgent.class).invokable(), me.clazz.getAnnotation(ModularAgent.class).ignoreError(), me.clazz.getAnnotation(ModularAgent.class).boolByTrue());
+        ModularAgent agentAnno = me.clazz.getAnnotation(ModularAgent.class);
+        return SyntheticBuilder.buildClass(me.clazz, agentAnno.invokable(), agentAnno.ignoreError(), agentAnno.boolByTrue());
     }
 
     private boolean isTransient(Class<?> clazz) {

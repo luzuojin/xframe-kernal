@@ -18,4 +18,8 @@ public class ModularElement {
     public String getSharableName() {
         return sharable == null ? "" : sharable.getName();
     }
+    @Override
+    public String toString() {
+        return "ModularElement [clazz=" + clazz + "]";
+    }
 }
