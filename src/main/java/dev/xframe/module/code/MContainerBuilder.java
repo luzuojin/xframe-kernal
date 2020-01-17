@@ -140,8 +140,8 @@ public class MContainerBuilder {
 	
 	private String makeUnloadMethodBody(List<ModularElement> mes) {
 		return cts.get("unload_method")
-				.replace("${multi_resident_unload}", String.join("\n", mes.stream().filter(me->!isTransient(me.clazz)).map(this::makeModuleUnloadParts).collect(Collectors.toList())))
-				.replace("${multi_transient_unload}", String.join("\n", mes.stream().filter(me->isTransient(me.clazz)).map(this::makeModuleUnloadParts).collect(Collectors.toList())))
+				.replace("${multi_resident_unload}", String.join("\n", mes.stream().filter(me->!isTransient(me.clazz)&&!me.isAgent).map(this::makeModuleUnloadParts).collect(Collectors.toList())))
+				.replace("${multi_transient_unload}", String.join("\n", mes.stream().filter(me->isTransient(me.clazz)&&!me.isAgent).map(this::makeModuleUnloadParts).collect(Collectors.toList())))
 				;
 	}
 	

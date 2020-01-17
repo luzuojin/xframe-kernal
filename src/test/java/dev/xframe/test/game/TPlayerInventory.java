@@ -8,7 +8,7 @@ import dev.xframe.module.Module;
 import dev.xframe.module.ModuleType;
 
 @Module(ModuleType.RESIDENT)
-public class TPlayerInventory implements TInventory, TSharablePlayer {
+public class TPlayerInventory implements TInventory, TSharablePlayer, TAgent {
     
 	@Inject
     private TRepository repository;
@@ -34,6 +34,11 @@ public class TPlayerInventory implements TInventory, TSharablePlayer {
     @Override
     public void dosomething() {
         testExecution.executing(TPlayerInventory.class);
+    }
+
+    @Override
+    public boolean dox() {
+        return false;
     }
 
 }
