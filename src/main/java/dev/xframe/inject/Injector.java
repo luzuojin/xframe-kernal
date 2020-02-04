@@ -109,7 +109,7 @@ public class Injector {
         }
     }
     
-    public static class NormalInjector extends FieldInjector {
+    static class NormalInjector extends FieldInjector {
         public NormalInjector(Field field) {
             super(field);
         }
@@ -118,7 +118,7 @@ public class Injector {
         }
     }
     
-    public static class NamedInjector extends FieldInjector {
+    static class NamedInjector extends FieldInjector {
         final String name;
         public NamedInjector(Field field) {
             super(field);
