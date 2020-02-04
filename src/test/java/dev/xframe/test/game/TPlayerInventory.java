@@ -14,6 +14,8 @@ public class TPlayerInventory implements TInventory, TSharablePlayer, TAgent {
     private TRepository repository;
 	@Inject
 	private TestExecution testExecution;
+	@Inject(lazy=true)
+	private TSharableDep sharableDep;
 	
 	public void load(TPlayer player) {
 		Assert.assertNotNull(player);

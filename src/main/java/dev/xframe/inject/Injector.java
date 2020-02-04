@@ -83,37 +83,24 @@ public class Injector {
                 throw new IllegalArgumentException(type.getName() + " doesn`t loaded");
             field.set(bean, obj);
         }
-        protected boolean isNullable() {
-            return false;
+        
+        protected Object fetch(BeanContainer bc) {
+            return bc.get(type);
         }
-        protected boolean isLazy() {
-            return false;
+        
+        private Object cache;
+        private Object proxy(BeanContainer bc) {
+            return nullable ? null : ProxyBuilder.buildBySupplier(type, ()->fetch(bc));
         }
-        protected Object proxy(BeanContainer bc) {
-            return nullable ? null : ProxyBuilder.buildBySupplier(type, ()->bc.get(type));
-        }
-        protected abstract Object get(BeanContainer bc) throws Exception;
-    }
-    
-    static class NormalInjector extends FieldInjector {
-        public NormalInjector(Field field) {
-            super(field);
-        }
-        protected Object cache;
         protected final Object get(BeanContainer bc) {
             //优先偿试获取bean, 没有时获取bean proxy
             if(cache == null && (cache = fetch(bc)) == null && (cache = proxy(bc)) == null);
             return cache;
         }
-        protected Object fetch(BeanContainer bc) {
-            return bc.get(type);
-        }
-        @Override
-        protected boolean isNullable() {
+        private boolean isNullable() {
             return field.getAnnotation(Inject.class).nullable();
         }
-        @Override
-        protected boolean isLazy() {
+        private boolean isLazy() {
             return field.getAnnotation(Inject.class).lazy();
         }
         @Override
@@ -122,7 +109,16 @@ public class Injector {
         }
     }
     
-    static class NamedInjector extends NormalInjector {
+    public static class NormalInjector extends FieldInjector {
+        public NormalInjector(Field field) {
+            super(field);
+        }
+        protected Object fetch(BeanContainer bc) {
+            return bc.get(type);
+        }
+    }
+    
+    public static class NamedInjector extends FieldInjector {
         final String name;
         public NamedInjector(Field field) {
             super(field);

@@ -4,5 +4,7 @@ import dev.xframe.module.ModularShare;
 
 @ModularShare
 public interface TSharableDep {
+	
+	public void dep();
 
 }

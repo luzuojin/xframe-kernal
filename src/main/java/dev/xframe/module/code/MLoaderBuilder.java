@@ -57,7 +57,8 @@ public class MLoaderBuilder {
             this.n = n;
         }
         public <T> T load(ModuleContainer container) {
-            return ProxyBuilder.build(c, ((IModuleLoader)container)._loadModule(n));
+            Object d = ((IModuleLoader)container)._loadModule(n);
+			return d == null ? null : ProxyBuilder.build(c, d);
         }
     }
     

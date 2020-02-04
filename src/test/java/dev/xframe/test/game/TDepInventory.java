@@ -41,4 +41,8 @@ public class TDepInventory implements TInventory, TSharableDep, Loadable, TAgent
     	return true;
     }
 
+	@Override
+	public void dep() {
+	}
+
 }

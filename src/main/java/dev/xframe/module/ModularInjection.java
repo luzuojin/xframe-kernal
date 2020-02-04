@@ -58,8 +58,7 @@ public class ModularInjection {
         boolean declaringIsComponentAndPackageMatch() {
             return field.getDeclaringClass().isAnnotationPresent(ModularComponent.class) && field.getDeclaringClass().getPackage().getName().startsWith(type.getPackage().getName());
         }
-        @Override
-        protected Object get(BeanContainer bc) throws Exception {
+        protected Object fetch(BeanContainer bc) {
             return ((ModularBeanContainer) bc).getModule(loader);
         }
     }
