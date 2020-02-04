@@ -27,8 +27,7 @@ public class Injector {
             }
             return bean;
         } catch (Exception e) {
-            XCaught.throwException(e);
-            return bean;
+            return XCaught.throwException(e);
         }
     }
     
@@ -66,17 +65,19 @@ public class Injector {
     }
     
     public static abstract class FieldInjector {
-        public final Field field;
-        public final Class<?> type;
-        public final boolean nullable;
-        public final boolean isLazy;
+        protected final Field field;
+        protected final Class<?> type;
+        protected final boolean nullable;
+        protected final boolean isLazy;
+        
         public FieldInjector(Field field) {
             this.field = field;
             this.field.setAccessible(true);
             this.type = field.getType();
-            this.nullable = isNullable();
-            this.isLazy = isLazy();
+            this.nullable = field.getAnnotation(Inject.class).nullable();
+            this.isLazy = field.getAnnotation(Inject.class).lazy();
         }
+        
         public final void inject(Object bean, BeanContainer bc) throws Exception {
             Object obj = get(bc);
             if(obj == null && !nullable)
@@ -89,19 +90,13 @@ public class Injector {
         }
         
         private Object cache;
-        private Object proxy(BeanContainer bc) {
+        private Object lazing(BeanContainer bc) {
             return nullable ? null : ProxyBuilder.buildBySupplier(type, ()->fetch(bc));
         }
         protected final Object get(BeanContainer bc) {
-            //优先偿试获取bean, 没有时获取bean proxy
-            if(cache == null && (cache = fetch(bc)) == null && (cache = proxy(bc)) == null);
+            if(cache == null && (cache = fetch(bc)) == null)
+            	cache = lazing(bc);
             return cache;
-        }
-        private boolean isNullable() {
-            return field.getAnnotation(Inject.class).nullable();
-        }
-        private boolean isLazy() {
-            return field.getAnnotation(Inject.class).lazy();
         }
         @Override
         public String toString() {
