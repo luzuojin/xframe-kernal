@@ -25,7 +25,7 @@
 			<configuration>
 				<archive>
 					<manifestEntries>
-						<Agent-Class>dev.xframe.injection.code.XInstrument</Agent-Class>
+						<Agent-Class>dev.xframe.inject.code.XInstrument</Agent-Class>
 						<Can-Retransform-Classes>true</Can-Retransform-Classes>
 						<Can-Redefine-Classes>true</Can-Redefine-Classes>
 					</manifestEntries>
