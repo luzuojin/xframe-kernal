@@ -7,12 +7,12 @@ import dev.xframe.module.ModularMethods;
 public interface RegistryAdapter {
     
     @ModularMethods.Load
-    public default void z_load(Registrator registrator) {
+    public default void z_regist(Registrator registrator) {
         Registry.regist(getClass(), this, registrator);
     }
     
     @ModularMethods.Unload
-    public default void a_unload(Registrator registrator) {
+    public default void a_unregist(Registrator registrator) {
         Registry.unregist(getClass(), registrator);
     }
 
