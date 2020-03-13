@@ -2,7 +2,6 @@ package dev.xframe.net.gateway;
 
 import dev.xframe.net.codec.IMessage;
 import dev.xframe.net.session.GroupSession;
-import dev.xframe.net.session.Session;
 
 public class Upstream {
     
@@ -37,9 +36,7 @@ public class Upstream {
     synchronized void initial0() {
         if(!initiated) {
             for (int i = 0; i < connCnt; i++) {
-                Session s = connector.connect(host, tcpPort);
-                s.connect();
-                gs.add(s);
+                gs.add(connector.connect(host, tcpPort));
             }
             initiated = true;
         }
