@@ -8,14 +8,19 @@ import dev.xframe.game.Assemble;
 import dev.xframe.game.player.ModularPlayer;
 import dev.xframe.inject.Inject;
 import dev.xframe.module.ModuleType;
+import dev.xframe.task.TaskContext;
 
 @Assemble
 public class TPlayer extends ModularPlayer implements Registrator {
     
     @Inject
+    public TaskContext taskCtx;
+    @Inject
     public TSharablePlayer player;
     @Inject
     public TAgent agent;
+    @Inject
+    public TSharableDep dep;
     
     private EventBus events;
 

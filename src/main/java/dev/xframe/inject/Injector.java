@@ -74,8 +74,14 @@ public class Injector {
             this.field = field;
             this.field.setAccessible(true);
             this.type = field.getType();
-            this.nullable = field.getAnnotation(Inject.class).nullable();
-            this.isLazy = field.getAnnotation(Inject.class).lazy();
+            this.nullable = nullable(field);
+            this.isLazy = isLazy(field);
+        }
+        protected boolean nullable(Field field) {
+            return field.getAnnotation(Inject.class).nullable();
+        }
+        protected boolean isLazy(Field field) {
+            return field.getAnnotation(Inject.class).lazy();
         }
         
         public final void inject(Object bean, BeanContainer bc) throws Exception {
@@ -89,8 +95,8 @@ public class Injector {
             return bc.get(type);
         }
         
-        private Object cache;
-        private Object lazing(BeanContainer bc) {
+        protected Object cache;
+        protected Object lazing(BeanContainer bc) {
             return nullable ? null : ProxyBuilder.buildBySupplier(type, ()->fetch(bc));
         }
         protected final Object get(BeanContainer bc) {

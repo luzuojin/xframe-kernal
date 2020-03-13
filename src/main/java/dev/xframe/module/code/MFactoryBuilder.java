@@ -1,11 +1,14 @@
 package dev.xframe.module.code;
 
+import java.util.Map;
+
 import dev.xframe.module.ModularConext;
-import dev.xframe.utils.CtHelper;
+import dev.xframe.utils.CtParser;
 import dev.xframe.utils.XCaught;
 import javassist.ClassPool;
 import javassist.CtClass;
-import javassist.CtMethod;
+import javassist.CtField;
+import javassist.CtNewMethod;
 
 /**
  * 
@@ -16,28 +19,20 @@ import javassist.CtMethod;
  */
 public class MFactoryBuilder {
 
+    static final Map<String, String> cts = CtParser.parse("mcfactory.ct");
+    
     @SuppressWarnings("unchecked")
     public static <T> T build(Class<T> mcFactoryInterface) {
         try {
             ClassPool pool = ClassPool.getDefault();
             CtClass ctParent = pool.getCtClass(mcFactoryInterface.getName());
 
-            CtClass ct = pool.makeClass(mcFactoryInterface.getName() + "$Proxy");
+            CtClass ct = pool.makeClass(cts.get("impl_name"));
             ct.addInterface(ctParent);
 
-            CtMethod[] methods = ctParent.getDeclaredMethods();
-            assert methods.length == 1;
-            CtMethod pmethod = methods[0];
+            ct.addField(CtField.make(cts.get("injector_field").replace("${mcname}", ModularConext.getMCClassName()), ct));
             
-            CtClass[] params = pmethod.getParameterTypes();
-            StringBuilder body = new StringBuilder("{return new ").append(ModularConext.getMCClassName()).append("(");
-            for (int i = 0; i < params.length; i++) {
-                if(i > 0) body.append(",");
-                body.append("$").append(i+1);
-            }
-            body.append(");}");
-            
-            ct.addMethod(CtHelper.copy(pmethod, body.toString(), ct));
+            ct.addMethod(CtNewMethod.make(cts.get("impl_method").replace("${mcname}", ModularConext.getMCClassName()), ct));
 
             return (T) (ct.toClass().newInstance());
         } catch (Exception e) {

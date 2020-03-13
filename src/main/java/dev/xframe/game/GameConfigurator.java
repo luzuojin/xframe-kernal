@@ -56,7 +56,7 @@ public final class GameConfigurator implements Loadable {
             configure0(assemble, clazzes);
             
             ActionExecutor executor = ActionExecutors.newFixed("logic", threads);//max: 2*threads
-            PlayerFactory factory = new PlayerInjectFactory(newPlayerFactory());
+            PlayerFactory factory = newPlayerFactory();
             PlayerContext context = new PlayerContext(executor, factory);
             
             ApplicationContext.registBean(PlayerFactory.class, factory);
@@ -69,19 +69,6 @@ public final class GameConfigurator implements Loadable {
         
     }
     
-    class PlayerInjectFactory implements PlayerFactory {
-        final PlayerFactory factory;
-        public PlayerInjectFactory(PlayerFactory factory) {
-            this.factory = factory;
-        }
-        @Override
-        public Player newPlayer(long playerId, ActionLoop loop) {
-            Player player = factory.newPlayer(playerId, loop);
-            Injection.inject(player);
-            return player;
-        }
-    }
-
     class NormalConfigurator extends AbstConfigurator {
         Constructor<?> constructor;
         @Override
@@ -96,7 +83,9 @@ public final class GameConfigurator implements Loadable {
         protected PlayerFactory newPlayerFactory() {
             return (playerId, loop) -> {
                 try {
-                    return (Player) constructor.newInstance(playerId, loop);
+                    Player player = (Player) constructor.newInstance(playerId, loop);
+                    Injection.inject(player);
+                    return player;
                 } catch (Throwable e) {
                     throw XCaught.wrapException(e);
                 }
