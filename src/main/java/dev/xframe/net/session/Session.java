@@ -29,7 +29,7 @@ public abstract class Session {
 
     public abstract boolean isActive();
 
-    public abstract boolean reconnect();
+    public abstract boolean connect();
 
     public abstract void close();
 

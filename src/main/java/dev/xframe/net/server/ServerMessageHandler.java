@@ -1,16 +1,15 @@
 package dev.xframe.net.server;
 
 import dev.xframe.net.LifecycleListener;
-import dev.xframe.net.MessageInterceptor;
+import dev.xframe.net.MessageHandler;
 import dev.xframe.net.NetMessageHandler;
-import dev.xframe.net.cmd.CommandContext;
 import dev.xframe.net.session.Session;
 import io.netty.channel.ChannelHandlerContext;
 
 public class ServerMessageHandler extends NetMessageHandler {
 
-    public ServerMessageHandler(LifecycleListener listener, CommandContext cmds, MessageInterceptor interceptor) {
-        super(listener, cmds, interceptor);
+    public ServerMessageHandler(LifecycleListener listener, MessageHandler handler) {
+        super(listener, handler);
     }
 
     @Override

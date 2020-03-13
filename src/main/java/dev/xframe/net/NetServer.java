@@ -3,15 +3,10 @@ package dev.xframe.net;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.xframe.inject.Inject;
-import dev.xframe.inject.Injection;
-import dev.xframe.net.cmd.CommandContext;
 import dev.xframe.net.codec.MessageCrypt;
 import dev.xframe.net.codec.MessageCrypts;
 import dev.xframe.net.server.ServerChannelInitializer;
-import dev.xframe.net.server.ServerLifecycleListener;
 import dev.xframe.net.server.ServerMessageHandler;
-import dev.xframe.net.server.ServerMessageInterceptor;
 import dev.xframe.utils.XThreadFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -34,49 +29,48 @@ public class NetServer {
         return Runtime.getRuntime().availableProcessors() * 2;
     }
 	
-	@Inject
-	private CommandContext cmdCtx;
-	@Inject
-	private ServerMessageInterceptor interceptor;
-	@Inject
-	private ServerLifecycleListener listener;
 	
 	private Channel bossChannel;
 	private NioEventLoopGroup bossGroup;
 	private NioEventLoopGroup workerGroup;
 	
-	private MessageCrypt crypt = MessageCrypts.fromSysOps();
 	private int threads = defaultThreads();
-
 	private int port;
+	private MessageCrypt crypt = MessageCrypts.fromSysOps();
+	private MessageHandler handler;
+	private LifecycleListener listener;
 	
-	public NetServer listening(int port) {
-	    this.port = port;
-	    return this;
-	}
-	
-	public NetServer working(int threads)  {
-	    this.threads = threads;
-	    return this;
-	}
-	
-	public NetServer crypting(MessageCrypt crypt) {
-	    this.crypt = crypt;
-	    return this;
-	}
-	
-	public NetServer startup() {
-	    Injection.inject(this);
-	    
+	public NetServer setThreads(int threads) {
+        this.threads = threads;
+        return this;
+    }
+    public NetServer setPort(int port) {
+        this.port = port;
+        return this;
+    }
+    public NetServer setCrypt(MessageCrypt crypt) {
+        this.crypt = crypt;
+        return this;
+    }
+    public NetServer setHandler(MessageHandlerPipeline handler) {
+        this.handler = handler;
+        return this;
+    }
+    public NetServer setListener(LifecycleListener listener) {
+        this.listener = listener;
+        return this;
+    }
+
+    public NetServer startup() {
 	    bossGroup = new NioEventLoopGroup(1, new XThreadFactory("netty.boss"));
 	    workerGroup = new NioEventLoopGroup(threads, new XThreadFactory("netty.worker"));
-        NetMessageHandler dispatcher = new ServerMessageHandler(listener, cmdCtx, interceptor);
+        NetMessageHandler netHandler = new ServerMessageHandler(listener, handler);
         
         ServerBootstrap bootstrap =
 	            new ServerBootstrap()
     	            .group(bossGroup, workerGroup)
     	            .channel(NioServerSocketChannel.class)
-    	            .childHandler(new ServerChannelInitializer(dispatcher, crypt))
+    	            .childHandler(new ServerChannelInitializer(netHandler, crypt))
     	            .childOption(ChannelOption.SO_KEEPALIVE, true)//开启时系统会在连接空闲一定时间后像客户端发送请求确认连接是否有效
     	            .childOption(ChannelOption.TCP_NODELAY, true)//关闭Nagle算法
 //    	            .childOption(ChannelOption.SO_LINGER, 0)//连接关闭时,偿试把未发送完成的数据继续发送(等待时间, 如果为0则直接设置连接为CLOSE状态 不进行TIME_WAIT...)

@@ -7,7 +7,12 @@ import org.slf4j.LoggerFactory;
 
 import dev.xframe.http.HttpServer;
 import dev.xframe.inject.ApplicationContext;
+import dev.xframe.inject.Inject;
+import dev.xframe.inject.Injection;
+import dev.xframe.net.MessageHandlerPipeline;
 import dev.xframe.net.NetServer;
+import dev.xframe.net.gateway.Gateway;
+import dev.xframe.net.server.ServerLifecycleListener;
 import dev.xframe.utils.XProcess;
 
 public class Bootstrap {
@@ -24,6 +29,9 @@ public class Bootstrap {
     int tcpPort;
     int tcpThreads;
     NetServer tcp;
+    Gateway gateway;
+    @Inject
+    ServerLifecycleListener sLifecycleListener;
     
     int httpPort;
     int httpThreads;
@@ -66,6 +74,10 @@ public class Bootstrap {
         this.tcpThreads = nThreads;
         return this;
     }
+    public Bootstrap useGateway(Gateway gateway) {
+        this.gateway = gateway;
+        return this;
+    }
     
     public Bootstrap withHttp(int port) {
         return withHttp(port, HttpServer.defaultThreads());
@@ -87,12 +99,14 @@ public class Bootstrap {
             
             ApplicationContext.initialize(includes, excludes);
             
+            Injection.inject(this);
+            
             if(tcpPort > 0) {
-                tcp = new NetServer().working(tcpThreads).listening(tcpPort).startup();
+                tcp = new NetServer().setThreads(tcpThreads).setPort(tcpPort).setListener(sLifecycleListener).setHandler(new MessageHandlerPipeline().addLast(gateway)).startup();
             }
 
             if(httpPort > 0) {
-                http = new HttpServer().working(httpThreads).listening(httpPort).startup();
+                http = new HttpServer().setThreads(httpThreads).setPort(httpPort).startup();
             }
         } catch (Throwable ex) {
             logger.error("Startup failed!", ex);

@@ -3,8 +3,6 @@ package dev.xframe.net;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.xframe.net.cmd.Command;
-import dev.xframe.net.cmd.CommandContext;
 import dev.xframe.net.codec.IMessage;
 import dev.xframe.net.session.Session;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -22,42 +20,25 @@ public class NetMessageHandler extends ChannelInboundHandlerAdapter {
 	
 	protected static Logger logger = LoggerFactory.getLogger(NetMessageHandler.class);
 	
-	protected CommandContext cmds;
 	protected LifecycleListener listener;
-	protected MessageInterceptor interceptor;
+	protected MessageHandler hanlder;
 	
-	public NetMessageHandler(LifecycleListener listener, CommandContext cmds, MessageInterceptor interceptor) {
+	public NetMessageHandler(LifecycleListener listener, MessageHandler hanlder) {
 	    this.listener = listener;
-	    this.cmds = cmds;
-	    this.interceptor = interceptor;
+	    this.hanlder = hanlder;
 	}
 
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-		IMessage req = (IMessage) msg;
-		Session session = Session.get(ctx);
-		if(interceptor == null || (!interceptor.intercept(session, req))) {//被拦截的情况下不执行
-		    exec(session, req);
-		}
-	}
-
-    private void exec(Session session, IMessage req) {
-        
-        listener.onMessageRecieve(session, req);
-        
-        int code = req.getCode();
-        Command cmd = cmds.get(code);
-        if(cmd == null) {
-            logger.warn("Can't find the command: " + code);
-            return;
+	    IMessage req = (IMessage) msg;
+	    Session session = Session.get(ctx);
+	    listener.onMessageRecieve(session, req);
+		try {
+		    hanlder.handle(session, req);
+		} catch (Throwable ex) {
+            listener.onExceptionCaught(session, req, ex);
         }
-        
-        try {
-	        cmd.execute(session, req);
-	    } catch (Throwable ex) {
-	        listener.onExceptionCaught(session, cmd, req, ex);
-	    }
-    }
+	}
 
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {

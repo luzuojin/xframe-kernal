@@ -31,7 +31,7 @@ public class ClientSession extends ChannelSession {
     }
 
     @Override
-    public boolean reconnect() {
+    public boolean connect() {
         if (this.isActive()) return true;
         if (isConnecting.get()) return false;
         if (bootstrap.config().group().isShutdown()) return false;

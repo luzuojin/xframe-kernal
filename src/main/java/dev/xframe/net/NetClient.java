@@ -1,15 +1,9 @@
 package dev.xframe.net;
 
-import dev.xframe.inject.Inject;
 import dev.xframe.inject.Injection;
 import dev.xframe.net.client.ClientChannelInitializer;
-import dev.xframe.net.client.ClientLifecycleListener;
 import dev.xframe.net.client.ClientMessageHandler;
-import dev.xframe.net.client.ClientMessageInterceptor;
 import dev.xframe.net.client.ClientSession;
-import dev.xframe.net.cmd.CommandContext;
-import dev.xframe.net.codec.IMessage;
-import dev.xframe.net.codec.Message;
 import dev.xframe.net.codec.MessageCrypt;
 import dev.xframe.net.session.Session;
 import dev.xframe.utils.XCaught;
@@ -25,37 +19,38 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 public class NetClient {
-
-    @Inject
-    private CommandContext cmdCtx;
-    @Inject
-    private ClientLifecycleListener listener;
-    @Inject
-    private ClientMessageInterceptor interceptor;
     
+    public static int defaultThreads() {
+        return Runtime.getRuntime().availableProcessors();
+    }
+
     private EventLoopGroup group;
     private Bootstrap bootstrap;
     
-    private int threads;
-    private IMessage heartbeat;
+    private int threads = defaultThreads();
+    private int heartbeatCode;
     private MessageCrypt crypt;
+    private MessageHandler handler;
+    private LifecycleListener listener;
     
-    public NetClient working(int threads) {
+    public NetClient setListener(LifecycleListener listener) {
+        this.listener = listener;
+        return this;
+    }
+    public NetClient setThreads(int threads) {
         this.threads = threads;
         return this;
     }
-    
-    public NetClient heartbeat(int heartbeat) {
-        return heartbeat(Message.build(heartbeat));
-    }
-    
-    public NetClient heartbeat(IMessage heartbeat) {
-        this.heartbeat = heartbeat;
+    public NetClient setHeartbeat(int heartbeatCode) {
+        this.heartbeatCode = heartbeatCode;
         return this;
     }
-    
-    public NetClient crypting(MessageCrypt crypt) {
+    public NetClient setCrypt(MessageCrypt crypt) {
         this.crypt = crypt;
+        return this;
+    }
+    public NetClient setHandler(MessageHandlerPipeline handler) {
+        this.handler = handler;
         return this;
     }
 
@@ -65,7 +60,7 @@ public class NetClient {
             
             this.bootstrap = new Bootstrap();
             this.group = new NioEventLoopGroup(threads, new XThreadFactory("netty.client"));
-            NetMessageHandler dispatcher = new ClientMessageHandler(listener, cmdCtx, interceptor);
+            NetMessageHandler netHandler = new ClientMessageHandler(listener, handler);
             
             this.bootstrap.group(group)
             .channel(NioSocketChannel.class)
@@ -75,7 +70,7 @@ public class NetClient {
             .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)//使用bytebuf池, 默认不使用
             .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator())//使用bytebuf池, 默认不使用
             .option(ChannelOption.WRITE_BUFFER_WATER_MARK, WriteBufferWaterMark.DEFAULT)//消息缓冲区
-            .handler(new ClientChannelInitializer(dispatcher, crypt, heartbeat));
+            .handler(new ClientChannelInitializer(netHandler, crypt, heartbeatCode));
             
         }
         return this;

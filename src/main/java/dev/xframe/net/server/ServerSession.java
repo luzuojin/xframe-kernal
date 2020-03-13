@@ -17,8 +17,8 @@ public class ServerSession extends ChannelSession {
     }
     
     @Override
-    public boolean reconnect() {
-        throw new IllegalArgumentException("Server session don`t support reconnect!");
+    public boolean connect() {
+        throw new UnsupportedOperationException("ServerSession don`t support connect!");
     }
 
 }

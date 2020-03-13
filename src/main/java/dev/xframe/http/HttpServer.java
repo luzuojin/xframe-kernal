@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import dev.xframe.http.service.ServiceContext;
 import dev.xframe.inject.Inject;
-import dev.xframe.inject.Injection;
+import dev.xframe.inject.Prototype;
 import dev.xframe.utils.XThreadFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -21,6 +21,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
  * 不支持keepAlive
  * @author luzj
  */
+@Prototype
 public class HttpServer {
     
     private static Logger logger = LoggerFactory.getLogger(HttpServer.class);
@@ -37,22 +38,18 @@ public class HttpServer {
     private NioEventLoopGroup workerGroup;
     
     private int threads = defaultThreads();
-    
     private int port;
     
-    public HttpServer listening(int port) {
+    public HttpServer setThreads(int threads) {
+        this.threads = threads;
+        return this;
+    }
+    public HttpServer setPort(int port) {
         this.port = port;
         return this;
     }
     
-    public HttpServer working(int threads) {
-        this.threads = threads;
-        return this;
-    }
-    
     public HttpServer startup() {
-        Injection.inject(this);
-        
         bossGroup = new NioEventLoopGroup(1, new XThreadFactory("http.boss"));
         workerGroup = new NioEventLoopGroup(threads, new XThreadFactory("http.worker"));
         
