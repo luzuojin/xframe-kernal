@@ -8,14 +8,19 @@ import dev.xframe.inject.Injection;
 
 public class Junit4ClassRunner extends BlockJUnit4ClassRunner {
     
+    private static boolean initialized = false;//only init once
+    
     public Junit4ClassRunner(Class<?> klass) throws InitializationError {
         super(klass);
         this.init();
     }
 
-    protected void init() {
-        Class<?> clazz = getTestClass().getJavaClass();
-        ApplicationContext.initialize(getIncludes(clazz), getExcludes(clazz));
+    protected synchronized void init() {
+        if(!initialized) {
+            Class<?> clazz = getTestClass().getJavaClass();
+            ApplicationContext.initialize(getIncludes(clazz), getExcludes(clazz));
+            initialized = true;
+        }
     }
     
     protected String getIncludes(Class<?> c) {
