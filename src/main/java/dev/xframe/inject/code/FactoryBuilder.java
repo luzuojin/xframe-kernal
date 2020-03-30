@@ -32,7 +32,14 @@ public class FactoryBuilder {
         try {
             ClassPool pool = ClassPool.getDefault();
             CtClass ctParent = pool.getCtClass(factoryInteface.getName());
-            CtClass ct = pool.makeClass(factoryInteface.getName() + "$Factory");
+            String factoryName = factoryInteface.getName() + "$Factory";
+            
+            Class<?> dc = defineClass(factoryName);
+            if(dc != null) {
+                return dc.newInstance();
+            }
+            
+            CtClass ct = pool.makeClass(factoryName);
             ct.addInterface(ctParent);
             
             Method method = annoType.getDeclaredMethods()[0];//annoation has one method
@@ -70,6 +77,14 @@ public class FactoryBuilder {
         } catch (Throwable e) {
             return XCaught.throwException(e);
         }
+    }
+    
+    private static Class<?> defineClass(String name) {
+        Class<?> proxyClass = null;
+        try {
+            proxyClass = Class.forName(name);
+        } catch(ClassNotFoundException e) {}
+        return proxyClass;
     }
     
     private static boolean isCaseTypeEnum(Class<?> keyType) {
