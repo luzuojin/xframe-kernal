@@ -17,7 +17,11 @@ public final class Responses {
     }
     
     public static Response of(String text) {
-    	return new PlainResponse(ContentType.TEXT, XStrings.getBytesUtf8(text));
+    	return of(ContentType.TEXT, text);
+    }
+    
+    public static Response of(ContentType type, String text) {
+        return new PlainResponse(type, XStrings.getBytesUtf8(text));
     }
     
     public static Response of(File file) {
