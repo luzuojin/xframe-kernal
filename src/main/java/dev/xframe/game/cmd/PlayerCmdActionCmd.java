@@ -3,7 +3,8 @@ package dev.xframe.game.cmd;
 import java.util.function.Supplier;
 
 import dev.xframe.game.player.ModularPlayer;
-import dev.xframe.inject.ApplicationContext;
+import dev.xframe.inject.Inject;
+import dev.xframe.inject.Injection;
 import dev.xframe.inject.Injector;
 import dev.xframe.module.ModularConext;
 import dev.xframe.module.ModularInjection;
@@ -15,22 +16,23 @@ import dev.xframe.utils.XLambda;
 
 public final class PlayerCmdActionCmd<T extends ModularPlayer> extends PlayerCommand<T>  {
 
+    @Inject
+    private PlayerCmdInvoker<T> invoker;
+    
     final Class<?> clazz;
     final Injector injector;
     final Supplier<?> getter;
     final ModuleTypeLoader loader;
     final LiteParser liteParser;
-    final PlayerCmdInvoker<T> invoker;
     
-    @SuppressWarnings("unchecked")
     public PlayerCmdActionCmd(Class<?> clazz) {
         try {
+            Injection.inject(this);
             this.clazz = clazz;
             this.getter = XLambda.createByConstructor(clazz);
             this.loader = ModularConext.getLoader(PlayerCmdAction.getModuleType(clazz));
             this.injector = ModularInjection.build(clazz);
             this.liteParser = PlayerCmdLiteAction.class.isAssignableFrom(clazz) ? new LiteParser(clazz, PlayerCmdLiteAction.class) : null;
-            this.invoker = ApplicationContext.fetchBean(PlayerCmdInvoker.class);
         } catch (Throwable e) {
             throw XCaught.wrapException(clazz.getName(), e);
         }
