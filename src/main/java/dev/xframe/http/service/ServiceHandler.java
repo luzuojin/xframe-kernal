@@ -20,7 +20,7 @@ public class ServiceHandler {
     public final void run(ChannelHandlerContext ctx, Request req) {
     	Response resp = Responses.NOT_FOUND;
     	HttpInterceptor interceptor = config.getInterceptor();
-    	ServicePair pair = serCtx.get(req.path());
+    	ServicePair pair = serCtx.get(req.xpath());
     	if(pair != null) {
     		try {
     			resp = interceptor.intercept(req);
