@@ -3,7 +3,6 @@ package dev.xframe.http.service;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
-import dev.xframe.http.service.config.ServiceConfig;
 import dev.xframe.http.service.path.PathMap;
 import dev.xframe.http.service.path.PathMatcher;
 import dev.xframe.http.service.path.PathPattern;
@@ -19,8 +18,6 @@ import dev.xframe.inject.code.Codes;
 @Bean
 public class ServiceContext implements Eventual {
     
-    @Inject
-    private ServiceConfig config;
     @Inject
     private ServiceBuilder builder;
     
@@ -53,12 +50,12 @@ public class ServiceContext implements Eventual {
 		}
     }
 
-    public ServiceInvoker get(String path) {
+    public ServicePair get(String path) {
     	Pair pair = paths.get(path);
     	if(pair != null) {
     		PathMatcher matcher = pair.pattern.compile(path);
     		if(matcher.find()) {
-    			return new ServiceInvoker(config.getInterceptor(), matcher, pair.serivce);
+    			return new ServicePair(matcher, pair.serivce);
     		}
     	}
     	return null;
@@ -66,10 +63,6 @@ public class ServiceContext implements Eventual {
 
     public int size() {
         return paths.size();
-    }
-    
-    public ServiceConfig config() {
-        return config;
     }
     
     @Override

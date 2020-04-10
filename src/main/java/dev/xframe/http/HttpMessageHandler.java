@@ -3,8 +3,7 @@ package dev.xframe.http;
 import java.net.InetSocketAddress;
 
 import dev.xframe.http.response.Responses;
-import dev.xframe.http.service.ServiceContext;
-import dev.xframe.http.service.ServiceInvoker;
+import dev.xframe.http.service.ServiceHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -17,10 +16,10 @@ import io.netty.handler.codec.http.FullHttpRequest;
  */
 public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
     
-    private final ServiceContext ctx;
+    private final ServiceHandler handler;
     
-    public HttpMessageHandler(ServiceContext ctx) {
-        this.ctx = ctx;
+    public HttpMessageHandler(ServiceHandler handler) {
+    	this.handler = handler;
     }
     
     @Override
@@ -42,28 +41,11 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
 
     protected void doRequest(ChannelHandlerContext ctx, Request req) {
         if(req.isSucc()) {
-            ServiceInvoker invoker = this.ctx.get(req.xpath());
-            if(invoker != null) {
-                doInvoke(ctx, req, invoker);
-            } else {
-                Responses.NOT_FOUND.writeTo(ctx, req);
-            }
+            handler.run(ctx, req);
         } else {
             Responses.BAD_REQUEST.writeTo(ctx, req);
         }
     }
-
-    protected void doInvoke(ChannelHandlerContext ctx, Request req, ServiceInvoker invoker) {
-        try {
-            sendResponse(ctx, req, invoker.invoke(req));
-        } catch (Throwable ex) {
-            sendResponse(ctx, req, this.ctx.config().getErrorhandler().handle(req, ex));
-        }
-    }
-
-   protected void sendResponse(ChannelHandlerContext ctx, Request req, Response resp) {
-       resp.writeTo(ctx, req);
-   }
 
    protected void sendNotFoudResponse(ChannelHandlerContext ctx) {
 	   Responses.NOT_FOUND.writeTo(ctx, null);

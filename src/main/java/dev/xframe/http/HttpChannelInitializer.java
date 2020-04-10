@@ -1,6 +1,6 @@
 package dev.xframe.http;
 
-import dev.xframe.http.service.ServiceContext;
+import dev.xframe.http.service.ServiceHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -10,10 +10,10 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
 
 public class HttpChannelInitializer extends ChannelInitializer<SocketChannel>{
     
-    private final ServiceContext ctx;
+    private final ServiceHandler handler;
     
-    public HttpChannelInitializer(ServiceContext ctx) {
-        this.ctx = ctx;
+    public HttpChannelInitializer(ServiceHandler handler) {
+        this.handler = handler;
     }
     
     @Override
@@ -26,7 +26,7 @@ public class HttpChannelInitializer extends ChannelInitializer<SocketChannel>{
         // Remove the following line if you don't want automatic content compression.
         //p.addLast(new HttpContentCompressor());
         p.addLast(new HttpResponseEncoder());
-        p.addLast(new HttpMessageHandler(ctx));
+        p.addLast(new HttpMessageHandler(handler));
         
     }
 

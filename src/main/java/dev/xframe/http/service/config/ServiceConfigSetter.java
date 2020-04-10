@@ -49,7 +49,7 @@ public class ServiceConfigSetter implements ServiceConfig, Loadable {
     }
 
     public void setInterceptor(Consumer<HttpInterceptor> setter) {
-        setter.accept(new HttpInterceptor() {});
+        setter.accept(r -> null);
     }
 
     public void setErrorHandler(Consumer<ErrorHandler> setter) {

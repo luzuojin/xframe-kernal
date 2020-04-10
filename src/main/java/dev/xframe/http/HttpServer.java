@@ -3,7 +3,7 @@ package dev.xframe.http;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.xframe.http.service.ServiceContext;
+import dev.xframe.http.service.ServiceHandler;
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.Injection;
 import dev.xframe.utils.XThreadFactory;
@@ -30,7 +30,7 @@ public class HttpServer {
     }
     
     @Inject
-    private ServiceContext serviceCtx;
+    private ServiceHandler handler;
     
     private Channel bossChannel;
     private NioEventLoopGroup bossGroup;
@@ -58,7 +58,7 @@ public class HttpServer {
                 new ServerBootstrap()
                     .group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new HttpChannelInitializer(serviceCtx))
+                    .childHandler(new HttpChannelInitializer(handler))
                     .childOption(ChannelOption.SO_KEEPALIVE, false)//开启时系统会在连接空闲一定时间后像客户端发送请求确认连接是否有效
                     .childOption(ChannelOption.TCP_NODELAY, true)//关闭Nagle算法
 //                    .childOption(ChannelOption.SO_LINGER, 0)//连接关闭时,偿试把未发送完成的数据继续发送(等待时间, 如果为0则直接设置连接为CLOSE状态 不进行TIME_WAIT...)

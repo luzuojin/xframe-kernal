@@ -7,12 +7,6 @@ import dev.xframe.inject.Synthetic;
 @Synthetic
 public interface HttpInterceptor {
     
-    default Response before(Request req) {
-        return null;
-    }
+    Response intercept(Request req);
     
-    default void after(Request req, Response resp) {
-        //do nothing
-    }
-
 }
