@@ -1,19 +1,20 @@
 package dev.xframe.boot;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import dev.xframe.inject.ApplicationContext;
 import dev.xframe.inject.Configurator;
 import dev.xframe.inject.Eventual;
+import dev.xframe.inject.Ordered;
+import dev.xframe.inject.Ordered.Collection;
 import dev.xframe.inject.code.Codes;
 import dev.xframe.utils.XLogger;
 
 @Configurator
 public class ShutdownHook implements Eventual {
 
-	private List<ShutdownAgent> agents;
+	private Collection<ShutdownAgent> agents;
 	
 	private Thread hook = new Thread(this::shutdownNow, "hook");
 	
@@ -64,9 +65,8 @@ public class ShutdownHook implements Eventual {
 		agents = Codes.getDeclaredClasses().stream()
 					.filter(this::isAgent)
 					.filter(this::existsBean)
-					.sorted(this::compareAgent)
 					.map(this::getAgentBean)
-					.collect(Collectors.toList());
+					.collect(Collectors.toCollection(Ordered.Collection::new));
 		
 		Runtime.getRuntime().addShutdownHook(this.hook);
 	}
@@ -76,20 +76,11 @@ public class ShutdownHook implements Eventual {
 	}
 
 	private boolean existsBean(Class<?> c) {
-		return ApplicationContext.fetchBean(c) != null;
+		return getAgentBean(c) != null;
 	}
 
 	private ShutdownAgent getAgentBean(Class<?> c) {
 		return (ShutdownAgent) ApplicationContext.fetchBean(c);
 	}
 
-	private int compareAgent(Class<?> c1, Class<?> c2) {
-		return Integer.compare(getOrder(c2), getOrder(c1));//big-->small
-	}
-
-	private int getOrder(Class<?> c) {
-		ShutdownOrder o = c.getAnnotation(ShutdownOrder.class);
-		return o == null ? 0 : o.value();
-	}
-	
 }

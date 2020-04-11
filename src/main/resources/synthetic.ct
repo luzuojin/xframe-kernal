@@ -8,7 +8,7 @@ public class ${synthetic_name} extends ${synthetic_basic} implements dev.xframe.
     ///
 
     ///delegates_field
-    final java.util.LinkedList _delegates = new java.util.LinkedList();
+    final dev.xframe.inject.Ordered.Collection _delegates = new dev.xframe.inject.Ordered.Collection();
     ///
     
     public void methodFromSupper()
