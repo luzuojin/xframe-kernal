@@ -1,12 +1,12 @@
 package dev.xframe.net.cmd;
 
+import dev.xframe.inject.Bean;
 import dev.xframe.inject.Inject;
-import dev.xframe.inject.Prototype;
 import dev.xframe.net.codec.IMessage;
 import dev.xframe.net.session.Session;
 import dev.xframe.utils.XLogger;
 
-@Prototype
+@Bean
 public class CommandHandler {
     
     @Inject

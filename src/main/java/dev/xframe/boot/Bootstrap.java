@@ -33,6 +33,8 @@ public class Bootstrap {
     NetServer tcp;
     Gateway gateway;
     @Inject
+    CommandHandler cmdHandler;
+    @Inject
     ServerLifecycleListener sLifecycleListener;
     @Inject
     ServerMessageInterceptor sMessageInterceptor;
@@ -106,7 +108,7 @@ public class Bootstrap {
             Injection.inject(this);
             
             if(tcpPort > 0) {
-                tcp = new NetServer().setThreads(tcpThreads).setPort(tcpPort).setListener(sLifecycleListener).setHandler(new MessageHandler(sMessageInterceptor, getCmdHandler())).startup();
+                tcp = new NetServer().setThreads(tcpThreads).setPort(tcpPort).setListener(sLifecycleListener).setHandler(newMessageHandler()).startup();
             }
 
             if(httpPort > 0) {
@@ -118,11 +120,11 @@ public class Bootstrap {
         }
         return this;
     }
-
-	private CommandHandler getCmdHandler() {
-		return gateway == null ? new CommandHandler() : gateway;
-	}
     
+    private MessageHandler newMessageHandler() {
+    	return new MessageHandler(sMessageInterceptor, (gateway != null) ? gateway : cmdHandler);
+    }
+
     public Bootstrap shutdown() {
         if(http != null) http.shutdown();
         if(tcp != null) tcp.shutdown();
