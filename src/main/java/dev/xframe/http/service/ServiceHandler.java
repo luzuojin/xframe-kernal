@@ -17,7 +17,7 @@ public class ServiceHandler {
 	@Inject
 	private ServiceContext serCtx;
 	
-    public final void run(ChannelHandlerContext ctx, Request req) {
+    public final void exec(ChannelHandlerContext ctx, Request req) {
     	Response resp = Responses.NOT_FOUND;
     	HttpInterceptor interceptor = config.getInterceptor();
     	ServicePair pair = serCtx.get(req.xpath());

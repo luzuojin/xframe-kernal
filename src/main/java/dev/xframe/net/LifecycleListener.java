@@ -13,7 +13,7 @@ public interface LifecycleListener {
     
     public void onSessionUnRegister(Session session);
     
-    public void onExceptionCaught(Session session, IMessage req, Throwable ex);
+    public void onExceptionCaught(Session session, IMessage message, Throwable ex);
 
     public void onMessageFlushSlow(Session session);
 

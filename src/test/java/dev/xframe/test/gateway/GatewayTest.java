@@ -20,7 +20,6 @@ public class GatewayTest {
         Gateway gateway = new Gateway()
                             //远程连接管理线程池大小&心跳协议号
                                 .setThreads(4)
-                                .setHeartbeat(114)
                             //转发规则
                                 .add(new Route()//一个上游服务器
                                         .name("xcat_001")

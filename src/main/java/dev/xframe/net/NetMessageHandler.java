@@ -34,7 +34,7 @@ public class NetMessageHandler extends ChannelInboundHandlerAdapter {
 	    Session session = Session.get(ctx);
 	    listener.onMessageRecieve(session, req);
 		try {
-		    hanlder.handle(session, req);
+		    hanlder.run(session, req);
 		} catch (Throwable ex) {
             listener.onExceptionCaught(session, req, ex);
         }

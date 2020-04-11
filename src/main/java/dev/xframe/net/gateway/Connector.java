@@ -118,4 +118,7 @@ class Connector implements ClientLifecycleListener {
     @Override
     public void onMessageFlushSlow(Session session) {
     }
+	@Override
+	public void onSessionIdle(Session session) {
+	}
 }

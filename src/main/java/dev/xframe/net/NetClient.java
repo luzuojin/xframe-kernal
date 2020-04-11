@@ -2,6 +2,7 @@ package dev.xframe.net;
 
 import dev.xframe.inject.Injection;
 import dev.xframe.net.client.ClientChannelInitializer;
+import dev.xframe.net.client.ClientLifecycleListener;
 import dev.xframe.net.client.ClientMessageHandler;
 import dev.xframe.net.client.ClientSession;
 import dev.xframe.net.codec.MessageCrypt;
@@ -28,12 +29,11 @@ public class NetClient {
     private Bootstrap bootstrap;
     
     private int threads = defaultThreads();
-    private int heartbeatCode;
     private MessageCrypt crypt;
     private MessageHandler handler;
-    private LifecycleListener listener;
+    private ClientLifecycleListener listener;
     
-    public NetClient setListener(LifecycleListener listener) {
+    public NetClient setListener(ClientLifecycleListener listener) {
         this.listener = listener;
         return this;
     }
@@ -41,15 +41,11 @@ public class NetClient {
         this.threads = threads;
         return this;
     }
-    public NetClient setHeartbeat(int heartbeatCode) {
-        this.heartbeatCode = heartbeatCode;
-        return this;
-    }
     public NetClient setCrypt(MessageCrypt crypt) {
         this.crypt = crypt;
         return this;
     }
-    public NetClient setHandler(MessageHandlerPipeline handler) {
+    public NetClient setHandler(MessageHandler handler) {
         this.handler = handler;
         return this;
     }
@@ -70,7 +66,7 @@ public class NetClient {
             .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)//使用bytebuf池, 默认不使用
             .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator())//使用bytebuf池, 默认不使用
             .option(ChannelOption.WRITE_BUFFER_WATER_MARK, WriteBufferWaterMark.DEFAULT)//消息缓冲区
-            .handler(new ClientChannelInitializer(netHandler, crypt, heartbeatCode));
+            .handler(new ClientChannelInitializer(netHandler, crypt, listener));
             
         }
         return this;

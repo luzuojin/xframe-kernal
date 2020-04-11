@@ -52,7 +52,7 @@ public class NetServer {
         this.crypt = crypt;
         return this;
     }
-    public NetServer setHandler(MessageHandlerPipeline handler) {
+    public NetServer setHandler(MessageHandler handler) {
         this.handler = handler;
         return this;
     }

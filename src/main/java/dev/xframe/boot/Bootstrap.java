@@ -9,10 +9,12 @@ import dev.xframe.http.HttpServer;
 import dev.xframe.inject.ApplicationContext;
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.Injection;
-import dev.xframe.net.MessageHandlerPipeline;
+import dev.xframe.net.MessageHandler;
 import dev.xframe.net.NetServer;
+import dev.xframe.net.cmd.CommandHandler;
 import dev.xframe.net.gateway.Gateway;
 import dev.xframe.net.server.ServerLifecycleListener;
+import dev.xframe.net.server.ServerMessageInterceptor;
 import dev.xframe.utils.XProcess;
 
 public class Bootstrap {
@@ -32,6 +34,8 @@ public class Bootstrap {
     Gateway gateway;
     @Inject
     ServerLifecycleListener sLifecycleListener;
+    @Inject
+    ServerMessageInterceptor sMessageInterceptor;
     
     int httpPort;
     int httpThreads;
@@ -102,7 +106,7 @@ public class Bootstrap {
             Injection.inject(this);
             
             if(tcpPort > 0) {
-                tcp = new NetServer().setThreads(tcpThreads).setPort(tcpPort).setListener(sLifecycleListener).setHandler(new MessageHandlerPipeline().addLast(gateway)).startup();
+                tcp = new NetServer().setThreads(tcpThreads).setPort(tcpPort).setListener(sLifecycleListener).setHandler(new MessageHandler(sMessageInterceptor, getCmdHandler())).startup();
             }
 
             if(httpPort > 0) {
@@ -114,6 +118,10 @@ public class Bootstrap {
         }
         return this;
     }
+
+	private CommandHandler getCmdHandler() {
+		return gateway == null ? new CommandHandler() : gateway;
+	}
     
     public Bootstrap shutdown() {
         if(http != null) http.shutdown();

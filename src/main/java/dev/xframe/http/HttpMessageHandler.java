@@ -41,7 +41,7 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
 
     protected void doRequest(ChannelHandlerContext ctx, Request req) {
         if(req.isSucc()) {
-            handler.run(ctx, req);
+            handler.exec(ctx, req);
         } else {
             Responses.BAD_REQUEST.writeTo(ctx, req);
         }
