@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import dev.xframe.http.Request;
+import dev.xframe.http.Response;
 import dev.xframe.utils.XDateFormatter;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -49,7 +50,7 @@ public abstract class FileResponse extends WriterResponse {
 	}
 
 	@Override
-	public void write(Channel channel, Request origin) {
+	public void writeTo(Channel channel, Request origin) {
 		long lastModified = lastModified();
 		// Cache Validation
 		String ifModifiedSince = origin.headers().get(HttpHeaderNames.IF_MODIFIED_SINCE);
@@ -69,7 +70,7 @@ public abstract class FileResponse extends WriterResponse {
 		try {
 			write0(channel, origin);
 		} catch (IOException e) {
-			Responses.BAD_REQUEST.writeTo(channel, origin);
+			Response.BAD_REQUEST.getWriter().writeTo(channel, origin);
 		}
 	}
 

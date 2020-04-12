@@ -1,7 +1,7 @@
 package dev.xframe.http.service.rest;
 
 import dev.xframe.http.Request;
-import dev.xframe.http.response.Responses;
+import dev.xframe.http.Response;
 import dev.xframe.http.service.path.PathMatcher;
 
 public interface RestService {
@@ -24,7 +24,7 @@ public interface RestService {
 	}
 	
 	public default Object options(Request req, PathMatcher matcher) {
-		return Responses.OPTIONS_DEF;
+		return Response.EMPTY_ALLOW;
 	}
 
 }

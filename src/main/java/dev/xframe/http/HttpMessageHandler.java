@@ -2,7 +2,6 @@ package dev.xframe.http;
 
 import java.net.InetSocketAddress;
 
-import dev.xframe.http.response.Responses;
 import dev.xframe.http.service.ServiceHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -43,16 +42,16 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
         if(req.isSucc()) {
             handler.exec(ctx, req);
         } else {
-            Responses.BAD_REQUEST.writeTo(ctx, req);
+            Response.BAD_REQUEST.getWriter().writeTo(ctx, req);
         }
     }
 
    protected void sendNotFoudResponse(ChannelHandlerContext ctx) {
-	   Responses.NOT_FOUND.writeTo(ctx, null);
+	   Response.NOT_FOUND.getWriter().writeTo(ctx, null);
    }
 
    protected void sendBadRequestResponse(ChannelHandlerContext ctx) {
-       Responses.BAD_REQUEST.writeTo(ctx, null);
+       Response.BAD_REQUEST.getWriter().writeTo(ctx, null);
    }
 
    @Override

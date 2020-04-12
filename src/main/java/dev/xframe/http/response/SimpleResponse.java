@@ -12,7 +12,7 @@ public abstract class SimpleResponse extends WriterResponse {
     public abstract ByteBuf content();
 	
 	@Override
-	public void write(Channel channel, Request origin) {
+	public void writeTo(Channel channel, Request origin) {
 		ByteBuf content = content();
 		int length = content.readableBytes();
 

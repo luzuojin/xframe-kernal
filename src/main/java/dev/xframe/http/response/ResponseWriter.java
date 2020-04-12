@@ -2,9 +2,14 @@ package dev.xframe.http.response;
 
 import dev.xframe.http.Request;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 
 public interface ResponseWriter {
 	
-	void write(Channel channel, Request origin);
+	default void writeTo(ChannelHandlerContext ctx, Request origin) {
+		writeTo(ctx.channel(), origin);
+	}
+	
+	public void writeTo(Channel channel, Request origin);
 	
 }

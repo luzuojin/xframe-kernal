@@ -7,7 +7,6 @@ import org.junit.Ignore;
 import dev.xframe.http.Request;
 import dev.xframe.http.Response;
 import dev.xframe.http.request.HttpBody;
-import dev.xframe.http.response.Responses;
 import dev.xframe.http.response.SimpleResponse;
 import dev.xframe.http.service.Rest;
 import dev.xframe.http.service.ServiceBuilder;
@@ -58,7 +57,7 @@ public class RestServiceTest {
             }
             @Override
             public void setRespEncoder(Consumer<RespEncoder> setter) {
-                setter.accept(resp -> Responses.of(resp.toString()));
+                setter.accept(resp -> Response.of(resp.toString()));
             }
 		};
 		configurer.load();

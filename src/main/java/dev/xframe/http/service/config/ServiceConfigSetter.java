@@ -3,7 +3,6 @@ package dev.xframe.http.service.config;
 import java.util.function.Consumer;
 
 import dev.xframe.http.Response;
-import dev.xframe.http.response.Responses;
 import dev.xframe.inject.Configurator;
 import dev.xframe.inject.Loadable;
 import dev.xframe.inject.Providable;
@@ -53,7 +52,7 @@ public class ServiceConfigSetter implements ServiceConfig, Loadable {
     }
 
     public void setErrorHandler(Consumer<ErrorHandler> setter) {
-        setter.accept((r, e) -> Responses.of(XStrings.getStackTrace(e)));
+        setter.accept((r, e) -> Response.of(XStrings.getStackTrace(e)));
     }
 
     public void setBodyDecoder(Consumer<BodyDecoder> setter) {
