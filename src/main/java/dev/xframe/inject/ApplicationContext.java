@@ -106,7 +106,7 @@ public class ApplicationContext {
     }
     
     private static void loadBeans(List<Class<?>> classes) {
-        new Dependences(classes).analyse().forEach(c -> registBean(Injection.makeInstanceAndInject(c)));
+        new Dependences(classes).analyse().filter(c -> !c.isAnnotationPresent(Prototype.class)).forEach(c -> registBean(Injection.makeInstanceAndInject(c)));
     }
     
     /**
