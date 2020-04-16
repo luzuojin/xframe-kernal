@@ -65,7 +65,7 @@ public class ApplicationContext {
     }
 
     protected static boolean isProxyRequired(Class<?> clazz) {
-        return clazz.isAnnotationPresent(Templates.class) || (clazz.isAnnotationPresent(Bean.class) && clazz.getAnnotation(Bean.class).reloadable());
+        return clazz.isAnnotationPresent(Templates.class) || clazz.isAnnotationPresent(Reloadable.class);
     }
     protected static Map<Class<?>, Object> proxies = new HashMap<>();
     protected static Object makeProxy(Class<?> clazz, Object bean) {
@@ -83,10 +83,12 @@ public class ApplicationContext {
     }
 
     protected static Object fetchBeanTryProxy(Class<?> clazz) {
-        if(fetchBean(clazz) == null && (isProxyRequired(clazz) || isSyntheticRequired(clazz))) {//Bean不存在 如果可以为该bean创建Proxy
+        Object bean = fetchBean(clazz);
+        if(bean == null && (isProxyRequired(clazz) || isSyntheticRequired(clazz))) {//Bean不存在 如果可以为该bean创建Proxy
             registBean(clazz, null);
+            return fetchBean(clazz);
         }
-        return fetchBean(clazz);
+        return bean;
     }
 
     public static void initialize(String includes, String excludes) {
