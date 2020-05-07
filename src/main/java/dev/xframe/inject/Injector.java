@@ -99,7 +99,7 @@ public class Injector {
         protected Object lazing(BeanContainer bc) {
             return nullable ? null : ProxyBuilder.buildBySupplier(type, ()->fetch(bc));
         }
-        protected final Object get(BeanContainer bc) {
+        protected Object get(BeanContainer bc) {
             if(cache == null && (cache = fetch(bc)) == null)
             	cache = lazing(bc);
             return cache;

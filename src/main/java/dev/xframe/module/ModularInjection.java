@@ -62,6 +62,10 @@ public class ModularInjection {
         protected boolean nullable(Field field) {
             return ModuleContainer.class.isAssignableFrom(field.getDeclaringClass()) ? true : super.nullable(field);
         }
+        @Override
+        protected Object get(BeanContainer bc) {//none cache
+            return ((ModularBeanContainer) bc).getModule(loader);
+        }
         protected Object fetch(BeanContainer bc) {
             return ((ModularBeanContainer) bc).getModule(loader);
         }
