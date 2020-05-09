@@ -2,7 +2,12 @@ package dev.xframe.metric;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Metric {
+	
+	private static final Logger logger = LoggerFactory.getLogger(Metric.class);
 	
 	private final Class<?> ident;
     
@@ -63,11 +68,15 @@ public class Metric {
 		apply(used, waited);
 
 		if (used > 1000) {
-			g.scriber.onExecSlow(g);
+			logSlow(g);
 			slo.incrementAndGet();
 		} else if (waited > 6000) {
-			g.scriber.onWaitLong(g);
+			logSlow(g);
 		}
+	}
+	
+	public static void logSlow(Gauge g) {
+		logger.warn("Execute slow [" + g.name() + "] used: " + g.used() + ", waited: " + g.waited());
 	}
 
 }

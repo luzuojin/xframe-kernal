@@ -34,6 +34,10 @@ public class Metrics {
     public static void watch() {
         watching = true;
     }
+    
+    public static void unwatch() {
+    	watching = false;
+    }
 
 	public static void apply(Gauge g) {
 		if(watching) {

@@ -17,8 +17,6 @@ public class Gauge {
 	
 	long endTime;
 	
-	Scriber scriber = Scriber.NIL;
-	
 	public Gauge() {
 	}
 	
@@ -47,11 +45,6 @@ public class Gauge {
 	
 	public Gauge ending() {
 		this.endTime = System.currentTimeMillis();
-		return this;
-	}
-	
-	public Gauge with(Scriber scriber) {
-		this.scriber = scriber;
 		return this;
 	}
 	

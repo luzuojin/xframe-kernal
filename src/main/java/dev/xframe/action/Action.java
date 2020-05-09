@@ -4,10 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.xframe.metric.Gauge;
-import dev.xframe.metric.Scriber;
 import dev.xframe.utils.XDateFormatter;
 
-public abstract class Action implements Runnable, Scriber {
+public abstract class Action implements Runnable {
     
     protected static final Logger logger = LoggerFactory.getLogger(Action.class);
     
@@ -68,16 +67,6 @@ public abstract class Action implements Runnable, Scriber {
     	return this.getClass();
     }
     
-	@Override
-	public void onExecSlow(Gauge g) {
-		logger.warn("Execute slow [" + g.name() + "] used: " + g.used() + ", waited: " + g.waited());
-	}
-
-	@Override
-	public void onWaitLong(Gauge g) {
-		logger.warn("Execute slow [" + g.name() + "] used: " + g.used() + ", waited: " + g.waited() + ", size: " + loop.size());
-	}
-
 	@Override
     public String toString() {
         return getClazz().getName() + "[" + XDateFormatter.from(createTime) + "]";

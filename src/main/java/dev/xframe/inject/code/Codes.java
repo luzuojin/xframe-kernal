@@ -100,10 +100,16 @@ public class Codes {
         return XInstrument.redefine(new ClassDefinition(theClass, ctClass.toBytecode()));
     }
 	
-	public static Class<?> getClassVersioning(File classFile) throws Exception {
+	public static Class<?> versioningClass(File classFile) throws Exception {
 		ClassPool pool = getClassPool(classFile);
 		CtClass ctClass = pool.makeClass(new FileInputStream(classFile));
 		return renameClass(pool, new ClassEntry(ctClass.getName(), classFile.length(), classFile.lastModified()), ctClass);
+	}
+	
+	public static Class<?> rebaseClass(Class<?> clazz) {
+	    String clazzName = clazz.getName();
+	    int idx = clazzName.lastIndexOf("_v");
+        return idx == -1 ? clazz : defineClass(ClassPool.getDefault(), clazzName.substring(0, idx));
 	}
 	
     private static ClassPool getClassPool(File classFile) {
@@ -118,19 +124,13 @@ public class Codes {
 		        classEntryMap.get(entry.name).size == entry.size) return null;//none modify
 		int ver = addEntry(entry);
 		ClassMap refs = tryLoadRefClasses(pool, ctClass, ver);
-		ctClass.setName(newName(entry.name, ver));
+		ctClass.setName(naming(entry.name, ver));
 		ctClass.replaceClassName(refs);
 		return ctClass.toClass();
 	}
 	
-	public static Class<?> getBaseClass(Class<?> modifiedClazz) {
-	    String clazzName = modifiedClazz.getName();
-	    int idx = clazzName.lastIndexOf("_v");
-        return idx == -1 ? modifiedClazz : defineClass(ClassPool.getDefault(), clazzName.substring(0, idx));
-	}
-
-	private static String newName(String originName, int ver) {
-        return ver == 0 ? originName : (originName + String.format("_v%d", ver));
+	public static String naming(String originName, int version) {
+        return version == 0 ? originName : (originName + String.format("_v%d", version));
     }
 	
 	//加载依赖类 如果为匿名内部时 同样重命名
@@ -141,9 +141,9 @@ public class Codes {
 			if(refClass.equals(ctClass.getName())) continue;
 			if(refClass.startsWith(ctClass.getName() + "$")) {//内部类
 		        CtClass ref = pool.get(refClass);
-	        	String newName = newName(refClass, ver);
+	        	String newName = naming(refClass, ver);
 	        	ref.setName(newName);
-	        	ref.replaceClassName(ctClass.getName(), newName(ctClass.getName(), ver));
+	        	ref.replaceClassName(ctClass.getName(), naming(ctClass.getName(), ver));
 	        	ref.toClass();
 	        	cm.put(refClass, newName);
 		    } else if(matcher.match(refClass)) {//同应用内的类, 如果有就不加载, 没有加载
