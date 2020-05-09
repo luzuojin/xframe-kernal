@@ -191,7 +191,7 @@ public class MContainerBuilder {
 	private String makeAgentParts(String ctKey, ModularElement me, String localName) {
         List<ModularElement> agents = Arrays.stream(me.clazz.getInterfaces()).map(i->injectModules.get(i)).filter(m->m!=null&&m.isAgent).collect(Collectors.toList());
 		if(!agents.isEmpty()) {
-			return String.join(",", agents.stream().map(agent->
+			return String.join("\n", agents.stream().map(agent->
 				cts.get(ctKey)
 					.replace("${local_name}", localName)
 					.replace("${agent_class}", agent.proxy.getName())
