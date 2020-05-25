@@ -64,7 +64,8 @@ public class ModularInjection {
         }
         @Override
         protected Object get(BeanContainer bc) {//none cache
-            return ((ModularBeanContainer) bc).getModule(loader);
+            Object obj = fetch(bc);
+            return obj == null ? lazing(bc) : obj;
         }
         protected Object fetch(BeanContainer bc) {
             return ((ModularBeanContainer) bc).getModule(loader);
