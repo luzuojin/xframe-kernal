@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.xframe.utils.XThreadFactory;
+import io.netty.util.HashedWheelTimer;
 
 public class ActionExecutors {
     
@@ -38,15 +39,14 @@ public class ActionExecutors {
     
     public static class ThreadPoolActionExecutor implements ActionExecutor {
         
-        private static final Logger logger = LoggerFactory.getLogger(ActionExecutor.class);
-        
         private final String name;
+        
         private final ThreadPoolExecutor executor;
         
         private volatile boolean isRunning = true;
         
         //delay set
-        private ScheduleThread scheduleThread;
+        private DelayScheduler scheduler;
         
         /**
          * 执行action队列的线程池
@@ -68,16 +68,15 @@ public class ActionExecutors {
         }
         
         public void schedule(DelayAction action) {
-            if(this.scheduleThread == null) {
-                setupScheduleThread();
+            if(this.scheduler == null) {
+                setupScheduler();
             }
-            this.scheduleThread.checkin(action);
+            this.scheduler.checkin(action);
         }
         
-        private synchronized void setupScheduleThread() {
-            if(this.scheduleThread == null) {
-                this.scheduleThread = new ScheduleThread(name);
-                this.scheduleThread.start();
+        private synchronized void setupScheduler() {
+            if(this.scheduler == null) {
+                this.scheduler = DelaySchedulerFactory.makeStartedScheduler(name);
             }
         }
 
@@ -91,59 +90,10 @@ public class ActionExecutors {
                     executor.shutdown();
                 }
                 
-                if(scheduleThread != null)
-                    scheduleThread.shutdown();
+                if(scheduler != null)
+                    scheduler.shutdown();
                 
                 isRunning = false;
-            }
-        }
-        
-        static class ScheduleThread extends Thread {
-
-            private DelayQueue<DelayAction> queue;
-            private volatile boolean isRunning;
-            private int checkedCount;
-
-            public ScheduleThread(String prefix) {
-                super(prefix + "-schedule");
-                setPriority(Thread.MAX_PRIORITY); // 给予高优先级
-                queue = new DelayQueue<>();
-                isRunning = true;
-            }
-
-            public boolean isRunning() {
-                return isRunning;
-            }
-
-            public void shutdown() {
-                if (isRunning)
-                    isRunning = false;
-            }
-
-            @Override
-            public void run() {
-                while (isRunning) {
-                    try {
-                        DelayAction action = queue.take();
-                        long now = System.currentTimeMillis();
-                        if (!action.tryExec(now)) {
-                            checkin(action);
-                        }
-                        if (++checkedCount > 1024) {
-                            int size = queue.size();
-                            if (size > 32)
-                                logger.info("Waiting delay actions [{}]", size);
-                            
-                            checkedCount = 0;
-                        }
-                    } catch (Throwable e) {
-                        logger.error(getName() + " Error. ", e);
-                    }
-                }
-            }
-
-            public void checkin(DelayAction delayAction) {
-                queue.offer(delayAction);
             }
         }
         
@@ -171,6 +121,100 @@ public class ActionExecutors {
 		public ThreadFactory getThreadFactory() {
 		    return executor.getThreadFactory();
 		}
+    }
+    
+    static class DelaySchedulerFactory {
+        static DelayScheduler hashedwheel;//hashedwheel全局只用一个实例
+        static boolean useHashedWheel = Boolean.parseBoolean(System.getProperty("xframe.hashedwheel", "true"));
+        static int tick = Integer.parseInt(System.getProperty("xframe.hashedwheel.tick", "50"));
+        static synchronized DelayScheduler makeStartedScheduler(String name) {
+            if(useHashedWheel) {
+                if(hashedwheel == null) {
+                    hashedwheel = new HWDelayScheduler(tick);
+                    hashedwheel.startup();
+                }
+                return hashedwheel;
+            } else {
+                DelayScheduler s = new TDelayScheduler(name);
+                s.startup();
+                return s;
+            }
+        }
+    }
+    
+    static interface DelayScheduler {
+        void startup();
+        void shutdown();
+        void checkin(DelayAction action);
+    }
+    
+    static class TDelayScheduler extends Thread implements DelayScheduler {
+        private static final Logger logger = LoggerFactory.getLogger(ActionExecutor.class);
+        private DelayQueue<DelayAction> queue;
+        private volatile boolean isRunning;
+        private int checkedCount;
+
+        public TDelayScheduler(String prefix) {
+            super(prefix + "-scheduler");
+            setPriority(Thread.MAX_PRIORITY); // 给予高优先级
+            queue = new DelayQueue<>();
+            isRunning = true;
+        }
+        public void shutdown() {
+            if (isRunning)
+                isRunning = false;
+        }
+        @Override
+        public void startup() {
+            start();
+        }
+        @Override
+        public void run() {
+            while (isRunning) {
+                try {
+                    DelayAction action = queue.take();
+                    long now = System.currentTimeMillis();
+                    if (!action.tryExec(now)) {
+                        checkin(action);
+                    }
+                    if (++checkedCount > 1024) {
+                        int size = queue.size();
+                        if (size > 32)
+                            logger.info("Waiting delay actions [{}]", size);
+                        
+                        checkedCount = 0;
+                    }
+                } catch (Throwable e) {
+                    logger.error(getName() + " Error. ", e);
+                }
+            }
+        }
+        public void checkin(DelayAction delayAction) {
+            queue.offer(delayAction);
+        }
+    }
+    
+    static class HWDelayScheduler implements DelayScheduler {
+        final static TimeUnit unit = TimeUnit.MILLISECONDS;
+        final HashedWheelTimer timer;
+        public HWDelayScheduler(int tick) {
+            timer = new HashedWheelTimer(new XThreadFactory("delays"), tick, unit);
+        }
+        @Override
+        public void startup() {
+            timer.start();
+        }
+        public void shutdown() {
+            timer.stop();
+        }
+        public void checkin(DelayAction action) {
+            timer.newTimeout(t->runDelay(action), action.getDelay(unit), unit);
+        }
+        private void runDelay(DelayAction action) {
+            if(!action.tryExec(System.currentTimeMillis())) {
+                checkin(action);
+            }
+        }
     }
 
 }
