@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import dev.xframe.inject.beans.BeanBinder;
-import dev.xframe.inject.beans.BeanContainer;
 import dev.xframe.inject.beans.BeanIndexing;
 import dev.xframe.inject.beans.Injector;
 import dev.xframe.utils.XReflection;
@@ -22,8 +21,8 @@ public class DeclaredBinder extends ModularBinder {
 
 	@Override
 	protected List<?> getKeywords() {
-		//过滤掉BeanContainer相关的接口
-		List<Class<?>> bc = XReflection.getAssigners(BeanContainer.class);
+		//如果有.过滤掉ModuleContainer相关的接口
+		List<Class<?>> bc = XReflection.getAssigners(ModuleContainer.class);
 		return XReflection.getAssigners(master).stream().filter(c->!bc.contains(c)).collect(Collectors.toList());
 	}
 

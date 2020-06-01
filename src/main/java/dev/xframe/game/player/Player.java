@@ -4,11 +4,13 @@ import dev.xframe.action.ActionLoop;
 import dev.xframe.module.ModuleType;
 import dev.xframe.module.beans.ModuleContainer;
 
-public abstract class Player extends ModuleContainer {
+public abstract class Player {
 
 	private ActionLoop loop;
 	private long playerId;
     private int loaded;
+    
+    final ModuleContainer mc = new ModuleContainer();
     
     public Player(long playerId, ActionLoop loop) {
         this.playerId = playerId;
@@ -24,14 +26,19 @@ public abstract class Player extends ModuleContainer {
     }
     
     public boolean load(ModuleType type) {
-    	this.loadModules(type);
+    	this.mc.loadModules(type);
     	this.loaded |= type.code;
         return true;
     }
     
     public boolean unload(ModuleType type) {
-    	this.unloadModules(type);
+    	this.mc.unloadModules(type);
     	this.loaded ^= type.code;
+        return true;
+    }
+    
+    public boolean save() {
+		this.mc.saveModules();
         return true;
     }
     
@@ -66,9 +73,4 @@ public abstract class Player extends ModuleContainer {
 		return this.isLoaded(ModuleType.TRANSIENT);
 	}
 
-	public boolean save() {
-		this.saveModules();
-        return true;
-    }
-    
 }

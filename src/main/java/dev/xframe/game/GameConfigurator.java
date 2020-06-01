@@ -5,6 +5,7 @@ import dev.xframe.action.ActionExecutors;
 import dev.xframe.action.ActionLoop;
 import dev.xframe.game.cmd.PlayerCmdAction;
 import dev.xframe.game.cmd.PlayerCmdActionCmd;
+import dev.xframe.game.player.ModularAdapter;
 import dev.xframe.game.player.Player;
 import dev.xframe.game.player.PlayerContext;
 import dev.xframe.game.player.PlayerFactory;
@@ -14,7 +15,6 @@ import dev.xframe.inject.Loadable;
 import dev.xframe.inject.beans.BeanBinder;
 import dev.xframe.inject.beans.BeanRegistrator;
 import dev.xframe.inject.code.Codes;
-import dev.xframe.module.ModularContext;
 import dev.xframe.net.cmd.CommandBuilder;
 import dev.xframe.utils.XLambda;
 
@@ -25,8 +25,8 @@ public final class GameConfigurator implements Loadable {
 	private BeanRegistrator registrator;
 	@Inject
 	private CommandBuilder cmdBuilder;
-	
-	private ModularContext modularCtx;
+	@Inject
+	private ModularAdapter modularAdapter;
 
 	@Override
 	public void load() {
@@ -42,13 +42,11 @@ public final class GameConfigurator implements Loadable {
 	}
 
 	private void configure(Class<?> assemble, int threads) {
-		modularCtx = new ModularContext();
-		modularCtx.initial(assemble);
+		modularAdapter.initial(assemble);
 		
 		cmdBuilder.regist(c -> PlayerCmdAction.class.isAssignableFrom(c), PlayerCmdActionCmd::new);
 
-		ActionExecutor executor = ActionExecutors.newFixed("logic", threads);// max:
-																				// 2*threads
+		ActionExecutor executor = ActionExecutors.newFixed("logic", threads);// max: 2*threads
 		PlayerFactory factory = newPlayerFactory(assemble);
 		PlayerContext context = new PlayerContext(executor, factory);
 
@@ -60,7 +58,7 @@ public final class GameConfigurator implements Loadable {
 		PlayerFactory factory = XLambda.createByConstructor(PlayerFactory.class, assemble, long.class, ActionLoop.class);
 		return (long playerId, ActionLoop loop) -> {
 					Player player = factory.newPlayer(playerId, loop);
-					modularCtx.setupContainer(player, assemble);
+					modularAdapter.initPlayer(player);
 					return player;
 				};
 	}

@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import dev.xframe.inject.Bean;
 import dev.xframe.inject.Inject;
-import dev.xframe.inject.Prototype;
 import dev.xframe.inject.beans.BeanBinder;
 import dev.xframe.inject.beans.BeanDefiner;
 import dev.xframe.inject.beans.BeanIndexing;
@@ -19,13 +19,13 @@ import dev.xframe.inject.code.Codes;
 import dev.xframe.inject.code.SyntheticBuilder;
 import dev.xframe.module.beans.DeclaredBinder;
 import dev.xframe.module.beans.ModularBinder;
-import dev.xframe.module.beans.ModuleContainer;
 import dev.xframe.module.beans.ModularIndexes;
+import dev.xframe.module.beans.ModuleContainer;
 import dev.xframe.utils.XLambda;
 import javassist.Modifier;
 
-@Prototype
-public class ModularContext implements ModuleLoader {
+@Bean
+public class ModularContext {
 	
 	@Inject
 	private BeanRegistrator registrator;
@@ -36,34 +36,29 @@ public class ModularContext implements ModuleLoader {
 	
 	private ModularIndexes indexes;
 	
-	public ModuleContainer setupContainer(ModuleContainer mc, Class<?> assemble) {
-		mc.setup(gDefiner, indexes);
-		int index = indexes.getIndex(assemble);
-		mc.setBean(index, mc);
-		mc.integrate(indexes.getBinder(index));
-		return mc;
-	}
-	
-	public Injector newInjector(Class<?> c) {
-		return Injector.of(c, indexes);
-	}
-	
-	@Override
-	public <T> T loadModule(ModuleContainer mc, Class<T> moduleType) {
-		return getModuleLoader(moduleType).load(mc);
-	}
-	
-	public ModuleTypeLoader getModuleLoader(Class<?> moduleType) {
-		return (ModularBinder) indexes.getBinder(indexes.indexOf(moduleType));
-	}
-
-	public void initial(Class<?> assembleClass) {
+	public void initialize(Class<?> assembleClass) {
 		indexes = new ModularIndexes(gIndexing);
-		registrator.regist(BeanBinder.instanced(this, ModularContext.class, ModuleLoader.class));
+		registrator.regist(BeanBinder.instanced(this, ModularContext.class));
 		registrator.regist(BeanBinder.instanced(indexes, ModularIndexes.class));
 		indexes.regist(new DeclaredBinder(assembleClass, Injector.of(assembleClass, indexes)));
 		pretreatModules().forEach(c->indexes.regist(buildBinder(c, indexes)));
 		indexes.integrate();
+	}
+	
+	public ModuleContainer initContainer(ModuleContainer mc, Object assemble) {
+		mc.setup(gDefiner, indexes);
+		int index = indexes.getIndex(assemble.getClass());
+		mc.setBean(index, assemble);
+		mc.integrate(indexes.getBinder(index));
+		return mc;
+	}
+	
+	public ModularBinder getBinder(Class<?> clazz) {
+		return (ModularBinder) indexes.getBinder(indexes.indexOf(clazz));
+	}
+	
+	public Injector newInjector(Class<?> c) {
+		return Injector.of(c, indexes);
 	}
 
 	static Class<?> buildAgentClass(Class<?> c) {

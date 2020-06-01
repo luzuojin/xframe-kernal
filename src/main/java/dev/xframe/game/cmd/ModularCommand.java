@@ -1,9 +1,9 @@
 package dev.xframe.game.cmd;
 
+import dev.xframe.game.player.ModularAdapter;
+import dev.xframe.game.player.MTypedLoader;
 import dev.xframe.game.player.Player;
 import dev.xframe.inject.Inject;
-import dev.xframe.module.ModularContext;
-import dev.xframe.module.ModuleTypeLoader;
 import dev.xframe.net.codec.IMessage;
 import dev.xframe.utils.XGeneric;
 
@@ -16,13 +16,13 @@ import dev.xframe.utils.XGeneric;
 public abstract class ModularCommand<T extends Player, V> extends PlayerCommand<T> {
 	
 	@Inject
-	private ModularContext modularCtx;
+	private ModularAdapter adapter;
 	
-    private ModuleTypeLoader loader;
+    private MTypedLoader loader;
     
-    private ModuleTypeLoader getLoader() {
+    private MTypedLoader getLoader() {
     	if(loader == null)
-    		loader = modularCtx.getModuleLoader(getModuleType(this.getClass()));
+    		loader = adapter.getTypedLoader(getModuleType(this.getClass()));
 		return loader;
 	}
     

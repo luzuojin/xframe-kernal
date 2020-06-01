@@ -11,10 +11,9 @@ import dev.xframe.module.ModularComponent;
 import dev.xframe.module.ModularHelper;
 import dev.xframe.module.Module;
 import dev.xframe.module.ModuleType;
-import dev.xframe.module.ModuleTypeLoader;
 import dev.xframe.utils.XReflection;
 
-public class ModularBinder extends BeanBinder.Classic implements ModuleTypeLoader {
+public class ModularBinder extends BeanBinder.Classic {
 	
 	protected ModularInvoker invoker;
 
@@ -48,8 +47,7 @@ public class ModularBinder extends BeanBinder.Classic implements ModuleTypeLoade
 		return invoker;
 	}
 
-	@Override
-	public <T> T load(ModuleContainer mc) {
+	public <T> T getModuleFrom(ModuleContainer mc) {
 		return (T) mc.getBean(getIndex());
 	}
 

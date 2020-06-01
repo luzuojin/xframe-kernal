@@ -3,10 +3,10 @@ package dev.xframe.game.callable;
 import java.util.HashMap;
 import java.util.Map;
 
+import dev.xframe.game.player.ModularAdapter;
+import dev.xframe.game.player.MTypedLoader;
 import dev.xframe.game.player.Player;
 import dev.xframe.inject.ApplicationContext;
-import dev.xframe.module.ModularContext;
-import dev.xframe.module.ModuleTypeLoader;
 import dev.xframe.utils.XGeneric;
 
 /**
@@ -18,12 +18,12 @@ import dev.xframe.utils.XGeneric;
  */
 public interface ModularCallable<T extends Player, V> extends PlayerCallable<T> {
 	
-	static Map<Class<?>, ModuleTypeLoader> loaders = new HashMap<>();
+	static Map<Class<?>, MTypedLoader> loaders = new HashMap<>();
 	
-	static ModuleTypeLoader getLoader(Class<?> clazz) {
-		ModuleTypeLoader loader = loaders.get(clazz);
+	static MTypedLoader getLoader(Class<?> clazz) {
+		MTypedLoader loader = loaders.get(clazz);
 		if(loader == null) {
-			loader = ApplicationContext.fetchBean(ModularContext.class).getModuleLoader(getModuleType(clazz));
+			loader = ApplicationContext.fetchBean(ModularAdapter.class).getTypedLoader(getModuleType(clazz));
 			loaders.put(clazz, loader);
 		}
 		return loader;
