@@ -5,13 +5,13 @@ import dev.xframe.event.EventBus;
 import dev.xframe.event.Registrator;
 import dev.xframe.event.Subscriber;
 import dev.xframe.game.Assemble;
-import dev.xframe.game.player.ModularPlayer;
+import dev.xframe.game.player.Player;
 import dev.xframe.inject.Inject;
 import dev.xframe.module.ModuleType;
 import dev.xframe.task.TaskContext;
 
 @Assemble
-public class TPlayer extends ModularPlayer implements Registrator {
+public class TPlayer extends Player implements Registrator {
     
     @Inject
     public TaskContext taskCtx;

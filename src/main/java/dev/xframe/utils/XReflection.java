@@ -4,7 +4,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 @SuppressWarnings("unchecked")
 public class XReflection extends SecurityManager {
@@ -105,5 +107,23 @@ public class XReflection extends SecurityManager {
             return XCaught.throwException(e);
         }
     }
+    
+    /**
+     * 获取Class.isAssignableFrom为true的所有类
+     */
+    public static List<Class<?>> getAssigners(Class<?> clazz) {
+    	List<Class<?>> parents = new ArrayList<>();
+    	getAssigners0(parents, clazz);
+    	return parents;
+    }
+
+	private static void getAssigners0(List<Class<?>> assigners, Class<?> clazz) {
+		assigners.add(clazz);
+		Class<?> zuper = clazz.getSuperclass();
+		if(zuper != null && !Object.class.equals(zuper))
+			getAssigners0(assigners, zuper);
+		for (Class<?> interfaze : clazz.getInterfaces())
+			getAssigners0(assigners, interfaze);
+	}
     
 }

@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import dev.xframe.inject.Inject;
-import dev.xframe.inject.Injection;
+import dev.xframe.inject.beans.BeanHelper;
 import dev.xframe.inject.code.SyntheticBuilder;
 import dev.xframe.net.MessageHandler;
 import dev.xframe.net.NetClient;
@@ -26,7 +26,7 @@ public class Gateway extends CommandHandler {
     private List<Route> routes = new LinkedList<>();
     
     public Gateway() {
-    	Injection.inject(this);
+    	BeanHelper.inject(this);
         netClient = new NetClient();
         connector = new Connector(netClient);
         netClient.setHandler(new MessageHandler(interceptor, this));

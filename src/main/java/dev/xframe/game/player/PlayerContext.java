@@ -91,7 +91,7 @@ public class PlayerContext {
         players.put(playerId, player);//放入缓存中
         
         //通过playerTask Load数据
-        new Action(player.loop) {
+        new Action(player.loop()) {
             @Override
             protected void exec() {
                 if(!player.load()) {
@@ -121,7 +121,7 @@ public class PlayerContext {
         players.put(playerId, player);//放入缓存中
         
         //通过playerTask Load数据
-        new Action(player.loop) {
+        new Action(player.loop()) {
             @Override
             protected void exec() {
                 try {

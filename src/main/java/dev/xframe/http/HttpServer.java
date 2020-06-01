@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import dev.xframe.http.service.ServiceHandler;
 import dev.xframe.inject.Inject;
-import dev.xframe.inject.Injection;
+import dev.xframe.inject.beans.BeanHelper;
 import dev.xframe.utils.XThreadFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -49,7 +49,7 @@ public class HttpServer {
     }
     
     public HttpServer startup() {
-        Injection.inject(this);
+        BeanHelper.inject(this);
         
         bossGroup = new NioEventLoopGroup(1, new XThreadFactory("http.boss"));
         workerGroup = new NioEventLoopGroup(threads, new XThreadFactory("http.worker"));

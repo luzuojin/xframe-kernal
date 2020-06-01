@@ -1,5 +1,5 @@
 ///synthetic_name
-${synthetic_basic}$Synthetic
+${synthetic_basic}$Synth
 ///
 public class ${synthetic_name} extends ${synthetic_basic} implements dev.xframe.injection.code.SyntheticBuilder.ISynthetic {
     

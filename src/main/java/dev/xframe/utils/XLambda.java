@@ -59,7 +59,7 @@ public class XLambda {
 		return _create(lambdaInterface, method, true);
 	}
 	
-	private static <T> T _create(Class<T> lambdaInterface, Method method, boolean invokeSpecial) {
+	private static <T> T _create(Class<?> lambdaInterface, Method method, boolean invokeSpecial) {
 		try {
             MethodHandles.Lookup lookup = createLookup(method.getDeclaringClass());
             MethodHandle methodHandle = invokeSpecial? lookup.unreflectSpecial(method, method.getDeclaringClass()) : lookup.unreflect(method);
@@ -69,10 +69,11 @@ public class XLambda {
         }
 	}
 	
-	private static <T> T _create(Class<T> lambdaInterface, MethodHandles.Lookup lookup, MethodHandle methodHandle) throws LambdaConversionException, Throwable {
+	private static <T> T _create(Class<?> lambdaInterface, MethodHandles.Lookup lookup, MethodHandle methodHandle) throws LambdaConversionException, Throwable {
 		MethodType instantiatedMethodType = methodHandle.type();
-		MethodType samMethodType = makeMethodTypeGeneric(instantiatedMethodType);
-		String signatureName = getNameFromLambdaInterface(lambdaInterface);
+		Method interfaceMethod = getInterfaceLambdaMethod(lambdaInterface);
+		String signatureName = interfaceMethod.getName();
+		MethodType samMethodType = makeMethodTypeGeneric(instantiatedMethodType, interfaceMethod);
 		CallSite site = LambdaMetafactory.metafactory(
 				lookup,
 				signatureName,
@@ -83,24 +84,25 @@ public class XLambda {
 		return (T) site.getTarget().invoke();
 	}
 
-	private static String getNameFromLambdaInterface(Class<?> lambdaInterface) {
+	private static Method getInterfaceLambdaMethod(Class<?> lambdaInterface) {
 		assert lambdaInterface.isInterface();
-		return Arrays.stream(lambdaInterface.getMethods()).filter(m->!m.isDefault()&&(m.getModifiers()&Modifier.STATIC)==0).findAny().get().getName();
+		return Arrays.stream(lambdaInterface.getMethods()).filter(m->!m.isDefault()&&(m.getModifiers()&Modifier.STATIC)==0).findAny().get();
 	}
 
 	/**
 	 * change instantiated method type paramters to generic (Object)
 	 */
-	private static MethodType makeMethodTypeGeneric(MethodType methodType) {
+	private static MethodType makeMethodTypeGeneric(MethodType methodType, Method pmethod) {
 		MethodType sam = methodType;
-		Class<?>[] params = sam.parameterArray();
-		for (int i = 0; i < params.length; i++) {
-			if (Object.class.isAssignableFrom(params[i])){
-				sam = sam.changeParameterType(i, Object.class);
+		Class<?>[] sparams = sam.parameterArray();
+		Class<?>[] pparams = pmethod.getParameterTypes();
+		for (int i = 0; i < sparams.length; i++) {
+			if (!sparams[i].equals(pparams[i])) {
+				sam = sam.changeParameterType(i, pparams[i]);
 			}
 		}
-		if (Object.class.isAssignableFrom(sam.returnType())){
-			sam = sam.changeReturnType(Object.class);
+		if (!pmethod.getReturnType().equals(sam.returnType())) {
+			sam = sam.changeReturnType(pmethod.getReturnType());
 		}
 		return sam;
 	}

@@ -1,6 +1,7 @@
 package dev.xframe.module;
 
 import dev.xframe.inject.Synthetic;
+import dev.xframe.module.beans.ModuleContainer;
 
 @Synthetic
 public interface ModuleLoader {

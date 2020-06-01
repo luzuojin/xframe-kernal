@@ -1,8 +1,5 @@
 package dev.xframe.game;
 
-import java.lang.reflect.Constructor;
-import java.util.List;
-
 import dev.xframe.action.ActionExecutor;
 import dev.xframe.action.ActionExecutors;
 import dev.xframe.action.ActionLoop;
@@ -11,99 +8,61 @@ import dev.xframe.game.cmd.PlayerCmdActionCmd;
 import dev.xframe.game.player.Player;
 import dev.xframe.game.player.PlayerContext;
 import dev.xframe.game.player.PlayerFactory;
-import dev.xframe.inject.ApplicationContext;
 import dev.xframe.inject.Configurator;
 import dev.xframe.inject.Inject;
-import dev.xframe.inject.Injection;
 import dev.xframe.inject.Loadable;
+import dev.xframe.inject.beans.BeanBinder;
+import dev.xframe.inject.beans.BeanRegistrator;
 import dev.xframe.inject.code.Codes;
-import dev.xframe.module.ModularConext;
-import dev.xframe.module.ModuleContainer;
-import dev.xframe.module.ModuleLoader;
-import dev.xframe.module.code.MFactoryBuilder;
+import dev.xframe.module.ModularContext;
 import dev.xframe.net.cmd.CommandBuilder;
-import dev.xframe.utils.XCaught;
+import dev.xframe.utils.XLambda;
 
 @Configurator
 public final class GameConfigurator implements Loadable {
-	
+
+	@Inject
+	private BeanRegistrator registrator;
 	@Inject
 	private CommandBuilder cmdBuilder;
-    
-    @Override
-    public void load() {
-        Class<?> assemble = Codes.getDeclaredClasses().stream().filter(c->c.isAnnotationPresent(Assemble.class)).findAny().orElse(null);
-        if(assemble != null) {
-            configure(assemble, getThreads(assemble));
-        }
-    }
+	
+	private ModularContext modularCtx;
 
-    public int getThreads(Class<?> assemble) {
-        int nThreads = assemble.getAnnotation(Assemble.class).threads();
-        return nThreads == 0 ? Runtime.getRuntime().availableProcessors() * 2 : nThreads;
-    }
-    
-    public void configure(Class<?> assemble, int threads) {
-        newConfigurator(assemble).configure(assemble, threads, Codes.getDeclaredClasses());
-    }
+	@Override
+	public void load() {
+		Class<?> assemble = Codes.getDeclaredClasses().stream().filter(c->c.isAnnotationPresent(Assemble.class)).findAny().orElse(null);
+		if (assemble != null) {
+			configure(assemble, getThreads(assemble));
+		}
+	}
 
-    public AbstConfigurator newConfigurator(Class<?> assemble) {
-        return ModuleContainer.class.isAssignableFrom(assemble) ? new ModularConfigurator() : new NormalConfigurator();
-    }
-    
-    abstract class AbstConfigurator {
-        public void configure(Class<?> assemble, final int threads, List<Class<?>> clazzes) {
-            configure0(assemble, clazzes);
-            
-            ActionExecutor executor = ActionExecutors.newFixed("logic", threads);//max: 2*threads
-            PlayerFactory factory = newPlayerFactory();
-            PlayerContext context = new PlayerContext(executor, factory);
-            
-            ApplicationContext.registBean(PlayerFactory.class, factory);
-            ApplicationContext.registBean(PlayerContext.class, context);
-        }
-        
-        protected abstract void configure0(Class<?> assemble, List<Class<?>> clazzes);
-        
-        protected abstract PlayerFactory newPlayerFactory();
-        
-    }
-    
-    class NormalConfigurator extends AbstConfigurator {
-        Constructor<?> constructor;
-        @Override
-        protected void configure0(Class<?> assemble, List<Class<?>> clazzes) {
-            try {
-                constructor = assemble.getConstructor(long.class, ActionLoop.class);
-            } catch (Throwable e) {
-                XCaught.throwException(e);
-            }
-        }
-        @Override
-        protected PlayerFactory newPlayerFactory() {
-            return (playerId, loop) -> {
-                try {
-                    Player player = (Player) constructor.newInstance(playerId, loop);
-                    Injection.inject(player);
-                    return player;
-                } catch (Throwable e) {
-                    throw XCaught.wrapException(e);
-                }
-            };
-        }
-    }
-    
-    class ModularConfigurator extends AbstConfigurator {
-        @Override
-        protected PlayerFactory newPlayerFactory() {
-            return MFactoryBuilder.build(PlayerFactory.class);
-        }
-        @Override
-        protected void configure0(Class<?> assemble, List<Class<?>> clazzes) {
-            ModularConext.initialize(assemble, clazzes);
-            ApplicationContext.registBean(ModuleLoader.class, ModularConext.getMLoader());
-            cmdBuilder.regist(c->PlayerCmdAction.class.isAssignableFrom(c), PlayerCmdActionCmd::new);
-        }
-    }
+	private int getThreads(Class<?> assemble) {
+		int nThreads = assemble.getAnnotation(Assemble.class).threads();
+		return nThreads == 0 ? Runtime.getRuntime().availableProcessors() * 2 : nThreads;
+	}
+
+	private void configure(Class<?> assemble, int threads) {
+		modularCtx = new ModularContext();
+		modularCtx.initial(assemble);
+		
+		cmdBuilder.regist(c -> PlayerCmdAction.class.isAssignableFrom(c), PlayerCmdActionCmd::new);
+
+		ActionExecutor executor = ActionExecutors.newFixed("logic", threads);// max:
+																				// 2*threads
+		PlayerFactory factory = newPlayerFactory(assemble);
+		PlayerContext context = new PlayerContext(executor, factory);
+
+		registrator.regist(BeanBinder.instanced(factory, PlayerFactory.class));
+		registrator.regist(BeanBinder.instanced(context, PlayerContext.class));
+	}
+
+	private PlayerFactory newPlayerFactory(Class<?> assemble) {
+		PlayerFactory factory = XLambda.createByConstructor(PlayerFactory.class, assemble, long.class, ActionLoop.class);
+		return (long playerId, ActionLoop loop) -> {
+					Player player = factory.newPlayer(playerId, loop);
+					modularCtx.setupContainer(player, assemble);
+					return player;
+				};
+	}
 
 }

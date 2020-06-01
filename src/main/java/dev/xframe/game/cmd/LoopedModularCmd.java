@@ -1,6 +1,6 @@
 package dev.xframe.game.cmd;
 
-import dev.xframe.game.player.ModularPlayer;
+import dev.xframe.game.player.Player;
 import dev.xframe.inject.Inject;
 import dev.xframe.net.codec.IMessage;
 
@@ -10,7 +10,7 @@ import dev.xframe.net.codec.IMessage;
  * @author luzj
  *
  */
-public abstract class LoopedModularCmd<T extends ModularPlayer, V> extends ModularCommand<T, V> {
+public abstract class LoopedModularCmd<T extends Player, V> extends ModularCommand<T, V> {
 
     @Inject
     private PlayerCmdInvoker<T> invoker;

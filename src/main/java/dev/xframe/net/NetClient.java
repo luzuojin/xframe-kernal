@@ -1,6 +1,6 @@
 package dev.xframe.net;
 
-import dev.xframe.inject.Injection;
+import dev.xframe.inject.beans.BeanHelper;
 import dev.xframe.net.client.ClientChannelInitializer;
 import dev.xframe.net.client.ClientLifecycleListener;
 import dev.xframe.net.client.ClientMessageHandler;
@@ -52,7 +52,7 @@ public class NetClient {
 
     private synchronized NetClient initial() {
         if(this.bootstrap == null) {
-            Injection.inject(this);
+            BeanHelper.inject(this);
             
             this.bootstrap = new Bootstrap();
             this.group = new NioEventLoopGroup(threads, new XThreadFactory("netty.client"));

@@ -1,18 +1,15 @@
 package dev.xframe.game.player;
 
 import dev.xframe.action.ActionLoop;
+import dev.xframe.module.ModuleType;
+import dev.xframe.module.beans.ModuleContainer;
 
-/**
- * 玩家数据在baseserver中需要用到的数据的一个子集
- * 可以由GamePlayer实现, 也可以由跨服中其他GamePlayer实现
- * @author luzj
- * 
- */
-public abstract class Player {
+public abstract class Player extends ModuleContainer {
+
+	private ActionLoop loop;
+	private long playerId;
+    private int loaded;
     
-    protected ActionLoop loop;
-    protected long playerId;
-
     public Player(long playerId, ActionLoop loop) {
         this.playerId = playerId;
         this.loop = loop;
@@ -26,18 +23,52 @@ public abstract class Player {
         return playerId;
     }
     
-    public abstract boolean isOnline();
-    
-    public boolean load() {
+    public boolean load(ModuleType type) {
+    	this.loadModules(type);
+    	this.loaded |= type.code;
         return true;
     }
     
-    public boolean save() {
+    public boolean unload(ModuleType type) {
+    	this.unloadModules(type);
+    	this.loaded ^= type.code;
         return true;
     }
     
-    public boolean idle(long activeTime) {
-        return true;
+    public final boolean isLoaded(ModuleType type) {
+        return (loaded & type.code) > 0;
     }
+    
+    public final boolean load() {
+        return this.load(ModuleType.RESIDENT);
+    }
+    
+    public final boolean idle(long lastActiveTime) {
+        if(unloadable(ModuleType.TRANSIENT, lastActiveTime)) {
+            this.unload(ModuleType.TRANSIENT);
+        }
+        if(unloadable(ModuleType.RESIDENT, lastActiveTime)) {
+            this.unload(ModuleType.RESIDENT);
+            return true;
+        }
+        return false;
+    }
+    
+    private boolean unloadable(ModuleType dataType, long lastActiveTime) {
+        return this.unloadable(dataType) && (System.currentTimeMillis() - lastActiveTime) > dataType.unloadIdleTime;
+    }
+    
+	public boolean unloadable(ModuleType type) {
+		return type == ModuleType.TRANSIENT;
+	}
 
+	public boolean isOnline() {
+		return this.isLoaded(ModuleType.TRANSIENT);
+	}
+
+	public boolean save() {
+		this.saveModules();
+        return true;
+    }
+    
 }

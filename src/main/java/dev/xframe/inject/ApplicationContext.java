@@ -1,143 +1,176 @@
 package dev.xframe.inject;
 
-import java.util.HashMap;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import dev.xframe.inject.beans.BeanBinder;
+import dev.xframe.inject.beans.BeanContext;
+import dev.xframe.inject.beans.BeanDefiner;
+import dev.xframe.inject.beans.BeanHelper;
+import dev.xframe.inject.beans.BeanIndexing;
+import dev.xframe.inject.beans.BeanPretreater;
+import dev.xframe.inject.beans.Injector;
 import dev.xframe.inject.code.Codes;
 import dev.xframe.inject.code.Factory;
 import dev.xframe.inject.code.FactoryBuilder;
 import dev.xframe.inject.code.ProxyBuilder;
-import dev.xframe.inject.code.SyntheticBuilder;
 import dev.xframe.inject.code.ProxyBuilder.IProxy;
+import dev.xframe.inject.code.SyntheticBuilder;
 
 public class ApplicationContext {
-    
-    private static Map<Class<?>, Object> beanClassMap = new HashMap<Class<?>, Object>();
-    private static Map<String, Object> beanNameMap = new HashMap<String, Object>();
-    
-    @SuppressWarnings("unchecked")
-    public static <T> T fetchBean(String name) {
-        return (T) beanNameMap.get(name);
-    }
-    @SuppressWarnings("unchecked")
-    public static <T> T fetchBean(Class<T> clazz) {
-        return (T) beanClassMap.get(clazz);
-    }
-    
-    public static void registBean(String name, Object bean) {//通过名字区别
-        beanNameMap.put(name, bean);
-    }
-    public static void registBean(Object bean) {//通过类型区别
-        registBean(bean.getClass(), bean);
-    }
-    public static void registBean(Class<?> clazz, Object bean) {
-        registBean0(clazz, makeProxy(clazz, bean));
-    }
+	
+	final static BeanContext bc = new BeanContext();
+	
+	public static void initialize(String includes, String excludes) {
+		initialize(Codes.getClasses(includes, excludes));
+	}
+	
+	private static void initialize(List<Class<?>> classes) {
+		loadFactories(classes);
+		loadBeans(classes);
+		//完成load操作
+		integrateBeans();
+		doEventuate();//execute Eventuals
+	}
+	
+	private static void integrateBeans() {
+		bc.integrate();
+	}
+	
+	private static void doEventuate() {
+		bc.getBean(Eventual.class).eventuate();
+	}
 
-    protected static void registBean0(Class<?> clazz, Object bean) {
-        beanClassMap.putIfAbsent(clazz, makeSynthetic(clazz, bean));
-        
-        Class<?> superclazz = clazz.getSuperclass();
-        if(superclazz != null && superclazz != Object.class)
-            registBean(superclazz, bean);
-        
-        for(Class<?> interfaze : clazz.getInterfaces())
-            registBean(interfaze, bean);
-    }
+	private static void loadFactories(List<Class<?>> classes) {
+		classes.stream().filter(isFactory()).forEach(c->bc.registBinder(BeanBinder.instanced(FactoryBuilder.build(c, classes), c)));
+	}
+	
+	private static Predicate<Class<?>> isFactory() {
+		return c -> c.isInterface() && c.isAnnotationPresent(Factory.class);
+	}
+	
+	private static void loadBeans(List<Class<?>> classes) {
+		new BeanPretreater(classes).filter(isAnnotated()).pretreat(annoComparator(), isPrototype()).forEach(registBinder());
+	}
 
-    protected static boolean isSyntheticRequired(Class<?> clazz) {
-        return clazz.isAnnotationPresent(Synthetic.class);
+	private static Consumer<Class<?>> registBinder() {
+		return c -> bc.registBinder(newBinder(c));
+	}
+	
+    private static Class<? extends Annotation>[] annos = new Class[] {
+    		Prototype.class,
+    		Synthetic.class,
+    		Configurator.class,
+    		Repository.class,
+    		Templates.class,
+    		Bean.class
+    		};
+    
+    private static Predicate<Class<?>> isAnnotated() {
+    	return c -> Arrays.stream(annos).filter(a->c.isAnnotationPresent(a)).findAny().isPresent();
     }
-    protected static Object makeSynthetic(Class<?> clazz, Object bean) {
-        if(isSyntheticRequired(clazz)) {
-            Object exists = beanClassMap.get(clazz);
-            if(exists == null) {
-                exists = SyntheticBuilder.buildBean(clazz);
+    
+    private static int annoOrder(Class<?> c) {
+        for (int i = 0; i < annos.length; i++) {
+            if(c.isAnnotationPresent(annos[i])) {
+                return annos.length - i;
             }
-            if(bean != null) {
-                SyntheticBuilder.append(exists, bean);
-            }
-            return exists;
         }
-        return bean;
-    }
-
-    protected static boolean isProxyRequired(Class<?> clazz) {
-        return clazz.isAnnotationPresent(Templates.class) || clazz.isAnnotationPresent(Reloadable.class);
-    }
-    protected static Map<Class<?>, Object> proxies = new HashMap<>();
-    protected static Object makeProxy(Class<?> clazz, Object bean) {
-        if(!isProxyRequired(clazz)) return bean;
-        
-        Object proxy = proxies.get(clazz);
-        if(proxy == null) {
-            proxy = ProxyBuilder.build(clazz);
-            proxies.put(clazz, proxy);
-        }
-        if(bean != null) {
-            ProxyBuilder.setDelegate(proxy, bean);
-        }
-        return proxy;
-    }
-
-    protected static Object fetchBeanTryProxy(Class<?> clazz) {
-        Object bean = fetchBean(clazz);
-        if(bean == null && (isProxyRequired(clazz) || isSyntheticRequired(clazz))) {//Bean不存在 如果可以为该bean创建Proxy
-            registBean(clazz, null);
-            return fetchBean(clazz);
-        }
-        return bean;
-    }
-
-    public static void initialize(String includes, String excludes) {
-        registBean(Eventual.class, null);     //empty Eventual bean
-        initialize(Codes.getClasses(includes, excludes));
-        fetchBean(Eventual.class).eventuate();//execute Eventuals
-    }
-
-    private static void initialize(List<Class<?>> classes) {
-        loadFactories(classes);
-        //singleton beans And Prototypes(prototype set injector)
-        loadBeans(classes);
+        return 0;
     }
     
-    private static void loadFactories(List<Class<?>> classes) {
-        classes.stream().filter(c -> c.isInterface() && c.isAnnotationPresent(Factory.class)).forEach(c -> registBean(c, FactoryBuilder.build(c, classes)));
+    private static Comparator<Class<?>> annoComparator() {
+    	return (c1, c2) -> Integer.compare(annoOrder(c2), annoOrder(c1));
     }
     
-    private static void loadBeans(List<Class<?>> classes) {
-        new Dependences(classes).analyse().filter(c -> !c.isAnnotationPresent(Prototype.class)).forEach(c -> registBean(Injection.makeInstanceAndInject(c)));
-    }
-    
-    /**
+	private static Predicate<Class<?>> isPrototype() {
+		return c -> c.isAnnotationPresent(Prototype.class);
+	}
+	
+	private static BeanBinder newBinder(Class<?> c) {
+		if(c.isAnnotationPresent(Synthetic.class)) {
+			return new BeanBinder.Instanced(SyntheticBuilder.buildBean(c), c) {
+				List<BeanBinder> impls = new ArrayList<>(); 
+				protected void integrate(Object bean, BeanDefiner definer) {//append all implements
+					impls.forEach(impl->SyntheticBuilder.append(bean, definer.define(impl.getIndex())));
+				}
+				protected BeanBinder conflict(Object keyword, BeanBinder binder) {
+					assert keyword instanceof Class;
+					assert ((Class<?>) keyword).isAnnotationPresent(Synthetic.class);
+					impls.add(binder);
+					return this;
+				}
+			};
+		}
+		if(c.isAnnotationPresent(Templates.class) || c.isAnnotationPresent(Reloadable.class)) {
+			return new ReloadableBinder(c, Injector.of(c, bc));
+		}
+		return new BeanBinder.Classic(c, Injector.of(c, bc));
+	}
+	
+	static class ReloadableBinder extends BeanBinder.Classic {
+		public ReloadableBinder(Class<?> master, Injector injector) {
+			super(master, injector);
+		}
+		protected void integrate(Object bean, BeanDefiner definer) {
+			super.integrate(ProxyBuilder.getDelegate(bean), definer);
+		}
+		protected Object newInstance() {
+			return ProxyBuilder.build(master, super.newInstance());
+		}
+		public Class<?> baseClass() {
+			return master;
+		}
+	}
+	
+	public static void reload(Predicate<Class<?>> preficate) {
+		bc.binders().stream()
+			.filter(b->(b instanceof ReloadableBinder))
+			.map(b->((ReloadableBinder) b).baseClass())
+			.filter(preficate)
+			.forEach(c->reload(c));
+	}
+	
+	/**
      * 重新执行load(替换delegate, 线程安全)
      */
-    public static void reload(Class<?> clazz) {
-        Object obj = fetchBean(clazz);
+	public static void reload(Class<?> clazz) {
+        Object obj = bc.getBean(clazz);
         if(obj != null && obj instanceof IProxy) {
             Object delegate = ProxyBuilder.getDelegate(obj);
             if(delegate instanceof IProxy) {
-                ProxyBuilder.setDelegate(delegate, Injection.makeInstanceAndInject(ProxyBuilder.getDelegate(delegate).getClass()));
+                ProxyBuilder.setDelegate(delegate, BeanHelper.inject(ProxyBuilder.getDelegate(delegate).getClass()));
             } else {
-                ProxyBuilder.setDelegate(obj, Injection.makeInstanceAndInject(delegate.getClass()));
+                ProxyBuilder.setDelegate(obj, BeanHelper.inject(delegate.getClass()));
             }
         }
     }
-    
-    public static void reload(Predicate<Class<?>> preficate) {
-    	Injection.injectedClasses(preficate).forEach(ApplicationContext::reload);
-    }
-    
+	
     /**
      * 使用新的class文件替换原有class
      */
     public static void replace(Class<?> clazz, Class<?> newClazz) {
-        Object obj = fetchBean(clazz);
+        Object obj = bc.getBean(clazz);
         if(obj != null && obj instanceof IProxy) {
-            ProxyBuilder.setDelegate(obj, ProxyBuilder.build(clazz, Injection.makeInstanceAndInject(newClazz)));
+            ProxyBuilder.setDelegate(obj, ProxyBuilder.build(clazz, BeanHelper.inject(newClazz)));
         }
     }
+	
+    public static BeanDefiner definer() {
+    	return bc;
+    }
     
+    public static BeanIndexing indexing() {
+    	return bc;
+    }
+    
+	public static <T> T fetchBean(Class<T> c) {
+		return bc.getBean(c);
+	}
+	
 }

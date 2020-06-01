@@ -6,7 +6,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import dev.xframe.inject.Configurator;
-import dev.xframe.inject.Injection;
+import dev.xframe.inject.beans.BeanHelper;
 
 @Configurator
 public class ServiceBuilder {
@@ -27,7 +27,7 @@ public class ServiceBuilder {
     }
 
 	private Service build0(Class<?> clazz) {
-		return (Service) Injection.makeInstanceAndInject(clazz);
+		return (Service) BeanHelper.inject(clazz);
 	}
     
 }

@@ -2,11 +2,11 @@ package dev.xframe.game.cmd;
 
 import com.google.protobuf.MessageLite;
 
-import dev.xframe.game.player.ModularPlayer;
+import dev.xframe.game.player.Player;
 import dev.xframe.net.codec.IMessage;
 import dev.xframe.utils.LiteParser;
 
-public abstract class LoopedModularLiteCmd<T extends ModularPlayer, V, L extends MessageLite> extends LoopedModularCmd<T, V> {
+public abstract class LoopedModularLiteCmd<T extends Player, V, L extends MessageLite> extends LoopedModularCmd<T, V> {
 
 	private LiteParser parser = new LiteParser(this.getClass(), LoopedModularLiteCmd.class);
 	

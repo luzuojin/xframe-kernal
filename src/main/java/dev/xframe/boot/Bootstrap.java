@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import dev.xframe.http.HttpServer;
 import dev.xframe.inject.ApplicationContext;
 import dev.xframe.inject.Inject;
-import dev.xframe.inject.Injection;
+import dev.xframe.inject.beans.BeanHelper;
 import dev.xframe.net.MessageHandler;
 import dev.xframe.net.NetServer;
 import dev.xframe.net.cmd.CommandHandler;
@@ -105,7 +105,7 @@ public class Bootstrap {
             
             ApplicationContext.initialize(includes, excludes);
             
-            Injection.inject(this);
+            BeanHelper.inject(this);
             
             if(tcpPort > 0) {
                 tcp = new NetServer().setThreads(tcpThreads).setPort(tcpPort).setListener(sLifecycleListener).setHandler(newMessageHandler()).startup();

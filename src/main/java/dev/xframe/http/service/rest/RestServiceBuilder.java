@@ -14,8 +14,8 @@ import dev.xframe.http.service.ServiceContext;
 import dev.xframe.http.service.config.ServiceConfig;
 import dev.xframe.inject.Bean;
 import dev.xframe.inject.Inject;
-import dev.xframe.inject.Injection;
 import dev.xframe.inject.Loadable;
+import dev.xframe.inject.beans.BeanHelper;
 import dev.xframe.utils.XStrings;
 
 @Bean
@@ -34,7 +34,7 @@ public class RestServiceBuilder implements Loadable {
     }
 
 	public Service build(Class<?> clazz) {
-		Object origin = Injection.makeInstanceAndInject(clazz);
+		Object origin = BeanHelper.inject(clazz);
 		
 		List<Method> mres = Collections.emptyList();
         for (Map.Entry<String, List<Method>> e : findMethods(clazz).entrySet()) {

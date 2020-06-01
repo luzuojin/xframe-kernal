@@ -1,0 +1,62 @@
+///invoker_name
+${module_name}$MInvoker
+///
+public class ${invoker_name} implements dev.xframe.module.beans.ModularInvoker {
+    
+    ///logger_field
+    static final org.slf4j.Logger _logger = org.slf4j.LoggerFactory.getLogger("${module_name}");
+    ///
+    
+    ///param_getter
+    (${param_name})mc.getBean(${param_index})
+    ///
+    
+    ///method_call
+	_local_name.${method_name}(${method_params});
+	///
+
+    ///load_method
+	public void invokeLoad(dev.xframe.module.beans.ModuleContainer mc) {
+		if(!mc.isModuleLoaded(${module_index})) {
+			${module_name} _local_name = (${module_name}) mc.getBean(${module_index});
+            ${methods_call}
+            /*
+            ${method_call};
+            */
+		}
+	}
+	///
+	
+	///unload_method
+	public void invokeUnload(dev.xframe.module.beans.ModuleContainer mc) {
+		try {
+			if(mc.isModuleLoaded(${module_index})) {
+				${module_name} _local_name = (${module_name}) mc.getBean(${module_index});
+	            ${methods_call}
+	            /*
+	            ${method_call};
+	            */
+			}
+        } catch (Throwable throwable) {
+            _logger.warn("unload error:", throwable);
+        }
+	}
+	///
+	
+	///save_method
+	public void invokeSave(dev.xframe.module.beans.ModuleContainer mc) {
+		try {
+			if(mc.isModuleLoaded(${module_index})) {
+				${module_name} _local_name = (${module_name}) mc.getBean(${module_index});
+	            ${methods_call}
+	            /*
+	            ${method_call};
+	            */
+			}
+        } catch (Throwable throwable) {
+            _logger.warn("save error:", throwable);
+        }
+	}
+	///
+
+}

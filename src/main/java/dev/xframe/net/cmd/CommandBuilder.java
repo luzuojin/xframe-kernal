@@ -6,7 +6,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import dev.xframe.inject.Configurator;
-import dev.xframe.inject.Injection;
+import dev.xframe.inject.beans.BeanHelper;
 
 @Configurator
 public class CommandBuilder {
@@ -27,7 +27,7 @@ public class CommandBuilder {
     }
 
     private Command build0(Class<?> clazz) {
-        return (Command) Injection.makeInstanceAndInject(clazz);
+        return (Command) BeanHelper.inject(clazz);
     }
     
 }
