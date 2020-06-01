@@ -17,6 +17,7 @@ public class ${invoker_name} implements dev.xframe.module.beans.ModularInvoker {
 
     ///load_method
 	public void invokeLoad(dev.xframe.module.beans.ModuleContainer mc) {
+		try {
 		if(!mc.isModuleLoaded(${module_index})) {
 			${module_name} _local_name = (${module_name}) mc.getBean(${module_index});
             ${methods_call}
@@ -24,6 +25,10 @@ public class ${invoker_name} implements dev.xframe.module.beans.ModularInvoker {
             ${method_call};
             */
 		}
+		} catch (Throwable throwable) {
+            _logger.warn("load [${module_name}] error");
+            dev.xframe.utils.XCaught.throwException(throwable);
+        }
 	}
 	///
 	

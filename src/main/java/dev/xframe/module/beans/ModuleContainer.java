@@ -77,12 +77,4 @@ public class ModuleContainer extends BeanContainer  {
 		return getFlag(index);
 	}
 
-//	public ModuleTypeLoader getModuleLoader(Class<?> moduleType) {
-//		return (ModularBinder) indexes.getBinder(indexes.getIndex(moduleType));
-//	}
-//	
-//	public <T> T getModule(ModuleContainer mc, Class<T> moduleType) {
-//		return getModuleLoader(moduleType).load(mc);
-//	}
-
 }
