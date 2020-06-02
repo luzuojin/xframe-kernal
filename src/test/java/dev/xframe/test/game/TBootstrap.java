@@ -1,5 +1,7 @@
 package dev.xframe.test.game;
 
+import java.util.concurrent.TimeUnit;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,7 +47,8 @@ public class TBootstrap {
         testExecution.assertExecuted(TCommand.class);
         
         PlayerCommand<TPlayer> cmd2 = (PlayerCommand<TPlayer>)  commandCtx.get((short) 101);
-        cmd2.exec(player, Message.build((short)101, ValueMsg.newBuilder().setVal("hey").build().toByteArray()).copy(playerId));
+        cmd2.execute(null, Message.build((short)101, ValueMsg.newBuilder().setVal("hey").build().toByteArray()).copy(playerId));
+        TimeUnit.MILLISECONDS.sleep(200);//wait queued executed
         testExecution.assertExecuted(TCmdAction.class);
         
         player.player.dosomething();

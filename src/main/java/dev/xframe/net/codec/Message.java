@@ -2,7 +2,6 @@ package dev.xframe.net.codec;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import com.google.protobuf.MessageLite;
 
@@ -244,14 +243,6 @@ public class Message implements IMessage {
         return ((Message) message).copy(message.getId());
     }
 
-    //unuseful
-    public static void buildHurge(short code, MessageLite lite, Consumer<Message> consumer) {
-        buildHurge(code, lite == null ? null : lite.toByteArray(), consumer);
-    }
-    public static void buildHurge(short code, byte[] bytes, Consumer<Message> consumer) {
-        consumer.accept(build(code, bytes));
-    }
-    
     private static class Param {
         public final byte[] keyBytes;
         public final String key;
