@@ -40,6 +40,7 @@ public class ModularContext {
 		indexes = new ModularIndexes(gIndexing);
 		registrator.regist(BeanBinder.instanced(this, ModularContext.class));
 		registrator.regist(BeanBinder.instanced(indexes, ModularIndexes.class));
+		//assembleClass作为第一个Bean记录
 		indexes.regist(new DeclaredBinder(assembleClass, Injector.of(assembleClass, indexes)));
 		pretreatModules().forEach(c->indexes.regist(buildBinder(c, indexes)));
 		indexes.integrate();
@@ -48,6 +49,7 @@ public class ModularContext {
 	public ModuleContainer initContainer(ModuleContainer mc, Object assemble) {
 		mc.setup(gDefiner, indexes);
 		int index = indexes.getIndex(assemble.getClass());
+		//为assembleClass赋值 @see initialize() 
 		mc.setBean(index, assemble);
 		mc.integrate(indexes.getBinder(index));
 		return mc;
@@ -89,39 +91,34 @@ public class ModularContext {
 	}
 
 	private List<Class<?>> pretreatModules() {
-		return new BeanPretreater(Codes.getDeclaredClasses()).filter(isNecessary()).pretreat(annoComparator()).collect();
+		return new BeanPretreater(Codes.getDeclaredClasses()).filter(isModularClass()).pretreat(annoComparator()).collect();
 	}
-	private Predicate<Class<?>> isNecessary() {
-		return c -> isNecessaryClass(c);
+	private Predicate<Class<?>> isModularClass() {
+		return c -> isModularClass(c);
 	}
-	private static boolean isNecessaryClass(Class<?> clazz) {
-		return  isModule(clazz) || isComponent(clazz) || isAgent(clazz);
+	private static boolean isModularClass(Class<?> clazz) {
+		return isModule(clazz) || isComponent(clazz) || isAgent(clazz);
 	}
 	private static boolean isAgent(Class<?> clazz) {
         return clazz.isInterface() && clazz.isAnnotationPresent(ModularAgent.class);
     }
 	private static boolean isComponent(Class<?> clazz) {
-        return clazz.isAnnotationPresent(ModularComponent.class);
+        return clazz.isAnnotationPresent(ModularComponent.class) && !clazz.isAnnotationPresent(ModularIgnore.class);
     }
 	//由于@Module可继承 需要过滤掉抽象类
 	private static boolean isModule(Class<?> clazz) {
         return !Modifier.isAbstract(clazz.getModifiers()) && !clazz.isInterface() && clazz.isAnnotationPresent(Module.class) && !clazz.isAnnotationPresent(ModularIgnore.class);
     }
-	private static Class<? extends Annotation>[] annos = new Class[] {
-    		ModularAgent.class,
-    		ModularComponent.class,
-    		Module.class
-    		};
+	//作为实现类存在的ModularClass
+	private static Class<? extends Annotation>[] annos = new Class[] {ModularAgent.class, ModularComponent.class, Module.class};
     private static int annoOrder(Class<?> c) {
-        for (int i = 0; i < annos.length; i++) {
-            if(c.isAnnotationPresent(annos[i])) {
-                return annos.length - i;
-            }
-        }
-        return 0;
+    	for (int i = 0; i < annos.length; i++) {
+			if(c.isAnnotationPresent(annos[i])) return i;
+		}
+    	return annos.length;
     }
-    private static Comparator<Class<?>> annoComparator() {
-    	return (c1, c2) -> Integer.compare(annoOrder(c2), annoOrder(c1));
+    private static Comparator<Class<?>> annoComparator() {//从小到大
+    	return (c1, c2)->Integer.compare(annoOrder(c1), annoOrder(c2));
     }
 
 }

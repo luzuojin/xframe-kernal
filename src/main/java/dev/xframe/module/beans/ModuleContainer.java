@@ -4,12 +4,11 @@ import dev.xframe.inject.beans.BeanBinder;
 import dev.xframe.inject.beans.BeanContainer;
 import dev.xframe.inject.beans.BeanDefiner;
 import dev.xframe.module.ModuleType;
-import dev.xframe.utils.XLogger;
 
 public class ModuleContainer extends BeanContainer  {
 	
 	//global beans
-	BeanDefiner gDefiner;
+	private BeanDefiner gDefiner;
 	
 	public ModuleContainer setup(BeanDefiner gDefiner, ModularIndexes indexes) {
 		super.setup(indexes);
@@ -32,17 +31,16 @@ public class ModuleContainer extends BeanContainer  {
 			loadModules(((ModularIndexes)indexes).transients);
 		}
 	}
-	private boolean loadModules(ModularBinder[] binders) {
+	private void loadModules(ModularBinder[] binders) {
 		for(ModularBinder binder : binders) {
 			integrate(binder);//load过程由Bean的初始化完成,逻辑走loadBeanExec
 		}
-		return true;
 	}
 	
-	//调用这个方法会确认加载flag
+	@Override //调用这个方法会确认是否已经加载过的flag
 	protected void loadBeanExec(BeanBinder binder, Object bean) {
 		super.loadBeanExec(binder, bean);
-		((ModularBinder)binder).getInvoker().invokeLoad(this);
+		((ModularBinder)binder).getInvoker().invokeLoad(this);//正常可以由ModularBinder在integrate方法中调用. 这里因为unload/save均在此类
 	}
 
 	public void unloadModules(ModuleType type) {
@@ -52,11 +50,10 @@ public class ModuleContainer extends BeanContainer  {
 			unloadModules(((ModularIndexes)indexes).transients);
 		}
 	}
-	private boolean unloadModules(ModularBinder[] binders) {
+	private void unloadModules(ModularBinder[] binders) {
 		for (ModularBinder binder : binders) {
 			binder.getInvoker().invokeUnload(this);
 		}
-		return true;
 	}
 	
 	public void saveModules() {
@@ -65,11 +62,7 @@ public class ModuleContainer extends BeanContainer  {
 	}
 	private void saveModules(ModularBinder[] binders) {
 		for (ModularBinder binder : binders) {
-			try {
-				binder.getInvoker().invokeSave(this);
-			} catch (Exception e) {
-				XLogger.warn("Save module[" + binder.getName() + "] throws: ", e);
-			}
+			binder.getInvoker().invokeSave(this);//异常在ModularInvoker已经捕获
 		}
 	}
 	

@@ -47,7 +47,7 @@ public class MInvokerBuilder {
 	private static String buildMethodBody(String name, Class<? extends Annotation> anno, Class<?> module, BeanIndexing indexing) {
 		return cts.get(name)
 				.replace("${module_name}", module.getName())
-				.replace("${module_index}", toStr(indexing.indexOf(module)))
+				.replace("${module_index}", str(indexing.indexOf(module)))
 				.replace("${methods_call}", buildCalls(anno, module, indexing));
 	}
 
@@ -60,28 +60,21 @@ public class MInvokerBuilder {
 	}
 
 	private static String buildParams(Method m, BeanIndexing indexing) {
-		return String.join(",", Arrays.stream(m.getParameterTypes()).map(p->cts.get("param_getter").replace("${param_name}", p.getName()).replace("${param_index}", toStr(indexing.indexOf(p)))).collect(Collectors.toList()));
+		return String.join(",", Arrays.stream(m.getParameterTypes()).map(p->cts.get("param_getter").replace("${param_name}", p.getName()).replace("${param_index}", str(indexing.indexOf(p)))).collect(Collectors.toList()));
 	}
 
-
-	private static String toStr(Object o) {
-		return String.valueOf(o);
+	private static String str(int i) {
+		return String.valueOf(i);
 	}
 
 	private static List<Method> findMethodsByAnno(Class<?> clazz, Class<? extends Annotation> anno) {
-        return XSorter.bubble(findMethodsByAnno0(clazz, anno, new ArrayList<>()), (m1, m2) -> m1.getName().compareTo(m2.getName()));
+        return XSorter.bubble(findMethodsByAnno0(clazz, anno, new ArrayList<>()), (m1, m2)->m1.getName().compareTo(m2.getName()));
     }
+	
     private static List<Method> findMethodsByAnno0(Class<?> clazz, Class<? extends Annotation> anno, List<Method> mets) {
         if(clazz != null && !clazz.equals(Object.class)) {
-            for (Method method : clazz.getDeclaredMethods()) {
-                if(method.isAnnotationPresent(anno)) {
-                    mets.add(method);
-                }
-            }
-            Class<?>[] interfaces = clazz.getInterfaces();
-            for (Class<?> interfaze : interfaces) {
-                findMethodsByAnno0(interfaze, anno, mets);
-            }
+        	Arrays.stream(clazz.getDeclaredMethods()).filter(method->method.isAnnotationPresent(anno)).forEach(mets::add);
+        	Arrays.stream(clazz.getInterfaces()).forEach(interfaze->findMethodsByAnno0(interfaze, anno, mets));
             findMethodsByAnno0(clazz.getSuperclass(), anno, mets);
         }
         return mets;
