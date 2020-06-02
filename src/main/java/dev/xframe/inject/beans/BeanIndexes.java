@@ -66,7 +66,8 @@ public class BeanIndexes {
 	}
 	
 	public BeanBinder getBinder(int index) {
-		return binders[arrayIndex(index)];
+		int aIndex = arrayIndex(index);
+		return aIndex == -1 ? null : binders[aIndex];
 	}
 	
 	private void setBinder(BeanBinder binder) {

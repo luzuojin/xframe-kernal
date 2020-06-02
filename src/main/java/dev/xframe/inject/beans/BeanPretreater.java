@@ -91,6 +91,11 @@ public class BeanPretreater {
         List<Class<?>> provides = new ArrayList<>();
         List<Class<?>> analysed = new ArrayList<>();
         
+        //首先按字母排序,保证每次加载顺序一样
+        XSorter.bubble(classes, (c1, c2) -> c1.getSimpleName().compareTo(c2.getSimpleName()));
+        //Annotation排序
+        XSorter.bubble(classes, comparator);
+        
         for (Class<?> clazz : this.classes) {
             if(isProvidable(clazz)) {
                 provides.add(clazz);
@@ -106,19 +111,14 @@ public class BeanPretreater {
                 putUpwardIfNotPrototype(dTypes, provide, new DependenceType(provide));
             }
         }
-
-        //首先按字母排序,保证每次加载顺序一样
-        XSorter.bubble(analysed, (c1, c2) -> c1.getSimpleName().compareTo(c2.getSimpleName()));
-        //Annotation排序
-        XSorter.bubble(analysed, comparator);
-        
-        for (Class<?> key : analysed) {
-            analyse0(key, new DependenceLink(null, null));
-        }
         
         //过滤掉仅用来帮助分析依赖关系的类
         analysed = filter0(analysed, c->!pretrial.test(c));
-        
+
+        for (Class<?> key : analysed) {
+            analyse0(key, new DependenceLink(null, null));
+        }
+
         //按依赖顺序排序
         XSorter.bubble(analysed, (c1, c2) -> Integer.compare(dTypes.get(c1).index, dTypes.get(c2).index));
         

@@ -72,6 +72,9 @@ public abstract class BeanBinder {
 				return XCaught.throwException(e);
 			}
 		}
+		public String toString() {
+			return "Classic [" + master.getName() + "]";
+		}
 	}
 	
 	public static class Instanced extends BeanBinder {
@@ -93,6 +96,9 @@ public abstract class BeanBinder {
 		protected BeanBinder conflict(Object keyword, BeanBinder binder) {
 			return this;
 		}
+		public String toString() {
+			return "Instanced [" + val.getClass().getName() + "]";
+		}
 	}
 	public static class Named extends BeanBinder {
 		protected final String key;
@@ -112,6 +118,9 @@ public abstract class BeanBinder {
 		}
 		protected BeanBinder conflict(Object keyword, BeanBinder binder) {
 			throw new IllegalArgumentException("Exists bean named[" + key + "]");
+		}
+		public String toString() {
+			return "Named [" + key + "]";
 		}
 	}
 
