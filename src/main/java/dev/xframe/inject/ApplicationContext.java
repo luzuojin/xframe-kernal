@@ -20,6 +20,7 @@ import dev.xframe.inject.code.Factory;
 import dev.xframe.inject.code.FactoryBuilder;
 import dev.xframe.inject.code.ProxyBuilder;
 import dev.xframe.inject.code.ProxyBuilder.IProxy;
+import javassist.Modifier;
 import dev.xframe.inject.code.SyntheticBuilder;
 
 public class ApplicationContext {
@@ -72,7 +73,11 @@ public class ApplicationContext {
     		};
     
     private static Predicate<Class<?>> isAnnotated() {
-    	return c -> Arrays.stream(annos).filter(a->c.isAnnotationPresent(a)).findAny().isPresent();
+    	return c -> Arrays.stream(annos).filter(a->c.isAnnotationPresent(a)).findAny().isPresent() && !isRepositorySuper(c);
+    }
+
+    private static boolean isRepositorySuper(Class<?> c) {//@Repository可继承 排除非实现类
+        return (c.isAnnotationPresent(Repository.class) && (Modifier.isAbstract(c.getModifiers()) || c.isInterface()));
     }
     
     private static int annoOrder(Class<?> c) {
