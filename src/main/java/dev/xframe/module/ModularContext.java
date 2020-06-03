@@ -22,7 +22,7 @@ import dev.xframe.module.beans.ModularBinder;
 import dev.xframe.module.beans.ModularIndexes;
 import dev.xframe.module.beans.ModuleContainer;
 import dev.xframe.utils.XLambda;
-import javassist.Modifier;
+import dev.xframe.utils.XReflection;
 
 @Bean
 public class ModularContext {
@@ -107,7 +107,7 @@ public class ModularContext {
     }
 	//由于@Module可继承 需要过滤掉抽象类
 	private static boolean isModule(Class<?> clazz) {
-        return !Modifier.isAbstract(clazz.getModifiers()) && !clazz.isInterface() && clazz.isAnnotationPresent(Module.class) && !clazz.isAnnotationPresent(ModularIgnore.class);
+        return XReflection.isImplementation(clazz) && clazz.isAnnotationPresent(Module.class) && !clazz.isAnnotationPresent(ModularIgnore.class);
     }
 	//作为实现类存在的ModularClass
 	private static Class<? extends Annotation>[] annos = new Class[] {ModularAgent.class, ModularComponent.class, Module.class};

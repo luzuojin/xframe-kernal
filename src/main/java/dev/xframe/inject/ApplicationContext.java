@@ -20,8 +20,8 @@ import dev.xframe.inject.code.Factory;
 import dev.xframe.inject.code.FactoryBuilder;
 import dev.xframe.inject.code.ProxyBuilder;
 import dev.xframe.inject.code.ProxyBuilder.IProxy;
-import javassist.Modifier;
 import dev.xframe.inject.code.SyntheticBuilder;
+import dev.xframe.utils.XReflection;
 
 public class ApplicationContext {
 	
@@ -56,7 +56,7 @@ public class ApplicationContext {
 	}
 	
 	private static void loadBeans(List<Class<?>> classes) {
-		new BeanPretreater(classes).filter(isAnnotated()).pretreat(annoComparator(), isPrototype()).forEach(registBinder());
+		new BeanPretreater(classes).filter(isBeanClass()).pretreat(annoComparator(), isPrototype()).forEach(registBinder());
 	}
 
 	private static Consumer<Class<?>> registBinder() {
@@ -72,12 +72,12 @@ public class ApplicationContext {
     		Bean.class
     		};
     
-    private static Predicate<Class<?>> isAnnotated() {
+    private static Predicate<Class<?>> isBeanClass() {
     	return c -> Arrays.stream(annos).filter(a->c.isAnnotationPresent(a)).findAny().isPresent() && !isRepositorySuper(c);
     }
 
     private static boolean isRepositorySuper(Class<?> c) {//@Repository可继承 排除非实现类
-        return (c.isAnnotationPresent(Repository.class) && (Modifier.isAbstract(c.getModifiers()) || c.isInterface()));
+        return c.isAnnotationPresent(Repository.class) && !XReflection.isImplementation(c);
     }
     
     private static int annoOrder(Class<?> c) {

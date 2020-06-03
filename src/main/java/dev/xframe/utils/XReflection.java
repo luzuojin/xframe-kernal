@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javassist.Modifier;
+
 @SuppressWarnings("unchecked")
 public class XReflection extends SecurityManager {
 	
@@ -124,6 +126,14 @@ public class XReflection extends SecurityManager {
 			getAssigners0(assigners, zuper);
 		for (Class<?> interfaze : clazz.getInterfaces())
 			getAssigners0(assigners, interfaze);
+	}
+	
+	/**
+	 * 是否是实现类(可实例化, 非Abstract 非Interface)
+	 * @param c
+	 */
+	public static boolean isImplementation(Class<?> c) {
+	    return !(Modifier.isAbstract(c.getModifiers()) || c.isInterface());
 	}
     
 }
