@@ -90,8 +90,8 @@ public abstract class BeanBinder {
 		protected Object newInstance() {
 			return val;
 		}
-		protected List<?> getKeywords() {
-			return Arrays.asList(keys);
+		protected List<?> getKeywords() {//没有单独设置key时 直接由Bean的class替代
+			return keys.length == 0 ? XReflection.getAssigners(val.getClass()) : Arrays.asList(keys);
 		}
 		protected BeanBinder conflict(Object keyword, BeanBinder binder) {
 			return this;
