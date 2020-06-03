@@ -173,4 +173,8 @@ public class ApplicationContext {
 		return bc.getBean(c);
 	}
 	
+	public static void registBean(BeanBinder binder) {
+	    bc.regist(binder);;
+	}
+	
 }
