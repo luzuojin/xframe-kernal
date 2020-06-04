@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -24,6 +25,11 @@ public class Patchers {
                     new JavaBeanPatcher(),
                     new PrototypePatcher()
                     ));
+    static {
+    	ServiceLoader<Patcher> provided = ServiceLoader.load(Patcher.class);
+    	for (Patcher patcher : provided) addPatcher(patcher);
+    }
+    
     public static void addPatcher(Patcher patcher) {
         patchers.add(patcher);
     }
