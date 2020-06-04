@@ -147,7 +147,7 @@ public class BeanPretreater {
     }
     
     public <T> void putUpwardIfNotPrototype(Map<Class<?>, T> map, Class<?> key, T val) {
-        putUpward(map, key, val, !key.isAnnotationPresent(Prototype.class));
+        putUpward(map, key, val, !key.isAnnotationPresent(Prototype.class));//prototype是通过new Instance来依赖. 所以只需要处理可实例化的类
     }
     
     public <T> void putUpward(Map<Class<?>, T> map, Class<?> key, T val, boolean clazzUpWard) {
@@ -163,7 +163,7 @@ public class BeanPretreater {
                 putUpward(map, superClazz, val, clazzUpWard);
         }
     }
-    
+    //解析Loadable.load实现方法中调用的new @Prototype的类 该类的依赖也需要被优化加载
     private List<Class<?>> getRefPrototypes(Class<?> clazz) {
         if(!refPrototypes.containsKey(clazz)) {
             try {

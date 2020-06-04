@@ -1,6 +1,7 @@
 package dev.xframe.inject.beans;
 
 import dev.xframe.inject.ApplicationContext;
+import dev.xframe.inject.Prototype;
 import dev.xframe.utils.XCaught;
 
 public class BeanHelper {
@@ -14,7 +15,7 @@ public class BeanHelper {
 	}
     
 	public static Injector build(Class<?> c) {
-		return Injector.of(c, ApplicationContext.indexing());
+		return Injector.of(c, ApplicationContext.indexing(), !c.isAnnotationPresent(Prototype.class));//prototype父类会有一个独立的Injector
 	}
 	public static Object inject(Class<?> c) {
 		return inject(newInstance(c), build(c));
