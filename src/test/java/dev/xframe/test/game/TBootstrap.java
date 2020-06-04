@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 
 import dev.xframe.game.callable.ModularCallable;
 import dev.xframe.game.cmd.PlayerCommand;
+import dev.xframe.game.player.ModularAdapter;
 import dev.xframe.game.player.PlayerContext;
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.junit.ContextScan;
@@ -27,6 +28,8 @@ public class TBootstrap {
     private TestExecution testExecution;
     @Inject
     private CommandContext commandCtx;
+    @Inject
+    private ModularAdapter adapter;
     
     @Test
     @SuppressWarnings("unchecked")
@@ -73,6 +76,7 @@ public class TBootstrap {
         
         player.unload(ModuleType.TRANSIENT);
         testExecution.assertExecuted(TDepInventory.class);
+        Assert.assertNull(adapter.loadModule(player, TDepInventory.class));
         
 		new TPrototype().dosomething();
 		
@@ -80,6 +84,7 @@ public class TBootstrap {
 		
 		player.unload(ModuleType.RESIDENT);
 		testExecution.assertExecuted(TPlayerInventory.class);
+		Assert.assertNull(adapter.loadModule(player, TPlayerInventory.class));
 	}
 
 }
