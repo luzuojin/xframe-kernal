@@ -7,12 +7,14 @@ import dev.xframe.module.ModuleType;
 
 public class ModuleContainer extends BeanContainer  {
 	
+    private ModularListener listener;
 	//global beans
 	private BeanDefiner gDefiner;
 	
-	public ModuleContainer setup(BeanDefiner gDefiner, ModularIndexes indexes) {
+	public ModuleContainer setup(BeanDefiner gDefiner, ModularIndexes indexes, ModularListener listener) {
 		super.setup(indexes);
 		this.gDefiner = gDefiner;
+		this.listener = listener;
 		return this;
 	}
 
@@ -40,7 +42,9 @@ public class ModuleContainer extends BeanContainer  {
 	@Override //调用这个方法会确认是否已经加载过的flag
 	protected void loadBeanExec(BeanBinder binder, Object bean) {
 		super.loadBeanExec(binder, bean);
-		((ModularBinder)binder).getInvoker().invokeLoad(this);//正常可以由ModularBinder在integrate方法中调用. 这里因为unload/save均在此类
+		ModularBinder mbinder = (ModularBinder)binder;
+        mbinder.getInvoker().invokeLoad(this);//正常可以由ModularBinder在integrate方法中调用. 这里因为unload/save均在此类
+		listener.onModuleLoaded(this, mbinder, bean);
 	}
 
 	public synchronized void unloadModules(ModuleType type) {
@@ -50,16 +54,20 @@ public class ModuleContainer extends BeanContainer  {
 			unloadModules(((ModularIndexes)indexes).transients);
 		}
 	}
+	//unload需要倒过来处理
 	private void unloadModules(ModularBinder[] binders) {
-		for (ModularBinder binder : binders) {
-			binder.getInvoker().invokeUnload(this);
-			this.clearModule(binder);
-		}
+	    for (int i=binders.length-1; i>=0; i--) {
+            this.unloadModule(binders[i]);
+        }
 	}
-	//清空Bean
-    private void clearModule(ModularBinder binder) {
-        this.setBean(binder.getIndex(), null);
-        this.setFlag(binder.getIndex(), false);
+    private void unloadModule(ModularBinder binder) {
+        int bIndex = binder.getIndex();
+        Object ex = this.getBean(bIndex);
+        binder.getInvoker().invokeUnload(this);
+        //清空Container中的Ref
+        this.setBean(bIndex, null);
+        this.setFlag(bIndex, false);
+        listener.onModuleUnload(this, binder, ex);
     }
 	
 	public void saveModules() {

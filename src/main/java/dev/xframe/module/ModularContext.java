@@ -1,8 +1,8 @@
 package dev.xframe.module;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -20,12 +20,13 @@ import dev.xframe.inject.code.SyntheticBuilder;
 import dev.xframe.module.beans.DeclaredBinder;
 import dev.xframe.module.beans.ModularBinder;
 import dev.xframe.module.beans.ModularIndexes;
+import dev.xframe.module.beans.ModularListener;
 import dev.xframe.module.beans.ModuleContainer;
 import dev.xframe.utils.XLambda;
 import dev.xframe.utils.XReflection;
 
 @Bean
-public class ModularContext {
+public class ModularContext implements ModularListener {
 	
 	@Inject
 	private BeanRegistrator registrator;
@@ -47,7 +48,7 @@ public class ModularContext {
 	}
 	
 	public ModuleContainer initContainer(ModuleContainer mc, Object assemble) {
-		mc.setup(gDefiner, indexes);
+		mc.setup(gDefiner, indexes, this);
 		int index = indexes.getIndex(assemble.getClass());
 		//为assembleClass赋值 @see initialize() 
 		mc.setBean(index, assemble);
@@ -70,22 +71,7 @@ public class ModularContext {
 	
 	private BeanBinder buildBinder(Class<?> c, BeanIndexing indexing) {
 		if(c.isAnnotationPresent(ModularAgent.class)) {
-			return new ModularBinder(c, Injector.NIL) {
-				Supplier<Object> supplier = XLambda.createByConstructor(buildAgentClass(c));
-				List<BeanBinder> impls = new ArrayList<>(); 
-				protected void integrate(Object bean, BeanDefiner definer) {//append all implements
-					impls.forEach(impl->SyntheticBuilder.append(bean, definer.define(impl.getIndex())));
-				}
-				protected BeanBinder conflict(Object keyword, BeanBinder binder) {
-					assert keyword instanceof Class;
-					assert ((Class<?>) keyword).isAnnotationPresent(ModularAgent.class);
-					impls.add(binder);
-					return this;
-				}
-				protected Object newInstance() {
-					return supplier.get();
-				}
-			};
+			return new AgentBinder(c);
 		}
 		return new ModularBinder(c, Injector.of(c, indexing));
 	}
@@ -119,6 +105,47 @@ public class ModularContext {
     }
     private static Comparator<Class<?>> annoComparator() {//从小到大
     	return (c1, c2)->Integer.compare(annoOrder(c1), annoOrder(c2));
+    }
+    
+    class AgentBinder extends ModularBinder {
+        Supplier<Object> factory;
+        List<BeanBinder> impls = new LinkedList<>(); 
+        public AgentBinder(Class<?> master) {
+            super(master, Injector.NIL);
+            factory = XLambda.createByConstructor(buildAgentClass(master));
+            agents.add(this);
+        }
+        //append impl留给ModularListener来处理
+        protected void integrate(Object bean, BeanDefiner definer) {
+        }
+        protected BeanBinder conflict(Object keyword, BeanBinder binder) {
+            assert keyword instanceof Class;
+            assert ((Class<?>) keyword).isAnnotationPresent(ModularAgent.class);
+            impls.add(binder);
+            return this;
+        }
+        protected Object newInstance() {
+            return factory.get();
+        }
+    }
+    
+    private List<AgentBinder> agents = new LinkedList<>();
+    @Override
+    public void onModuleLoaded(ModuleContainer mc, ModularBinder binder, Object module) {
+        for (AgentBinder agent : agents) {
+            if(agent.impls.contains(binder)) {
+                SyntheticBuilder.append(mc.getBean(agent.getIndex()), module);
+            }
+        }
+    }
+
+    @Override
+    public void onModuleUnload(ModuleContainer mc, ModularBinder binder, Object module) {
+        for (AgentBinder agent : agents) {
+            if(agent.impls.contains(binder)) {
+                SyntheticBuilder.remove(mc.getBean(agent.getIndex()), module);
+            }
+        }
     }
 
 }
