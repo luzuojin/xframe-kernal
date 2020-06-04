@@ -24,7 +24,7 @@ public class ModuleContainer extends BeanContainer  {
 		return gDefiner.define(index);
 	}
 
-	public void loadModules(ModuleType type) {
+	public synchronized void loadModules(ModuleType type) {
 		if(type == ModuleType.RESIDENT) {
 			loadModules(((ModularIndexes)indexes).residents);
 		} else {
@@ -43,7 +43,7 @@ public class ModuleContainer extends BeanContainer  {
 		((ModularBinder)binder).getInvoker().invokeLoad(this);//正常可以由ModularBinder在integrate方法中调用. 这里因为unload/save均在此类
 	}
 
-	public void unloadModules(ModuleType type) {
+	public synchronized void unloadModules(ModuleType type) {
 		if(type == ModuleType.RESIDENT) {
 			unloadModules(((ModularIndexes)indexes).residents);
 		} else {
@@ -53,8 +53,14 @@ public class ModuleContainer extends BeanContainer  {
 	private void unloadModules(ModularBinder[] binders) {
 		for (ModularBinder binder : binders) {
 			binder.getInvoker().invokeUnload(this);
+			this.clearModule(binder);
 		}
 	}
+	//清空Bean
+    private void clearModule(ModularBinder binder) {
+        this.setBean(binder.getIndex(), null);
+        this.setFlag(binder.getIndex(), false);
+    }
 	
 	public void saveModules() {
 		saveModules(((ModularIndexes)indexes).residents);
