@@ -7,14 +7,12 @@ import dev.xframe.module.ModuleType;
 
 public class ModuleContainer extends BeanContainer  {
 	
-    private ModularListener listener;
 	//global beans
 	private BeanDefiner gDefiner;
 	
-	public ModuleContainer setup(BeanDefiner gDefiner, ModularIndexes indexes, ModularListener listener) {
+	public ModuleContainer setup(BeanDefiner gDefiner, ModularIndexes indexes) {
 		super.setup(indexes);
 		this.gDefiner = gDefiner;
-		this.listener = listener;
 		return this;
 	}
 
@@ -44,7 +42,8 @@ public class ModuleContainer extends BeanContainer  {
 		super.loadBeanExec(binder, bean);
 		ModularBinder mbinder = (ModularBinder)binder;
         mbinder.getInvoker().invokeLoad(this);//正常可以由ModularBinder在integrate方法中调用. 这里因为unload/save均在此类
-		listener.onModuleLoaded(this, mbinder, bean);
+        //为Agent设值
+		mbinder.fillAgents(this, bean);
 	}
 
 	public synchronized void unloadModules(ModuleType type) {
@@ -64,10 +63,11 @@ public class ModuleContainer extends BeanContainer  {
         int bIndex = binder.getIndex();
         Object ex = this.getBean(bIndex);
         binder.getInvoker().invokeUnload(this);
-        //清空Container中的Ref
+        //清空Container中的ref
         this.setBean(bIndex, null);
         this.setFlag(bIndex, false);
-        listener.onModuleUnload(this, binder, ex);
+        //清空Agent中的ref
+        binder.unfillAgents(this, ex);
     }
 	
 	public void saveModules() {

@@ -1,5 +1,6 @@
 package dev.xframe.module.beans;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,6 +17,7 @@ import dev.xframe.utils.XReflection;
 public class ModularBinder extends BeanBinder.Classic {
 	
 	protected ModularInvoker invoker;
+	protected List<AgentBinder> relatedAgents = new LinkedList<>();
 
 	public ModularBinder(Class<?> master, Injector injector) {
 		super(master, injector);
@@ -54,5 +56,21 @@ public class ModularBinder extends BeanBinder.Classic {
 	public String getName() {
 		return master.getName();
 	}
+
+    public void relate(AgentBinder agentBinder) {
+        relatedAgents.add(agentBinder);
+    }
+
+    public void fillAgents(ModuleContainer mc, Object bean) {
+        for (AgentBinder agent : relatedAgents) {
+            agent.appendImpl(mc, bean);
+        }
+    }
+    
+    public void unfillAgents(ModuleContainer mc, Object bean) {
+        for (AgentBinder agent : relatedAgents) {
+            agent.removeImpl(mc, bean);
+        }
+    }
 	
 }
