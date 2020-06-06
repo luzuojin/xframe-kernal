@@ -12,9 +12,11 @@ import java.util.function.Predicate;
 
 import dev.xframe.inject.Configurator;
 import dev.xframe.inject.Eventual;
+import dev.xframe.inject.Ordered;
 import dev.xframe.utils.XThreadFactory;
 
 @Configurator
+@Ordered(Integer.MIN_VALUE)//eventual order
 public class TaskContext implements Eventual {
     
     private static final int CTL_NONE = 0;  //ctl none
