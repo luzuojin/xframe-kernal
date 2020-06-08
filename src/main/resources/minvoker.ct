@@ -43,7 +43,7 @@ public class ${invoker_name} implements dev.xframe.module.beans.ModularInvoker {
 	            */
 			}
         } catch (Throwable throwable) {
-            _logger.warn("unload error:", throwable);
+            _logger.warn("unload [${module_name}] error:", throwable);
         }
 	}
 	///
@@ -59,7 +59,7 @@ public class ${invoker_name} implements dev.xframe.module.beans.ModularInvoker {
 	            */
 			}
         } catch (Throwable throwable) {
-            _logger.warn("save error:", throwable);
+            _logger.warn("save [${module_name}] error:", throwable);
         }
 	}
 	///
