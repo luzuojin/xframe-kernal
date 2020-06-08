@@ -1,6 +1,7 @@
 package dev.xframe.inject.beans;
 
 import dev.xframe.inject.ApplicationContext;
+import dev.xframe.inject.Loadable;
 import dev.xframe.inject.Prototype;
 import dev.xframe.utils.XCaught;
 
@@ -25,6 +26,7 @@ public class BeanHelper {
 	}
 	public static Object inject(Object bean, Injector injector) {
 		injector.inject(bean, ApplicationContext.definer());
+		Loadable.doLoad(bean);
 		return bean;
 	}
 
