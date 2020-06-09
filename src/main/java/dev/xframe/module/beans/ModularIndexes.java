@@ -25,7 +25,7 @@ public class ModularIndexes extends BeanIndexes implements BeanIndexing {
 		List<ModularBinder> list = binders().stream().map(binder->((ModularBinder)binder)).collect(Collectors.toList());
 		residents = list.stream().filter(ModularBinder::isResident).toArray(ModularBinder[]::new);
 		transients = list.stream().filter(ModularBinder::isTransient).toArray(ModularBinder[]::new);
-		list.forEach(b->b.buildInvoker(this));
+		list.forEach(b->b.makeComplete(this));
 	}
 	
 	@Override

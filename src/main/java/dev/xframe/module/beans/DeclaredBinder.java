@@ -4,8 +4,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import dev.xframe.inject.beans.BeanBinder;
-import dev.xframe.inject.beans.BeanIndexing;
 import dev.xframe.inject.beans.Injector;
+import dev.xframe.inject.beans.Injector.Member;
+import dev.xframe.utils.XCaught;
 import dev.xframe.utils.XReflection;
 
 public class DeclaredBinder extends ModularBinder {
@@ -32,12 +33,36 @@ public class DeclaredBinder extends ModularBinder {
 	}
 
 	@Override
-	public void buildInvoker(BeanIndexing indexing) {
+	public void makeComplete(ModularIndexes indexes) {
+		for (Member member : injector.getMebmers()) {
+			if(indexes.isValidIndex(member.getIndex())) {//Assemble的Index offset为0
+			 	((ModularBinder)indexes.getBinder(member.getIndex())).registListener(newMemberListener(member));
+			}
+		}
 		//empty invoker
 		invoker = new ModularInvoker() {
 			public void invokeUnload(ModuleContainer mc) {}
 			public void invokeSave(ModuleContainer mc) {}
 			public void invokeLoad(ModuleContainer mc) {}
+		};
+	}
+
+	private ModularListener newMemberListener(final Member member) {
+		return new ModularListener() {
+			public void onModuleLoaded(ModuleContainer mc, ModularBinder binder, Object module) {
+				try {
+					member.getField().set(mc.getBean(getIndex()), module);
+				} catch (Exception e) {
+					XCaught.throwException(e);
+				}
+			}
+			public void onModuleUnloaded(ModuleContainer mc, ModularBinder binder, Object module) {
+				try {
+					member.getField().set(mc.getBean(getIndex()), null);
+				} catch (Exception e) {
+					XCaught.throwException(e);
+				}
+			}
 		};
 	}
 	

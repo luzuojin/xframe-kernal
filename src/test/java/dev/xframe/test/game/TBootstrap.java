@@ -77,6 +77,7 @@ public class TBootstrap {
         player.unload(ModuleType.TRANSIENT);
         testExecution.assertExecuted(TDepInventory.class);
         Assert.assertNull(adapter.loadModule(player, TDepInventory.class));
+        Assert.assertNull(player.dep);
         
 		new TPrototype().dosomething();
 		

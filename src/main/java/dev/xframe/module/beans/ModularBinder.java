@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import dev.xframe.inject.beans.BeanBinder;
-import dev.xframe.inject.beans.BeanIndexing;
 import dev.xframe.inject.beans.Injector;
 import dev.xframe.module.ModularAgent;
 import dev.xframe.module.ModularComponent;
@@ -17,7 +16,7 @@ import dev.xframe.utils.XReflection;
 public class ModularBinder extends BeanBinder.Classic {
 	
 	protected ModularInvoker invoker;
-	protected List<AgentBinder> relatedAgents = new LinkedList<>();
+	protected List<ModularListener> listeners = new LinkedList<>();
 
 	public ModularBinder(Class<?> master, Injector injector) {
 		super(master, injector);
@@ -36,8 +35,8 @@ public class ModularBinder extends BeanBinder.Classic {
 			   ;
 	}
 	
-	public void buildInvoker(BeanIndexing indexing) {
-		invoker = MInvokerBuilder.build(master, indexing);
+	public void makeComplete(ModularIndexes indexes) {
+		invoker = MInvokerBuilder.build(master, indexes);
 	}
 	
 	@Override
@@ -57,20 +56,19 @@ public class ModularBinder extends BeanBinder.Classic {
 		return master.getName();
 	}
 
-    public void relate(AgentBinder agentBinder) {
-        relatedAgents.add(agentBinder);
-    }
-
-    public void fillAgents(ModuleContainer mc, Object bean) {
-        for (AgentBinder agent : relatedAgents) {
-            agent.appendImpl(mc, bean);
-        }
-    }
-    
-    public void unfillAgents(ModuleContainer mc, Object bean) {
-        for (AgentBinder agent : relatedAgents) {
-            agent.removeImpl(mc, bean);
-        }
-    }
+	public void registListener(ModularListener listener) {
+		this.listeners.add(listener);
+	}
 	
+	public void onLoaded(ModuleContainer mc, Object module) {
+		for (ModularListener listener : listeners) {
+			listener.onModuleLoaded(mc, this, module);
+		}
+	}
+	public void onUnloaded(ModuleContainer mc, Object module) {
+		for (ModularListener listener : listeners) {
+			listener.onModuleUnloaded(mc, this, module);
+		}
+	}
+
 }

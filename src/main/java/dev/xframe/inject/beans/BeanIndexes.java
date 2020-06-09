@@ -60,6 +60,11 @@ public class BeanIndexes {
 		BeanBinder binder = indexes.get(keyword);
 		return binder == null ? -1 : binder.index;
 	}
+	
+	public boolean isValidIndex(int binderIndex) {
+		int aIndex = arrayIndex(binderIndex);
+		return aIndex > -1 && aIndex < binders.length;
+	}
 
 	int arrayIndex(int binderIndex) {
 		return binderIndex - offset;

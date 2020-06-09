@@ -9,7 +9,7 @@ import dev.xframe.inject.code.SyntheticBuilder;
 import dev.xframe.module.ModularAgent;
 import dev.xframe.utils.XLambda;
 
-public class AgentBinder extends ModularBinder {
+public class AgentBinder extends ModularBinder implements ModularListener {
     private Supplier<Object> factory;
     public AgentBinder(Class<?> master) {
         super(master, Injector.NIL);
@@ -22,7 +22,7 @@ public class AgentBinder extends ModularBinder {
         assert keyword instanceof Class;
         assert ((Class<?>) keyword).isAnnotationPresent(ModularAgent.class);
         assert binder instanceof ModularBinder;
-        ((ModularBinder) binder).relate(this);
+        ((ModularBinder) binder).registListener(this);
         return this;
     }
     protected Object newInstance() {
@@ -32,10 +32,12 @@ public class AgentBinder extends ModularBinder {
         ModularAgent an = c.getAnnotation(ModularAgent.class);
         return SyntheticBuilder.buildClass(c, an.invokable(), an.ignoreError(), an.boolByTrue());
     }
-    public void appendImpl(ModuleContainer mc, Object impl) {
-        SyntheticBuilder.append(mc.getBean(getIndex()), impl);
-    }
-    public void removeImpl(ModuleContainer mc, Object impl) {
-        SyntheticBuilder.remove(mc.getBean(getIndex()), impl);
-    }
+	@Override
+	public void onModuleLoaded(ModuleContainer mc, ModularBinder binder, Object module) {
+		SyntheticBuilder.append(mc.getBean(getIndex()), module);
+	}
+	@Override
+	public void onModuleUnloaded(ModuleContainer mc, ModularBinder binder, Object module) {
+		SyntheticBuilder.remove(mc.getBean(getIndex()), module);
+	}
 }

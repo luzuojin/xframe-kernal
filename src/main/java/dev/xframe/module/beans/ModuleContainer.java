@@ -42,8 +42,7 @@ public class ModuleContainer extends BeanContainer  {
 		super.loadBeanExec(binder, bean);
 		ModularBinder mbinder = (ModularBinder)binder;
         mbinder.getInvoker().invokeLoad(this);//正常可以由ModularBinder在integrate方法中调用. 这里因为unload/save均在此类
-        //为Agent设值
-		mbinder.fillAgents(this, bean);
+		mbinder.onLoaded(this, bean);
 	}
 
 	public synchronized void unloadModules(ModuleType type) {
@@ -66,8 +65,8 @@ public class ModuleContainer extends BeanContainer  {
         //清空Container中的ref
         this.setBean(bIndex, null);
         this.setFlag(bIndex, false);
-        //清空Agent中的ref
-        binder.unfillAgents(this, ex);
+        //清空Agent...中的ref
+        binder.onUnloaded(this, ex);
     }
 	
 	public void saveModules() {

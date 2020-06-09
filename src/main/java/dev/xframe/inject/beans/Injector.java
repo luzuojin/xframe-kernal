@@ -20,6 +20,13 @@ public class Injector {
 		this.mebmers = members;
 	}
 	
+	public Class<?> getType() {
+		return type;
+	}
+	public Member[] getMebmers() {
+		return mebmers;
+	}
+
 	@Override
 	public String toString() {
 		return "Injector [" + type + "]";
@@ -54,7 +61,7 @@ public class Injector {
 		return new Injector(clazz, members.stream().toArray(Member[]::new));
 	}
 
-	static class Member {
+	public static class Member {
 		private Field field;
 		private int index;
 		private BeanIndexing indexing;
@@ -71,7 +78,10 @@ public class Injector {
 			Inject an = field.getAnnotation(Inject.class);
 			return XStrings.isEmpty(an.value()) ? field.getType() : an.value();
 		}
-		private int getIndex() {
+		public Field getField() {
+			return field;
+		}
+		public int getIndex() {
 			if(index == -1) {
 				index = indexing.indexOf(getKeyword());
 			}
