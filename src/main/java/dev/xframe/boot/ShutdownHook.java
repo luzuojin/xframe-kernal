@@ -18,6 +18,10 @@ public class ShutdownHook implements Eventual {
 	
 	private AtomicBoolean shuttedDown = new AtomicBoolean(false);
 	
+	public void append(ShutdownAgent agent) {
+	    SyntheticBuilder.append(agents, agent);
+	}
+	
 	public void shutdown() {
 		shutdonw(true);
 	}
@@ -28,11 +32,6 @@ public class ShutdownHook implements Eventual {
 				XLogger.info("Shutting down server gracefully");
 			} else {
 				XLogger.info("Shutting down server immediately");
-			}
-			
-			if(Bootstrap.RUNNING_INSTANCE != null) {
-				Bootstrap.RUNNING_INSTANCE.shutdown();
-				XLogger.info("Shutting down net servers");
 			}
 			
 			SyntheticBuilder.forEach(agents, (ShutdownAgent agent)->{
