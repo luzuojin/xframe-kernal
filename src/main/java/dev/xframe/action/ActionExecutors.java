@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dev.xframe.utils.XProperties;
 import dev.xframe.utils.XThreadFactory;
 import io.netty.util.HashedWheelTimer;
 
@@ -125,8 +126,8 @@ public class ActionExecutors {
     
     static class DelaySchedulerFactory {
         static DelayScheduler hashedwheel;//hashedwheel全局只用一个实例
-        static boolean useHashedWheel = Boolean.parseBoolean(System.getProperty("xframe.hashedwheel", "true"));
-        static int tick = Integer.parseInt(System.getProperty("xframe.hashedwheel.tick", "50"));
+        static boolean useHashedWheel = XProperties.getAsBool("xframe.hashedwheel", true);
+        static int tick = XProperties.getAsInt("xframe.hashedwheel.tick", 50);
         static synchronized DelayScheduler makeStartedScheduler(String name) {
             if(useHashedWheel) {
                 if(hashedwheel == null) {

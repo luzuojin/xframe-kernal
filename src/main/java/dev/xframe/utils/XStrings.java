@@ -12,6 +12,15 @@ public class XStrings {
     public static String orElse(String b, String t) {
     	return isEmpty(b) ? t : b;
     }
+    public static int orElse(String val, int def) {
+		return isEmpty(val) ? def : Integer.parseInt(val);
+	}
+    public static long orElse(String val, long def) {
+		return isEmpty(val) ? def : Long.parseLong(val);
+	}
+    public static boolean orElse(String val, boolean def) {
+		return isEmpty(val) ? def : Boolean.parseBoolean(val);
+	}
     
     public static boolean isEmpty(String x) {
         int len;

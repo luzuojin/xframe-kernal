@@ -1,5 +1,6 @@
 package dev.xframe.net.codec;
 
+import dev.xframe.utils.XProperties;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
 
@@ -17,7 +18,7 @@ public final class MessageCrypts {
     public static final MessageCrypt SIMPLE = new SimpleCryption();
     
     public static MessageCrypt fromSysOps() {
-        return Boolean.parseBoolean(System.getProperty(CRYPT_SYS_OP_KEY, "false")) ? SIMPLE : NONE;
+        return XProperties.getAsBool(CRYPT_SYS_OP_KEY, false) ? SIMPLE : NONE;
     }
 
     public static class SimpleCryption implements MessageCrypt {

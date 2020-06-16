@@ -15,24 +15,21 @@ public interface HttpParams {
         return (values == null || values.isEmpty()) ? null : values.get(0);
     }
     default String getParam(String name, String def) {
-        String val = getParam(name);
-        return XStrings.isEmpty(val) ? def : val;
+    	return XStrings.orElse(getParam(name), def);
     }
 
     default int getParamAsInt(String name) {
         return getParamAsInt(name, -1);
     }
     default int getParamAsInt(String name, int def) {
-        String param = getParam(name);
-        return XStrings.isEmpty(param) ? def : Integer.parseInt(param);
+        return XStrings.orElse(getParam(name), def);
     }
     
     default long getParamAsLong(String name) {
         return getParamAsLong(name, -1);
     }
     default long getParamAsLong(String name, long def) {
-        String param = getParam(name);
-        return XStrings.isEmpty(param) ? def : Long.parseLong(param);
+        return XStrings.orElse(getParam(name), def);
     }
 
 }
