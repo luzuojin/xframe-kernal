@@ -127,11 +127,11 @@ public class ActionExecutors {
     static class DelaySchedulerFactory {
         static DelayScheduler hashedwheel;//hashedwheel全局只用一个实例
         static boolean useHashedWheel = XProperties.getAsBool("xframe.hashedwheel", true);
-        static int tick = XProperties.getAsInt("xframe.hashedwheel.tick", 50);
+        static int tickDuration = XProperties.getAsInt("xframe.hashedwheel.tickduration", 100);
         static synchronized DelayScheduler makeStartedScheduler(String name) {
             if(useHashedWheel) {
                 if(hashedwheel == null) {
-                    hashedwheel = new HWDelayScheduler(tick);
+                    hashedwheel = new HWDelayScheduler(tickDuration);
                     hashedwheel.startup();
                 }
                 return hashedwheel;
@@ -198,8 +198,8 @@ public class ActionExecutors {
     static class HWDelayScheduler implements DelayScheduler {
         final static TimeUnit unit = TimeUnit.MILLISECONDS;
         final HashedWheelTimer timer;
-        public HWDelayScheduler(int tick) {
-            timer = new HashedWheelTimer(new XThreadFactory("delays"), tick, unit);
+        public HWDelayScheduler(int tickDuration) {
+            timer = new HashedWheelTimer(new XThreadFactory("delays"), tickDuration, unit);
         }
         @Override
         public void startup() {
