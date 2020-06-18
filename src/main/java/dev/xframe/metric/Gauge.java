@@ -1,5 +1,9 @@
 package dev.xframe.metric;
 
+/**
+ * 瞬时值
+ * @author luzj
+ */
 public class Gauge {
 	
 	public static final Gauge NIL = new Gauge() {
@@ -25,7 +29,7 @@ public class Gauge {
 	}
 
 	public static Gauge of(Class<?> ident) {
-		return Metrics.watching ? new Gauge(ident) : NIL;
+		return Metric.watching ? new Gauge(ident) : NIL;
 	}
 	
 	public Gauge creating() {
@@ -61,7 +65,7 @@ public class Gauge {
 	}
 	
 	public void apply() {
-		Metrics.apply(this);
+		Metric.apply(this);
 	}
 
 }

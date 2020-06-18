@@ -1,82 +1,53 @@
 package dev.xframe.metric;
 
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Metric {
-	
-	private static final Logger logger = LoggerFactory.getLogger(Metric.class);
-	
-	private final Class<?> ident;
     
-    private final AtomicLong cnt = new AtomicLong();//执行次数
-    private final AtomicLong sum = new AtomicLong();//执行总时间
-    private final AtomicLong max = new AtomicLong();//最长执行时间
-    private final AtomicLong wat = new AtomicLong();//最长等待时间
-    private final AtomicLong slo = new AtomicLong();//slow count
+    static int wait_threshold = 3000;//ms
+    static int slow_threshold = 500;
     
-    public Metric(Class<?> ident) {
-        this.ident = ident;
-    }
+    static boolean watching = false;//默认不开启
     
-    @Override
-    public String toString() {
-        return "" +
-               cnt.get() + '\t' +
-               sum.get() + '\t' +
-               sum.get() / cnt.get() + '\t' +
-               max.get() + '\t' +
-               wat.get() + '\t' +
-               wat.get() + '\t' +
-               ident.getName();
-    }
+    static final Map<Class<?>, Meter> meters = new HashMap<>();
     
-    public static String columns() {
-        return  "count\t" + 
-                "sum  \t" +
-                "avg  \t" +
-                "max  \t" +
-                "wait \t" +
-                "slow \t" +
-                "ident\t";
-    }
-    
-    static void updateMax(AtomicLong s, long max) {
-        for(;;) {
-            long current = s.get();
-            if(max < current) 
-                break;
-            if(s.compareAndSet(current, max))
-                break;
+    static Meter get(Class<?> ident) {
+        Meter meter = meters.get(ident);
+        if(meter == null) {
+            meter = getOrNew(ident);
         }
+        return meter;
+    }
+    static synchronized Meter getOrNew(Class<?> ident) {
+        Meter meter = meters.get(ident);
+        if(meter == null) {
+            meter = new Meter(ident);
+            meters.put(ident, meter);
+        }
+        return meter;
     }
     
-    void apply(long used, long wait) {
-    	cnt.incrementAndGet();
-    	sum.addAndGet(used);
-
-    	updateMax(max, used);
-    	updateMax(wat, wait);
+    public static void watch() {
+        watching = true;
     }
     
-	public void apply(Gauge g) {
-		long used = g.used();
-		long waited = g.waited();
-		
-		apply(used, waited);
+    public static void unwatch() {
+    	watching = false;
+    }
 
-		if (used > 1000) {
-			logSlow(g);
-			slo.incrementAndGet();
-		} else if (waited > 6000) {
-			logSlow(g);
-		}
+	public static void apply(Gauge g) {
+		if(watching) {
+        	try {
+        		get(g.ident).apply(g);
+        	 } catch (Throwable e) {
+                 //ignore
+             }
+        }
 	}
-	
-	public static void logSlow(Gauge g) {
-		logger.warn("Execute slow [" + g.name() + "] used: " + g.used() + ", waited: " + g.waited());
-	}
+
+    public static String console() {
+        return Reporter.console(meters.values());
+    }
 
 }
