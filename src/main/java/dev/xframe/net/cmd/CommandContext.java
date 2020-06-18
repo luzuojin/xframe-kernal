@@ -1,6 +1,5 @@
 package dev.xframe.net.cmd;
 
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +8,7 @@ import dev.xframe.inject.Bean;
 import dev.xframe.inject.Eventual;
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.code.Codes;
+import dev.xframe.utils.XReflection;
 
 /**
  * 命令集合 遍历所有文件,找出含有@cmd annotation的命令类
@@ -50,7 +50,7 @@ public class CommandContext implements Eventual {
     
     public void defineCmd(Class<?> clazz) {
         Cmd ann = clazz.getAnnotation(Cmd.class);
-        if(ann != null && !Modifier.isAbstract(clazz.getModifiers()) && !Modifier.isInterface(clazz.getModifiers())) {
+        if(ann != null && XReflection.isImplementation(clazz)) {
             registCmd(ann.value(), builder.build(clazz));
         }
     }

@@ -11,6 +11,7 @@ public class Gauge {
 		public Gauge creating() {return this;}
 		public Gauge beginning() {return this;}
 		public Gauge ending() {return this;}
+        public void apply() {}
 	};
 	
 	Class<?> ident;
@@ -57,7 +58,7 @@ public class Gauge {
 	}
 	
 	public long waited() {
-		return this.beginTime - createTime;
+		return createTime == 0 ? 0 : beginTime - createTime;
 	}
 
 	public String name() {

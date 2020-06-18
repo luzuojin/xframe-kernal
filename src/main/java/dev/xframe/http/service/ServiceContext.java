@@ -1,8 +1,9 @@
 package dev.xframe.http.service;
 
-import java.lang.reflect.Modifier;
 import java.util.List;
 
+import dev.xframe.http.Request;
+import dev.xframe.http.Response;
 import dev.xframe.http.service.path.PathMap;
 import dev.xframe.http.service.path.PathMatcher;
 import dev.xframe.http.service.path.PathPattern;
@@ -11,6 +12,7 @@ import dev.xframe.inject.Bean;
 import dev.xframe.inject.Eventual;
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.code.Codes;
+import dev.xframe.utils.XReflection;
 
 /**
  * @author luzj
@@ -21,7 +23,7 @@ public class ServiceContext implements Eventual {
     @Inject
     private ServiceBuilder builder;
     
-    private PathMap<Pair> paths;
+    private PathMap<ServicePair> paths;
     
     private ConflictHandler conflictHandler;
     
@@ -37,26 +39,39 @@ public class ServiceContext implements Eventual {
 	public void registService(String path, Service service, ConflictHandler conflictHandler) {
     	PathTemplate temp = new PathTemplate(path);
     	PathPattern pattern = new PathPattern(temp);
-    	Pair old = paths.put(temp.mapping(), new Pair(pattern, service));
-    	if(old != null) conflictHandler.handle(path, old.serivce, service);
+    	ServicePair old = paths.put(temp.mapping(), new ServicePair(pattern, service));
+    	if(old != null) conflictHandler.handle(path, old.service, service);
     }
     
-    public static class Pair {
-    	PathPattern pattern;
-    	Service serivce;
-    	Pair(PathPattern pattern, Service service) {
+    public static class ServicePair {
+    	final PathPattern pattern;
+    	final Service service;
+    	ServicePair(PathPattern pattern, Service service) {
     		this.pattern = pattern;
-    		this.serivce = service;
+    		this.service = service;
 		}
     }
+    
+    public static class ServiceInvoker implements Service {
+        final PathMatcher matcher;
+        final Service internal;
+        ServiceInvoker(PathMatcher matcher, Service service) {
+            this.matcher = matcher;
+            this.internal = service;
+        }
+        @Override
+        public Response exec(Request req) throws Exception {
+            return internal.exec(req, matcher);
+        }
+    }
 
-    public ServicePair get(String path) {
-    	Pair pair = paths.get(path);
-    	if(pair != null) {
-    		PathMatcher matcher = pair.pattern.compile(path);
-    		if(matcher.find()) {
-    			return new ServicePair(matcher, pair.serivce);
-    		}
+    public Service get(String path) {
+    	ServicePair sp = paths.get(path);
+    	if(sp != null) {
+    	    PathMatcher matcher = sp.pattern.compile(path);
+            if(matcher.find()) {
+                return new ServiceInvoker(matcher, sp.service);
+            }
     	}
     	return null;
     }
@@ -79,7 +94,9 @@ public class ServiceContext implements Eventual {
 	}
 
 	public void defineServices(List<Class<?>> clazzes, ConflictHandler conflictHandler) {
-		for (Class<?> clazz : clazzes) defineService(clazz, conflictHandler);
+		for (Class<?> clazz : clazzes) {
+		    defineService(clazz, conflictHandler);
+		}
 	}
 	
 	public void defineService(Class<?> clazz) {
@@ -88,7 +105,7 @@ public class ServiceContext implements Eventual {
 	
     public void defineService(Class<?> clazz, ConflictHandler conflictHandler) {
         String path = Service.findPath(clazz);
-        if(path != null && !Modifier.isAbstract(clazz.getModifiers()) && !Modifier.isInterface(clazz.getModifiers())) {
+        if(path != null && XReflection.isImplementation(clazz)) {
             ConflictHandler osch = this.conflictHandler;
             this.conflictHandler = conflictHandler;
             registService(path, builder.build(clazz), conflictHandler);

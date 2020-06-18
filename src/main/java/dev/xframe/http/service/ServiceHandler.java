@@ -19,12 +19,12 @@ public class ServiceHandler {
     public final void exec(ChannelHandlerContext ctx, Request req) {
     	Response resp = Response.NOT_FOUND;
     	HttpInterceptor interceptor = config.getInterceptor();
-    	ServicePair pair = serCtx.get(req.xpath());
-    	if(pair != null) {
+    	Service s = serCtx.get(req.xpath());
+    	if(s != null) {
     		try {
     			resp = interceptor.intercept(req);
     			if(resp == null) {
-    				resp = pair.invoke(req);
+    				resp = s.exec(req);
     			}
     		} catch (Throwable ex) {
     			resp = config.getErrorhandler().handle(req, ex);
