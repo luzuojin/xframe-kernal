@@ -5,38 +5,27 @@ import java.util.List;
 
 import dev.xframe.utils.SyncCOWList;
 
-public class EventBus implements Registrator {
+public class EventBus extends SubscriberMap implements Registrator {
+    
+    public static int getEventType(Object evt) {
+        return evt.getClass().getAnnotation(Event.class).value();
+    }
 	
-	static class SubList extends SyncCOWList<Subscriber> {
-		int type;
-		SubList next;
-		public SubList(int type) {
-			this.type = type;
-		}
-	}
-	
-	private int subListCount;
-	private SubList[] subLists;
 	private Dispatcher dispatcher;
 	
 	public EventBus() {
 		this(Dispatcher.direct());
 	}
 	public EventBus(Dispatcher dispatcher) {
-		this.subLists = new SubList[16];
 		this.dispatcher = dispatcher;
 	}
 	
     public void post(Object evt) {
-        List<Subscriber> list = get0(getEventType(evt));
+        List<Subscriber> list = get(getEventType(evt));
         if(list != null && !list.isEmpty()) {
         	dispatcher.dispatch(list, evt);
         }
     }
-
-    static int getEventType(Object evt) {
-		return evt.getClass().getAnnotation(Event.class).value();
-	}
 
 	@Override
     public void regist(Subscriber subscriber) {
@@ -45,34 +34,49 @@ public class EventBus implements Registrator {
 
 	@Override
     public void unregist(int group) {
-		delSubsByType(group);
+		delByGroup(group);
     }
 	
 	public void unregist(Subscriber subscriber) {
-		delSub(subscriber);
+		del(subscriber);
 	}
-	
-	
-	private List<Subscriber> getOrNew(int type) {
-        List<Subscriber> list = get0(type);
+
+}
+
+class SubscriberMap {//减少内存占用(相关Ref/Wrapper都去掉)
+    static class Entry extends SyncCOWList<Subscriber> {
+        int type;
+        Entry next;
+        public Entry(int type) {
+            this.type = type;
+        }
+    }
+    private int count;
+    private Entry[] datas;
+    public SubscriberMap() {
+        this.datas = new Entry[16];
+    }
+    
+    protected List<Subscriber> getOrNew(int type) {
+        List<Subscriber> list = get(type);
         return list == null ? getOrNewSafely(type) : list;
     }
 
-    private synchronized List<Subscriber> getOrNewSafely(int type) {//只有new sublist时才会有并发问题 (其他时机的并发由cowlist处理)
-        SubList list = get0(type);
+    private synchronized List<Subscriber> getOrNewSafely(int type) {//只有new Entry时才会有并发问题 (其他时机的并发由cowlist处理)
+        Entry list = get(type);
         if(list == null) {
-            list = new SubList(type);
+            list = new Entry(type);
             put(type, list);
         }
         return list;
     }
     
     private int indexOf(int key) {
-        return key & (subLists.length - 1);
+        return key & (datas.length - 1);
     }
     
-    private SubList get0(int key) {
-        SubList node = subLists[indexOf(key)];
+    protected Entry get(int key) {
+        Entry node = datas[indexOf(key)];
         while(node != null) {
             if(node.type == key) {
                 return node;
@@ -82,33 +86,33 @@ public class EventBus implements Registrator {
         return null;
     }
     
-    private void put(int key, SubList val) {
+    private void put(int key, Entry val) {
         put0(key, val);
         
-        if(subListCount > subLists.length) {
+        if(count > datas.length) {
             resize();
         }
     }
 
-    private void put0(int key, SubList val) {
+    private void put0(int key, Entry val) {
         int i = indexOf(key);
-        SubList subList = subLists[i];
-        if(subList == null) {
-            subLists[i] = val;
+        Entry data = datas[i];
+        if(data == null) {
+            datas[i] = val;
         } else {
-            while(subList.next != null) {
-                subList = subList.next;
+            while(data.next != null) {
+                data = data.next;
             }
-            subList.next = val;
+            data.next = val;
         }
-        ++ subListCount;
+        ++ count;
     }
 
     private void resize() {
-        SubList[] old = increase();
-        for(SubList s : old) {
+        Entry[] old = increase();
+        for(Entry s : old) {
             while(s != null) {
-                SubList t = s.next;
+                Entry t = s.next;
                 s.next = null;//make pure
                 put0(s.type, s);
                 s = t;
@@ -116,15 +120,15 @@ public class EventBus implements Registrator {
         }
     }
 
-    private SubList[] increase() {
-        SubList[] old = subLists;
-        subLists = new SubList[(old.length << 1)];
-        subListCount = 0;
+    private Entry[] increase() {
+        Entry[] old = datas;
+        datas = new Entry[(old.length << 1)];
+        count = 0;
         return old;
     }
-	
-	private void delSubsByType(int group) {
-        for(SubList s : subLists) {
+    
+    protected void delByGroup(int group) {
+        for(Entry s : datas) {
             while(s != null) {
                 Iterator<Subscriber> it = s.iterator();
                 while(it.hasNext()) {
@@ -137,12 +141,11 @@ public class EventBus implements Registrator {
             }
         }
     }
-	
-    private void delSub(Subscriber subscriber) {
-        SubList subList = get0(subscriber.type);
-		if(subList != null && !subList.isEmpty()) {
-			subList.remove(subscriber);
-		}
+    
+    protected void del(Subscriber subscriber) {
+        Entry datas = get(subscriber.type);
+        if(datas != null && !datas.isEmpty()) {
+            datas.remove(subscriber);
+        }
     }
-
 }
