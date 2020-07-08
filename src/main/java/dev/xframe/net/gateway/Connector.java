@@ -45,14 +45,12 @@ class Connector implements ClientLifecycleListener {
         return thread;
     }
 
-    private void createThread() {
-        synchronized (this) {
-            if(thread == null) {
-                thread = new ConnectThread();
-                thread.setName("connector");
-                thread.setDaemon(true);
-                thread.start();
-            }
+    synchronized void createThread() {
+        if(thread == null) {
+            thread = new ConnectThread();
+            thread.setName("connector");
+            thread.setDaemon(true);
+            thread.start();
         }
     }
 
@@ -86,8 +84,8 @@ class Connector implements ClientLifecycleListener {
     }
     
     static class ConnectData implements Delayed {
-        int count;
         Session session;
+        int count;
         long time = System.currentTimeMillis();
         public ConnectData(Session session) {
             this.session = session;

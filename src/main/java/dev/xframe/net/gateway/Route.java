@@ -19,8 +19,8 @@ public class Route {
         return this;
     }
     
-    public Route upstream(Upstream pipeline) {
-        this.upstream = pipeline;
+    public Route upstream(Upstream upstream) {
+        this.upstream = upstream;
         return this;
     }
     

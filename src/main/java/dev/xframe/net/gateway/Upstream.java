@@ -9,10 +9,8 @@ public class Upstream {
     private int tcpPort;
     private int connCnt;
     
-    private boolean initiated;
-    
     private Connector connector;
-    private GroupSession gs = new GroupSession();
+    private GroupSession gs;
     
     public Upstream(String host, int port) {
         this(host, port, 4);
@@ -27,25 +25,23 @@ public class Upstream {
         this.connector = connector;
     }
     
-    void initial() {
-        if(initiated)
-            return;
-        initial0();
+    GroupSession getGS() {
+        return gs == null ? create() : gs;
     }
     
-    synchronized void initial0() {
-        if(!initiated) {
+    synchronized GroupSession create() {
+        if(gs == null) {
+            GroupSession _gs = new GroupSession();
             for (int i = 0; i < connCnt; i++) {
-                gs.add(connector.connect(host, tcpPort));
+                _gs.add(connector.connect(host, tcpPort));
             }
-            initiated = true;
+            gs = _gs;
         }
+        return gs;
     }
 
     public void post(IMessage message) {
-        initial();
-        
-        gs.sendMessage(message);
+        getGS().sendMessage(message);
     }
 
 }
