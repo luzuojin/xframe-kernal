@@ -71,7 +71,7 @@ public class XPaths {
     }
     private static List<File> listFiles(List<File> fs, File root) {
         for (File file : root.listFiles()) {
-            if(file.isDirectory()) {
+        	if(file.isDirectory()) {
                 listFiles(fs, file);
             } else {
                 fs.add(file);
