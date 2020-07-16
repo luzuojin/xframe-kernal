@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.xframe.utils.XPaths;
+import dev.xframe.utils.XReflection;
 
 public class XInstrument {
     
@@ -20,9 +21,16 @@ public class XInstrument {
     synchronized static void loadAgent() {
         if(_inst == null && !_loaded) {
             try {
+                //使用反射代替以下代码. 去掉pom.xml中的tools.jar的编译依赖
+                Class<?> vmClass = Class.forName("com.sun.tools.attach.VirtualMachine");
+                Object vmObj = XReflection.getMethod(vmClass, "attach", String.class).invoke(null, getProcessId());
+                XReflection.getMethod(vmClass, "loadAgent", String.class).invoke(vmObj, getProtectionPath());
+                XReflection.getMethod(vmClass, "detach").invoke(vmObj);
+                /*
                 com.sun.tools.attach.VirtualMachine vm = com.sun.tools.attach.VirtualMachine.attach(getProcessId());
                 vm.loadAgent(getProtectionPath());
                 vm.detach();
+                */
                 logger.info("Load instrument success...");
             } catch (Throwable e) {
                 logger.info("Load instrument failed...", e);

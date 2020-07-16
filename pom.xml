@@ -77,13 +77,5 @@
   		<version>1.1.9</version>
   		<scope>test</scope>
   	</dependency>
-	<dependency> 
-	    <groupId>com.sun</groupId> 
-	    <artifactId>tools</artifactId> 
-	    <version>1.6.0</version> 
-	    <scope>system</scope> 
-	    <systemPath>${env.JAVA_HOME}/lib/tools.jar</systemPath> 
-	    <optional>true</optional> 
-	</dependency> 
   </dependencies>
 </project>
