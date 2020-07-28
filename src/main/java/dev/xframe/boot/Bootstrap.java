@@ -48,6 +48,14 @@ public class Bootstrap {
         networker.useGateway(gateway);
         return this;
     }
+    public Bootstrap withWebSocket(String host, int port) {
+        networker.withWebSocket(host, port);
+        return this;
+    }
+    public Bootstrap withWebSocket(String host, int port, int nThreads) {
+        networker.withWebSocket(host, port, nThreads);
+        return this;
+    }
     
     public Bootstrap withHttp(int port) {
          networker.withHttp(port);

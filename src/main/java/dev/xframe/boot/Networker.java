@@ -6,10 +6,13 @@ import dev.xframe.inject.Ordered;
 import dev.xframe.inject.beans.BeanHelper;
 import dev.xframe.net.MessageHandler;
 import dev.xframe.net.NetServer;
+import dev.xframe.net.WebSocketServer;
 import dev.xframe.net.cmd.CommandHandler;
 import dev.xframe.net.gateway.Gateway;
 import dev.xframe.net.server.ServerLifecycleListener;
 import dev.xframe.net.server.ServerMessageInterceptor;
+import dev.xframe.net.websocket.WebSocketLifecycleListener;
+import dev.xframe.net.websocket.WebSocketMessageInterceptor;
 
 @Ordered(Integer.MAX_VALUE)
 public class Networker implements ShutdownAgent {
@@ -20,6 +23,10 @@ public class Networker implements ShutdownAgent {
     ServerLifecycleListener sLifecycleListener;
     @Inject
     ServerMessageInterceptor sMessageInterceptor;
+    @Inject
+    WebSocketLifecycleListener wsLifecycleListener;
+    @Inject
+    WebSocketMessageInterceptor wsMessageInterceptor;
     @Inject
     ShutdownHook shutdownHook;
     
@@ -33,6 +40,11 @@ public class Networker implements ShutdownAgent {
     int httpThreads;
     HttpServer http;
     
+    String wsHost;
+    int wsPort;
+    int wsThreads;
+    WebSocketServer ws;
+    
     public Networker withTcp(int port) {
         return withTcp(port, NetServer.defaultThreads());
     }
@@ -45,8 +57,17 @@ public class Networker implements ShutdownAgent {
         this.gateway = gateway;
         return this;
     }
+    public Networker withWebSocket(String host, int port) {
+    	return withWebSocket(host, port, WebSocketServer.defaultThreads());
+    }
+    public Networker withWebSocket(String host, int port, int nThreads) {
+    	this.wsHost = host;
+    	this.wsPort = port;
+    	this.wsThreads = nThreads;
+		return this;
+	}
     
-    public Networker withHttp(int port) {
+	public Networker withHttp(int port) {
         return withHttp(port, HttpServer.defaultThreads());
     }
     public Networker withHttp(int port, int nThreads) {
@@ -63,7 +84,9 @@ public class Networker implements ShutdownAgent {
             if(tcpPort > 0) {
                 tcp = new NetServer().setThreads(tcpThreads).setPort(tcpPort).setListener(sLifecycleListener).setHandler(newMessageHandler()).startup();
             }
-
+            if(wsPort > 0) {
+            	ws = new WebSocketServer().setThreads(wsThreads).setHost(wsHost).setPort(wsPort).setListener(wsLifecycleListener).setHandler(newMessageHandler()).startup();
+            }
             if(httpPort > 0) {
                 http = new HttpServer().setThreads(httpThreads).setPort(httpPort).startup();
             }
@@ -80,6 +103,7 @@ public class Networker implements ShutdownAgent {
     public void shutdown() {
         if(http != null) http.shutdown();
         if(tcp != null) tcp.shutdown();
+        if(ws != null) ws.shutdown();
     }
 
 }
