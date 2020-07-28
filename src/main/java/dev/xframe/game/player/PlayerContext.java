@@ -1,7 +1,7 @@
 package dev.xframe.game.player;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
@@ -149,7 +149,7 @@ public class PlayerContext {
             return;
         }
         
-        List<PlayerData> curPlayers = players.datas();
+        Collection<PlayerData> curPlayers = players.datas();
         for (PlayerData curPlayer : curPlayers) {
             try {
                 Player player = curPlayer.getData();
@@ -182,10 +182,10 @@ public class PlayerContext {
     }
 
     private static class PlayerCollection {
-        ConcurrentHashMap<Long, PlayerData> context = new ConcurrentHashMap<>();
+        Map<Long, PlayerData> datas = new ConcurrentHashMap<>();
         
         public Player get(long playerId) {
-            PlayerData item = (PlayerData) context.get(playerId);
+            PlayerData item = (PlayerData) datas.get(playerId);
             if(item == null) {
                 return null;
             }
@@ -194,67 +194,39 @@ public class PlayerContext {
         }
         
         public boolean isExist(long playerId) {
-            return context.containsKey(playerId);
+            return datas.containsKey(playerId);
         }
 
         public void put(long playerId, Player player) {
-            if (!context.containsKey(playerId)) {
-                context.put(playerId, new PlayerData(player));
-            }
+        	datas.putIfAbsent(playerId, new PlayerData(player));
         }
 
         public void remove(long playerId) {
-            context.remove(playerId);
+            datas.remove(playerId);
         }
 
         public void clear() {
-            context.clear();
+            datas.clear();
         }
 
-        public List<Player> values() {
-            List<Player> infos = new ArrayList<Player>();
-            synchronized (context) {
-                for (PlayerData item : context.values()) {
-                    if ((item == null) || (item.getData() == null)) {
-                        continue;
-                    }
-                    infos.add(item.getData());
-                }
-            }
-            return infos;
+        public Collection<PlayerData> datas() {
+            return datas.values();
         }
 
-        public List<PlayerData> datas() {
-            List<PlayerData> infos = new ArrayList<PlayerData>();
-            synchronized (context) {
-                for (PlayerData item : context.values()) {
-                    if (item == null) {
-                        continue;
-                    }
-                    infos.add(item);
-                }
-            }
-            return infos;
-        }
-        
         public int size() {
-            return context.size();
+            return datas.size();
         }
     }
 
-    public static class PlayerData {
+    private static class PlayerData {
         private Player data;
-        private long createTime;//创建对像的时间
         private long activeTime;//最后的活跃时间
         public PlayerData(Player player) {
             this.data = player;
-            this.createTime = this.activeTime = System.currentTimeMillis();
+            this.activeTime = System.currentTimeMillis();
         }
         public Player getData() {
             return data;
-        }
-        public long getCreateTime() {
-            return createTime;
         }
         public void setActiveTime(long activeTime) {
             this.activeTime = activeTime;
@@ -264,26 +236,28 @@ public class PlayerContext {
     public <T extends Player> void callPlayer(long id, PlayerCallable<T> callable) {
         Player player = players.get(id);
         if(player != null) {
-            execCall(callable, player);
+        	execCall(callable, player);
         }
     }
-    
+
     public <T extends Player> void callOnlinePlayers(PlayerCallable<T> callable) {
-        List<Player> values = players.values();
-        for (Player player : values) {
-            if(player.isOnline()){
-                execCall(callable, player);
-            }
+        for (PlayerData data : players.datas()) {
+        	execCall(callable, data, true);
         }
     }
 
     public <T extends Player> void callAllPlayers(PlayerCallable<T> callable) {
-        List<Player> values = players.values();
-        for (Player player : values) {
-        	execCall(callable, player);
+        for (PlayerData data : players.datas()) {
+        	execCall(callable, data, false);
         }
     }
     
+    private <T extends Player> void execCall(PlayerCallable<T> callable, PlayerData data, boolean requireOnline) {
+    	Player player;
+    	if(data != null && (player = data.getData()) != null && (!requireOnline || player.isOnline())) {
+    		execCall(callable, player);
+    	}
+    }
 	private <T extends Player> void execCall(PlayerCallable<T> callable, Player player) {
 		try {
 			callable.call((T) player);
