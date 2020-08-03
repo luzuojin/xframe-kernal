@@ -2,9 +2,9 @@ package dev.xframe.net.client;
 
 import java.util.concurrent.TimeUnit;
 
-import dev.xframe.net.codec.MessageCrypt;
-import dev.xframe.net.codec.MessageDecoder;
-import dev.xframe.net.codec.MessageEncoder;
+import dev.xframe.net.codec.MessageCodec;
+import dev.xframe.net.codec.NetMessageDecoder;
+import dev.xframe.net.codec.NetMessageEncoder;
 import dev.xframe.net.session.Session;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
@@ -19,20 +19,20 @@ import io.netty.handler.timeout.IdleStateHandler;
 public class ClientChannelInitializer extends ChannelInitializer<SocketChannel> {
     
     private final ChannelHandler handler;
-    private final MessageCrypt cryption;
+    private final MessageCodec iCodec;
     private final ClientLifecycleListener listener;
 
-    public ClientChannelInitializer(ChannelHandler handler, MessageCrypt cryption, ClientLifecycleListener listener) {
+    public ClientChannelInitializer(ChannelHandler handler, MessageCodec iCodec, ClientLifecycleListener listener) {
         this.handler = handler;
-        this.cryption = cryption;
+        this.iCodec = iCodec;
         this.listener = listener;
     }
 
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline();
-        pipeline.addLast("decoder", new MessageDecoder(cryption));
-        pipeline.addLast("encoder", new MessageEncoder(cryption));
+        pipeline.addLast("decoder", new NetMessageDecoder(iCodec));
+        pipeline.addLast("encoder", new NetMessageEncoder(iCodec));
         pipeline.addLast("idleStateHandler", new IdleStateHandler(0, 60, 0, TimeUnit.SECONDS));//60秒发一次心跳操作
         pipeline.addLast("idleTriggerHandler", new IdleTriggerHandler());
         pipeline.addLast("handler", handler);

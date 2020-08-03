@@ -2,9 +2,9 @@ package dev.xframe.net.server;
 
 import java.util.concurrent.TimeUnit;
 
-import dev.xframe.net.codec.MessageCrypt;
-import dev.xframe.net.codec.MessageDecoder;
-import dev.xframe.net.codec.MessageEncoder;
+import dev.xframe.net.codec.MessageCodec;
+import dev.xframe.net.codec.NetMessageDecoder;
+import dev.xframe.net.codec.NetMessageEncoder;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -18,18 +18,18 @@ import io.netty.handler.timeout.IdleStateHandler;
 public class ServerChannelInitializer extends ChannelInitializer<SocketChannel> {
     
     private final ChannelHandler handler;
-    private final MessageCrypt cryption;
+    private final MessageCodec iCodec;
 
-    public ServerChannelInitializer(ChannelHandler handler, MessageCrypt cryption) {
+    public ServerChannelInitializer(ChannelHandler handler, MessageCodec iCodec) {
         this.handler = handler;
-        this.cryption = cryption;
+        this.iCodec = iCodec;
     }
 
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline();
-        pipeline.addLast("decoder", new MessageDecoder(cryption));
-        pipeline.addLast("encoder", new MessageEncoder(cryption));
+        pipeline.addLast("decoder", new NetMessageDecoder(iCodec));
+        pipeline.addLast("encoder", new NetMessageEncoder(iCodec));
         pipeline.addLast("idleStateHandler", new IdleStateHandler(180, 0, 0, TimeUnit.SECONDS));//300秒不操作将会被断开
         pipeline.addLast("idleHandler", new IdleHandler());
         pipeline.addLast("handler", handler);

@@ -8,6 +8,7 @@ import dev.xframe.net.MessageHandler;
 import dev.xframe.net.NetServer;
 import dev.xframe.net.WebSocketServer;
 import dev.xframe.net.cmd.CommandHandler;
+import dev.xframe.net.codec.MessageCodec;
 import dev.xframe.net.gateway.Gateway;
 import dev.xframe.net.server.ServerLifecycleListener;
 import dev.xframe.net.server.ServerMessageInterceptor;
@@ -29,6 +30,8 @@ public class Networker implements ShutdownAgent {
     WebSocketMessageInterceptor wsMessageInterceptor;
     @Inject
     ShutdownHook shutdownHook;
+    @Inject
+    MessageCodec iCodec;
     
     Gateway gateway;
     
@@ -82,10 +85,10 @@ public class Networker implements ShutdownAgent {
             shutdownHook.append(this);
             
             if(tcpPort > 0) {
-                tcp = new NetServer().setThreads(tcpThreads).setPort(tcpPort).setListener(sLifecycleListener).setHandler(newMessageHandler()).startup();
+                tcp = new NetServer().setCodec(iCodec).setThreads(tcpThreads).setPort(tcpPort).setListener(sLifecycleListener).setHandler(newMessageHandler()).startup();
             }
             if(wsPort > 0) {
-            	ws = new WebSocketServer().setThreads(wsThreads).setHost(wsHost).setPort(wsPort).setListener(wsLifecycleListener).setHandler(newMessageHandler()).startup();
+            	ws = new WebSocketServer().setCodec(iCodec).setThreads(wsThreads).setHost(wsHost).setPort(wsPort).setListener(wsLifecycleListener).setHandler(newMessageHandler()).startup();
             }
             if(httpPort > 0) {
                 http = new HttpServer().setThreads(httpThreads).setPort(httpPort).startup();

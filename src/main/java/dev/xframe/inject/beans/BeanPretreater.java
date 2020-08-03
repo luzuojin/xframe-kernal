@@ -64,7 +64,7 @@ public class BeanPretreater {
     }
     
     /**
-     * 但凡有一个接口或者父类已有实现 就表示该类需要被忽略掉
+     * 但凡有一个@Providable的接口或者父类已有实现 就表示该类需要被忽略掉
      * @param clazz
      * @return
      */
@@ -73,13 +73,12 @@ public class BeanPretreater {
         
         Class<?>[] interfaces = clazz.getInterfaces();
         for (Class<?> interfaze : interfaces) {
-            if(Loadable.class.equals(interfaze)) continue;
-            if(isProvided(interfaze)) return true;
+            if(isProvidable(interfaze) && isProvided(interfaze)) return true;
         }
         
         Class<?> superClazz = clazz.getSuperclass();
         if(superClazz != null && superClazz != Object.class) {
-            if(isProvided(superClazz)) return true;
+            if(isProvidable(superClazz) && isProvided(superClazz)) return true;
         }
         return false;
     }

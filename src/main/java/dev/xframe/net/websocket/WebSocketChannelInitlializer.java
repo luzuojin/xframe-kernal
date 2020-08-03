@@ -2,7 +2,7 @@ package dev.xframe.net.websocket;
 
 import java.util.concurrent.TimeUnit;
 
-import dev.xframe.net.codec.MessageCrypt;
+import dev.xframe.net.codec.MessageCodec;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -19,11 +19,11 @@ import io.netty.handler.timeout.IdleStateHandler;
 public class WebSocketChannelInitlializer extends ChannelInitializer<SocketChannel> {
     
     private final ChannelHandler handler;
-    private final MessageCrypt crypt;
+    private final MessageCodec iCodec;
 
-    public WebSocketChannelInitlializer(ChannelHandler handler, MessageCrypt crypt) {
+    public WebSocketChannelInitlializer(ChannelHandler handler, MessageCodec iCodec) {
         this.handler = handler;
-        this.crypt = crypt;
+        this.iCodec = iCodec;
     }
 
     @Override
@@ -32,7 +32,7 @@ public class WebSocketChannelInitlializer extends ChannelInitializer<SocketChann
         pipeline.addLast("httpcodec", new HttpServerCodec());
         pipeline.addLast("aggregator", new HttpObjectAggregator(1048576));
         pipeline.addLast("httpchunked", new ChunkedWriteHandler());
-        pipeline.addLast("messageCodec", new WebSocketMessageCodec(crypt));
+        pipeline.addLast("messageCodec", new WebSocketMessageCodec(iCodec));
         pipeline.addLast("idleStateHandler", new IdleStateHandler(180, 0, 0, TimeUnit.SECONDS));//300秒不操作将会被断开
         pipeline.addLast("idleHandler", new IdleHandler());
         pipeline.addLast("handler", handler);

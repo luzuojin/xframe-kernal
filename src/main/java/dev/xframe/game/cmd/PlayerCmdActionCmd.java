@@ -2,14 +2,13 @@ package dev.xframe.game.cmd;
 
 import java.util.function.Supplier;
 
-import dev.xframe.game.player.ModularAdapter;
 import dev.xframe.game.player.MTypedLoader;
+import dev.xframe.game.player.ModularAdapter;
 import dev.xframe.game.player.Player;
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.beans.BeanHelper;
 import dev.xframe.inject.beans.Injector;
 import dev.xframe.net.codec.IMessage;
-import dev.xframe.utils.LiteParser;
 import dev.xframe.utils.XCaught;
 import dev.xframe.utils.XLambda;
 
@@ -33,7 +32,7 @@ public final class PlayerCmdActionCmd<T extends Player> extends PlayerCommand<T>
             this.getter = XLambda.createByConstructor(clazz);
             this.loader = adapter.getTypedLoader(PlayerCmdAction.getModuleType(clazz));
             this.injector = adapter.newInjector(clazz);
-            this.liteParser = PlayerCmdLiteAction.class.isAssignableFrom(clazz) ? new LiteParser(clazz, PlayerCmdLiteAction.class) : null;
+            this.liteParser = PlayerCmdLiteAction.class.isAssignableFrom(clazz) ? new LiteParser(clazz, PlayerCmdLiteAction.class, "L") : null;
         } catch (Throwable e) {
             throw XCaught.wrapException(clazz.getName(), e);
         }

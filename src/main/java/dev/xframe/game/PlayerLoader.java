@@ -1,7 +1,9 @@
 package dev.xframe.game;
 
 import dev.xframe.game.player.Player;
+import dev.xframe.inject.Providable;
 
+@Providable
 public interface PlayerLoader {
     
     public boolean exists(long playerId);

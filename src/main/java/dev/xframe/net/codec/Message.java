@@ -13,7 +13,7 @@ import io.netty.buffer.ByteBuf;
  * 
  * @author luzj
  */
-public class Message implements IMessage {
+public class Message implements BuiltinAbstMessage {
 
     public static final byte[] EMPTY_BODY = new byte[0];
 
@@ -96,7 +96,6 @@ public class Message implements IMessage {
         this.bodyLen = bodyLen;
     }
     
-    @Override
     public void addParam(String key, String value) {
         if(this.params == null) params = new HashMap<String, Param>();
         
@@ -119,10 +118,24 @@ public class Message implements IMessage {
         return param == null ? null : param.val;
     }
 
-    @Override
-    public void readHeader(ByteBuf buff) {
+    public static Message readFrom(ByteBuf buff) {
+        if (buff.readableBytes() < HDR_SIZE) // 不够字节忽略
+            return null;
+        buff.markReaderIndex();
+        Message message = Message.build();
+        message.readHeader(buff);
+        int len = message.getBodyLen() + message.getParamsLen();
+        if (len > buff.readableBytes()) {
+            buff.resetReaderIndex();
+            return null;
+        }
+        message.readParams(buff);
+        message.readBody(buff);
+        return message;
+    }
+    
+    protected void readHeader(ByteBuf buff) {
         this.flag = buff.readShort();
-        // 16字节
         this.code = buff.readInt();
         this.id = buff.readLong();
         this.version = buff.readInt();
@@ -130,8 +143,7 @@ public class Message implements IMessage {
         this.bodyLen = buff.readInt();
     }
     
-    @Override
-    public void readParams(ByteBuf buff) {
+    protected void readParams(ByteBuf buff) {
         short paramsLen = this.getParamsLen();
         if(paramsLen == 0) return;
         if(params == null) params = new HashMap<String, Param>();
@@ -151,14 +163,13 @@ public class Message implements IMessage {
         }
     }
 
-    private byte[] readBytes(ByteBuf buff, short len) {
+    protected byte[] readBytes(ByteBuf buff, short len) {
         byte[] bytes = new byte[len];
         buff.readBytes(bytes);
         return bytes;
     }
     
-    @Override
-    public void readBody(ByteBuf buff) {
+    protected void readBody(ByteBuf buff) {
         int len = this.getBodyLen();
         if (len > 0) {
             byte[] bytes = new byte[len];
@@ -168,7 +179,13 @@ public class Message implements IMessage {
     }
 
     @Override
-    public void writeHeader(ByteBuf buff) {
+    public void writeTo(ByteBuf buff) {
+        writeHeader(buff);
+        writeParams(buff);
+        writeBody(buff);
+    }
+    
+    protected void writeHeader(ByteBuf buff) {
         writeHeader0(buff, this.flag, this.code, this.id);
     }
 
@@ -182,8 +199,7 @@ public class Message implements IMessage {
         buff.writeInt(this.bodyLen);
     }
 
-    @Override
-    public void writeParams(ByteBuf buff) {
+    protected void writeParams(ByteBuf buff) {
         if(this.paramsLen == 0) return;
             
         for (Param param : params.values()) {
@@ -195,11 +211,14 @@ public class Message implements IMessage {
         }
     }
     
-    @Override
-    public void writeBody(ByteBuf buff) {
+    protected void writeBody(ByteBuf buff) {
         if (this.getBodyLen() > 0) {
             buff.writeBytes(this.body);
         }
+    }
+    
+    public int getLen() {
+        return HDR_SIZE + getParamsLen() + getBodyLen();
     }
 
     public static Message build() {
@@ -236,13 +255,15 @@ public class Message implements IMessage {
     }
     
     public IMessage copy(long id) {
-        return new CopiedMessage(this, id);
+        return new CopiedMessage(this, id, code);
+    }
+    public IMessage copy(long id, int code) {
+        return new CopiedMessage(this, id, code);
+    }
+    public IMessage copyViaCode(int code) {
+        return new CopiedMessage(this, this.id, code);
     }
     
-    public static IMessage copy(IMessage message) {
-        return ((Message) message).copy(message.getId());
-    }
-
     private static class Param {
         public final byte[] keyBytes;
         public final String key;
@@ -271,25 +292,24 @@ public class Message implements IMessage {
         }
     }
 
-    private static class CopiedMessage implements IMessage {
-    	private Message message;
+    private static class CopiedMessage implements BuiltinAbstMessage {
     	private short flag;
     	private int code;
     	private long id;
-        
-        public CopiedMessage(Message message, long id) {
-            this.message = message;
-            this.id = id;
+    	private Message message;
+        public CopiedMessage(Message message, long id, int code) {
             this.flag = message.flag;
-            this.code = message.code;
+            this.id = id;
+            this.code = code;
+            this.message = message;
         }
         @Override
-        public int getBodyLen() {
-            return message.getBodyLen();
+        public short getFlag() {
+            return this.flag;
         }
         @Override
-        public short getParamsLen() {
-            return message.getParamsLen();
+        public int getCode() {
+            return this.code;
         }
         @Override
         public long getId() {
@@ -297,51 +317,15 @@ public class Message implements IMessage {
         }
         @Override
         public byte[] getBody() {
-            return message.body;
-        }
-        @Override
-        public void readHeader(ByteBuf buff) {
-            message.readHeader(buff);
-        }
-        @Override
-        public void readBody(ByteBuf buff) {
-            message.readBody(buff);
-        }
-        @Override
-        public void writeHeader(ByteBuf buff) {
-            message.writeHeader0(buff, this.flag, this.code, this.id);
-        }
-        @Override
-        public void writeBody(ByteBuf buff) {
-            message.writeBody(buff);
-        }
-        @Override
-        public void readParams(ByteBuf buff) {
-            message.readParams(buff);
-        }
-        @Override
-        public void writeParams(ByteBuf buff) {
-            message.writeParams(buff);
-        }
-        @Override
-        public void addParam(String key, String value) {
-            message.addParam(key, value);
+            return message.getBody();
         }
         @Override
         public String getParam(String key) {
             return message.getParam(key);
         }
         @Override
-        public short getFlag() {
-            return this.flag;
-        }
-        @Override
         public int getVersion() {
             return message.getVersion();
-        }
-        @Override
-        public int getCode() {
-            return this.code;
         }
         @Override
         public void setFlag(short flag) {
@@ -350,6 +334,16 @@ public class Message implements IMessage {
         @Override
         public void setCode(int code) {
             this.code = code;
+        }
+        @Override
+        public int getBodyLen() {
+            return message.getBodyLen();
+        }
+        @Override
+        public void writeTo(ByteBuf buff) {
+            message.writeHeader0(buff, flag, code, id);
+            message.writeParams(buff);
+            message.writeBody(buff);
         }
     }
 

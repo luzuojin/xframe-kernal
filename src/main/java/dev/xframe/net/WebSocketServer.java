@@ -3,8 +3,7 @@ package dev.xframe.net;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.xframe.net.codec.MessageCrypt;
-import dev.xframe.net.codec.MessageCrypts;
+import dev.xframe.net.codec.MessageCodec;
 import dev.xframe.net.websocket.WebSocketChannelInitlializer;
 import dev.xframe.net.websocket.WebSocketLifecycleListener;
 import dev.xframe.net.websocket.WebSocketMessageHandler;
@@ -33,7 +32,7 @@ public class WebSocketServer {
 	private int threads = defaultThreads();
 	private String host;
 	private int port;
-	private MessageCrypt crypt = MessageCrypts.fromSysOps();
+	private MessageCodec iCodec;
 	private MessageHandler handler;
 	private WebSocketLifecycleListener listener;
 	
@@ -49,8 +48,8 @@ public class WebSocketServer {
         this.port = port;
         return this;
     }
-    public WebSocketServer setCrypt(MessageCrypt crypt) {
-        this.crypt = crypt;
+    public WebSocketServer setCodec(MessageCodec iCodec) {
+        this.iCodec = iCodec;
         return this;
     }
     public WebSocketServer setHandler(MessageHandler handler) {
@@ -75,7 +74,7 @@ public class WebSocketServer {
 	            new ServerBootstrap()
     	            .group(bossGroup, workerGroup)
     	            .channel(NioServerSocketChannel.class)
-    	            .childHandler(new WebSocketChannelInitlializer(wsHandler, crypt))
+    	            .childHandler(new WebSocketChannelInitlializer(wsHandler, iCodec))
     	            .childOption(ChannelOption.SO_KEEPALIVE, true)//开启时系统会在连接空闲一定时间后像客户端发送请求确认连接是否有效
     	            .childOption(ChannelOption.TCP_NODELAY, true)//关闭Nagle算法
 //    	            .childOption(ChannelOption.SO_LINGER, 0)//连接关闭时,偿试把未发送完成的数据继续发送(等待时间, 如果为0则直接设置连接为CLOSE状态 不进行TIME_WAIT...)

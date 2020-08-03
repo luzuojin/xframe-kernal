@@ -5,7 +5,7 @@ import dev.xframe.net.client.ClientChannelInitializer;
 import dev.xframe.net.client.ClientLifecycleListener;
 import dev.xframe.net.client.ClientMessageHandler;
 import dev.xframe.net.client.ClientSession;
-import dev.xframe.net.codec.MessageCrypt;
+import dev.xframe.net.codec.MessageCodec;
 import dev.xframe.net.session.Session;
 import dev.xframe.utils.XCaught;
 import dev.xframe.utils.XThreadFactory;
@@ -29,7 +29,7 @@ public class NetClient {
     private Bootstrap bootstrap;
     
     private int threads = defaultThreads();
-    private MessageCrypt crypt;
+    private MessageCodec iCodec;
     private MessageHandler handler;
     private ClientLifecycleListener listener;
     
@@ -41,8 +41,8 @@ public class NetClient {
         this.threads = threads;
         return this;
     }
-    public NetClient setCrypt(MessageCrypt crypt) {
-        this.crypt = crypt;
+    public NetClient setCodec(MessageCodec iCodec) {
+        this.iCodec = iCodec;
         return this;
     }
     public NetClient setHandler(MessageHandler handler) {
@@ -66,7 +66,7 @@ public class NetClient {
             .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)//使用bytebuf池, 默认不使用
             .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator())//使用bytebuf池, 默认不使用
             .option(ChannelOption.WRITE_BUFFER_WATER_MARK, WriteBufferWaterMark.DEFAULT)//消息缓冲区
-            .handler(new ClientChannelInitializer(netHandler, crypt, listener));
+            .handler(new ClientChannelInitializer(netHandler, iCodec, listener));
             
         }
         return this;

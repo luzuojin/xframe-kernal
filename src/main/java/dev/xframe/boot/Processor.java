@@ -9,8 +9,9 @@ public class Processor {
     
     private String name;
     
-    public void withName(String name) {
+    public Processor withName(String name) {
         this.name = name;
+        return this;
     }
     
     public void startup() {

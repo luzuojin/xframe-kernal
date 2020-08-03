@@ -8,25 +8,32 @@ public final class MessageCrypts {
     
     public static final String CRYPT_SYS_OP_KEY = "xframe.message.strict";
     
-    public static final MessageCrypt NONE = new MessageCrypt() {
-        public void decrypt(ChannelHandlerContext ctx, IMessage message) {
-        }
-        public void encrypt(ChannelHandlerContext ctx, IMessage message) {
-        }
-    };
-    
     public static final MessageCrypt SIMPLE = new SimpleCryption();
+    
+    public static final MessageCrypt   NONE = new MessageCrypt() {
+        public void encrypt(ChannelHandlerContext ctx, IMessage message) {}
+        public void decrypt(ChannelHandlerContext ctx, IMessage message) {}
+    };
     
     public static MessageCrypt fromSysOps() {
         return XProperties.getAsBool(CRYPT_SYS_OP_KEY, false) ? SIMPLE : NONE;
     }
 
+    //只支持Message
     public static class SimpleCryption implements MessageCrypt {
+        @Override
+        public void decrypt(ChannelHandlerContext ctx, IMessage message) {
+            decrypt(ctx, (BuiltinAbstMessage)message);
+        }
+        @Override
+        public void encrypt(ChannelHandlerContext ctx, IMessage message) {
+            encrypt(ctx, (BuiltinAbstMessage)message);
+        }
 
         private AttributeKey<byte[]> ENCRYPT_CIPHER = AttributeKey.valueOf("ENCRYPTION");
         private AttributeKey<byte[]> DECRYPT_CIPHER = AttributeKey.valueOf("DECRYPTION");
         
-        public void encrypt(ChannelHandlerContext ctx, IMessage message) {
+        public void encrypt(ChannelHandlerContext ctx, BuiltinAbstMessage message) {
             byte[] cipher = getCipher(ctx, ENCRYPT_CIPHER);
             
             short flag = flagCodec(message, cipher);
@@ -38,7 +45,7 @@ public final class MessageCrypts {
             message.setCode(code);
         }
         
-        public void decrypt(ChannelHandlerContext ctx, IMessage message) {
+        public void decrypt(ChannelHandlerContext ctx, BuiltinAbstMessage message) {
             byte[] cipher = getCipher(ctx, DECRYPT_CIPHER);
             
             short flag = flagCodec(message, cipher);
@@ -50,11 +57,11 @@ public final class MessageCrypts {
             setCipher(cipher, message);
         }
 
-        protected short flagCodec(IMessage message, byte[] cipher) {
+        protected short flagCodec(BuiltinAbstMessage message, byte[] cipher) {
             return (short) codec(message.getFlag(), cipher[0], cipher[1]);
         }
         
-        protected int codeCodec(IMessage message, byte[] cipher) {
+        protected int codeCodec(BuiltinAbstMessage message, byte[] cipher) {
             return codec(message.getCode(), cipher[2], cipher[3]);
         }
         
@@ -62,7 +69,7 @@ public final class MessageCrypts {
             return (src ^ (((cipher1 & 0xFF) << 8) | (cipher2 & 0xFF)) & 0xFFFF);
         }
 
-        protected void setCipher(byte[] cipher, IMessage message) {
+        protected void setCipher(byte[] cipher, BuiltinAbstMessage message) {
             int bodyLen = message.getBodyLen();
             if(bodyLen > 4) {
                 byte[] body = message.getBody();

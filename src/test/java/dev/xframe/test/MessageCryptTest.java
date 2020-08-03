@@ -6,7 +6,6 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-import dev.xframe.net.codec.IMessage;
 import dev.xframe.net.codec.Message;
 import dev.xframe.net.codec.MessageCrypts;
 import io.netty.buffer.ByteBuf;
@@ -34,32 +33,26 @@ public class MessageCryptTest extends MessageCrypts.SimpleCryption {
 	@Test
 	public void test() {
 		byte[] bytes = new byte[]{1,1,0,1,1,4,1,1,9};
-		
-		Message message = Message.build(10086, bytes);
-		message.addParam("key", "val");
+        Message message = Message.build(10086, bytes);
+        message.addParam("key", "val");
 		
 		//skip first
-		doOnce(Message.copy(message));
+		Message zmessage = doOnce(message);
 		
-		Message xmessage = doOnce(Message.copy(message));
+		Message xmessage = doOnce(zmessage);
 		
 		Assert.assertEquals(xmessage.getFlag(), Message.HDR_FLAG);
 		Assert.assertEquals(xmessage.getParam("key"), "val");
 		Assert.assertArrayEquals(bytes, xmessage.getBody());
 	}
 
-	private Message doOnce(IMessage smessage) {
+    private Message doOnce(Message smessage) {
 		this.encrypt(null, smessage);
 		
 		ByteBuf buff = ByteBufAllocator.DEFAULT.heapBuffer();
-		smessage.writeHeader(buff);
-		smessage.writeParams(buff);
-		smessage.writeBody(buff);
+		smessage.writeTo(buff);
 		
-		Message xmessage = Message.build();
-		xmessage.readHeader(buff);
-		xmessage.readParams(buff);
-		xmessage.readBody(buff);
+		Message xmessage = Message.readFrom(buff);
 		this.decrypt(null, xmessage);
 		return xmessage;
 	}

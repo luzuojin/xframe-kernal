@@ -9,21 +9,17 @@ import io.netty.handler.codec.MessageToByteEncoder;
  * @author luzj
  *
  */
-public class MessageEncoder extends MessageToByteEncoder<IMessage> {
+public class NetMessageEncoder extends MessageToByteEncoder<IMessage> {
 
-    private MessageCrypt crypt;
+    private MessageCodec iCodec;
     
-    public MessageEncoder(MessageCrypt crypt) {
-        this.crypt = crypt;
+    public NetMessageEncoder(MessageCodec iCodec) {
+        this.iCodec = iCodec;
     }
     
     @Override
     protected void encode(ChannelHandlerContext ctx, IMessage message, ByteBuf out) throws Exception {
-        crypt.encrypt(ctx, message);
-        
-        message.writeHeader(out);
-        message.writeParams(out);
-        message.writeBody(out);
+        iCodec.encode(ctx, message, out);
     }
 
 }

@@ -1,14 +1,11 @@
 package dev.xframe.game.cmd;
 
-import com.google.protobuf.MessageLite;
-
 import dev.xframe.game.player.Player;
 import dev.xframe.net.codec.IMessage;
-import dev.xframe.utils.LiteParser;
 
-public abstract class DirectModularLiteCmd<T extends Player, V, L extends MessageLite> extends DirectModularCmd<T, V> {
+public abstract class DirectModularLiteCmd<T extends Player, V, L> extends DirectModularCmd<T, V> {
 
-	private LiteParser parser = new LiteParser(this.getClass(), DirectModularLiteCmd.class);
+	private LiteParser parser = new LiteParser(this.getClass(), DirectModularLiteCmd.class, "L");
 	
 	@Override
 	public final void exec(T player, V module, IMessage req) throws Exception {

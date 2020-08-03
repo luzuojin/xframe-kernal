@@ -12,6 +12,7 @@ import dev.xframe.net.client.ClientLifecycleListener;
 import dev.xframe.net.client.ClientMessageInterceptor;
 import dev.xframe.net.cmd.CommandHandler;
 import dev.xframe.net.codec.IMessage;
+import dev.xframe.net.codec.MessageCodec;
 import dev.xframe.net.session.Session;
 
 public class Gateway extends CommandHandler {
@@ -20,6 +21,8 @@ public class Gateway extends CommandHandler {
     private ClientLifecycleListener lifecycleListener;
     @Inject
     private ClientMessageInterceptor interceptor;
+    @Inject
+    private MessageCodec iCodec;
     
     private NetClient netClient;
     private Connector connector;
@@ -29,7 +32,7 @@ public class Gateway extends CommandHandler {
     	BeanHelper.inject(this);
         netClient = new NetClient();
         connector = new Connector(netClient);
-        netClient.setHandler(new MessageHandler(interceptor, this));
+        netClient.setCodec(iCodec).setHandler(new MessageHandler(interceptor, this));
         SyntheticBuilder.append(lifecycleListener, connector);//监听连接被断开
         netClient.setListener(lifecycleListener);
     }
