@@ -1,7 +1,5 @@
 package dev.xframe.module.beans;
 
-import java.util.function.Supplier;
-
 import dev.xframe.inject.beans.BeanBinder;
 import dev.xframe.inject.beans.BeanDefiner;
 import dev.xframe.inject.beans.Injector;
@@ -10,10 +8,8 @@ import dev.xframe.module.ModularAgent;
 import dev.xframe.utils.XLambda;
 
 public class AgentBinder extends ModularBinder implements ModularListener {
-    private Supplier<Object> factory;
     public AgentBinder(Class<?> master) {
-        super(master, Injector.NIL);
-        factory = XLambda.createByConstructor(buildAgentClass(master));
+        super(master, Injector.NIL, XLambda.createByConstructor(buildAgentClass(master)));
     }
     //append impl留给ModularListener来处理
     protected void integrate(Object bean, BeanDefiner definer) {
@@ -25,10 +21,7 @@ public class AgentBinder extends ModularBinder implements ModularListener {
         ((ModularBinder) binder).registListener(this);
         return this;
     }
-    protected Object newInstance() {
-        return factory.get();
-    }
-    private Class<?> buildAgentClass(Class<?> c) {
+    private static Class<?> buildAgentClass(Class<?> c) {
         ModularAgent an = c.getAnnotation(ModularAgent.class);
         return SyntheticBuilder.buildClass(c, an.invokable(), an.ignoreError(), an.boolByTrue());
     }

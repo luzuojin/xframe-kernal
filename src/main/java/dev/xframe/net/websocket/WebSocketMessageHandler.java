@@ -1,7 +1,5 @@
 package dev.xframe.net.websocket;
 
-import java.nio.charset.StandardCharsets;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +17,6 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFactory;
@@ -78,10 +75,7 @@ public class WebSocketMessageHandler extends ChannelInboundHandlerAdapter {
         	ctx.writeAndFlush(new PongWebSocketFrame(frame.content().retain()));
             return;
         }
-        if (frame instanceof TextWebSocketFrame) {
-        	ctx.writeAndFlush(new TextWebSocketFrame(frame.content().toString(StandardCharsets.UTF_8))).addListener(ChannelFutureListener.CLOSE);
-        	return;
-        }
+        //can`t be here
     }
 
 	private void handleIMessage(Session session, IMessage message) {

@@ -27,4 +27,17 @@ public class ModularHelper {
     			c.isAnnotationPresent(ModularComponent.class);
     }
     
+    public static boolean isResidentModularClass(Class<?> c) {
+        return c.isAnnotationPresent(ModularAgent.class)
+                || (c.isAnnotationPresent(Module.class) && c.getAnnotation(Module.class).value() == ModuleType.RESIDENT)
+                || (c.isAnnotationPresent(ModularComponent.class) && c.getAnnotation(ModularComponent.class).value() == ModuleType.RESIDENT)
+                ;
+    }
+    
+    public static boolean isTransientModularClass(Class<?> c) {
+        return (c.isAnnotationPresent(Module.class) && c.getAnnotation(Module.class).value() == ModuleType.TRANSIENT)
+            || (c.isAnnotationPresent(ModularComponent.class) && c.getAnnotation(ModularComponent.class).value() == ModuleType.TRANSIENT)
+               ;
+    }
+    
 }

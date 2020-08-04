@@ -19,7 +19,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 
 public class WebSocketServer {
 	
-	private static Logger logger = LoggerFactory.getLogger(NetServer.class);
+	private static Logger logger = LoggerFactory.getLogger(WebSocketServer.class);
 	
 	public static int defaultThreads() {
         return Runtime.getRuntime().availableProcessors() * 2;
@@ -90,9 +90,9 @@ public class WebSocketServer {
         
 	    try {
 	        bossChannel = bootstrap.bind(port).sync().channel();
-            logger.info("NetServer listening to port : " + port);
+            logger.info("WebSocket listening to port : " + port);
         } catch (InterruptedException e) {
-            logger.error("NetServer start failed ...", e);
+            logger.error("WebSocket start failed ...", e);
         }
 	    return this;
 	}
