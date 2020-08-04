@@ -2,7 +2,7 @@ package dev.xframe.net.codec;
 
 import io.netty.buffer.ByteBuf;
 
-public interface BuiltinAbstMessage extends IMessage {
+interface BuiltinAbstMessage extends IMessage {
 
     //for codec
     void writeTo(ByteBuf buff);

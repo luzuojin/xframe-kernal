@@ -2,15 +2,12 @@ package dev.xframe.module.beans;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import dev.xframe.inject.beans.BeanBinder;
 import dev.xframe.inject.beans.Injector;
-import dev.xframe.module.ModularAgent;
-import dev.xframe.module.ModularComponent;
 import dev.xframe.module.ModularHelper;
-import dev.xframe.module.Module;
-import dev.xframe.module.ModuleType;
 import dev.xframe.utils.XReflection;
 
 public class ModularBinder extends BeanBinder.Classic {
@@ -21,18 +18,16 @@ public class ModularBinder extends BeanBinder.Classic {
 	public ModularBinder(Class<?> master, Injector injector) {
 		super(master, injector);
 	}
+	protected ModularBinder(Class<?> master, Injector injector, Supplier<?> factory) {
+	    super(master, injector, factory);
+	}
 
 	public boolean isResident() {
-		return master.isAnnotationPresent(ModularAgent.class)
-		   || (master.isAnnotationPresent(Module.class) && master.getAnnotation(Module.class).value() == ModuleType.RESIDENT)
-		   || (master.isAnnotationPresent(ModularComponent.class) && master.getAnnotation(ModularComponent.class).value() == ModuleType.RESIDENT)
-		   ;
+		return ModularHelper.isResidentModularClass(master);
 	}
 	
 	public boolean isTransient() {
-		return (master.isAnnotationPresent(Module.class) && master.getAnnotation(Module.class).value() == ModuleType.TRANSIENT) ||
-			   (master.isAnnotationPresent(ModularComponent.class) && master.getAnnotation(ModularComponent.class).value() == ModuleType.TRANSIENT)
-			   ;
+		return ModularHelper.isTransientModularClass(master);
 	}
 	
 	public void makeComplete(ModularIndexes indexes) {

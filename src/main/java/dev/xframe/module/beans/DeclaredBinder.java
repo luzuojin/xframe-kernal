@@ -12,7 +12,7 @@ import dev.xframe.utils.XReflection;
 public class DeclaredBinder extends ModularBinder {
 
 	public DeclaredBinder(Class<?> master, Injector injector) {
-		super(master, injector);
+		super(master, injector, null);
 	}
 
 	@Override

@@ -7,7 +7,7 @@ import io.netty.channel.ChannelHandlerContext;
 
 @Bean
 @Providable
-public class BuiltinMessageCodec implements MessageCodec {
+class BuiltinMessageCodec implements MessageCodec {
     
     private MessageCrypt crypt = MessageCrypts.fromSysOps();
     

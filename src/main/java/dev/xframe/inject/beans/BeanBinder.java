@@ -2,9 +2,10 @@ package dev.xframe.inject.beans;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 import dev.xframe.inject.Loadable;
-import dev.xframe.utils.XCaught;
+import dev.xframe.utils.XLambda;
 import dev.xframe.utils.XReflection;
 
 /**
@@ -48,29 +49,27 @@ public abstract class BeanBinder {
 	public static class Classic extends BeanBinder {
 		protected final Class<?> master;
 		protected final Injector injector;
+		protected final Supplier<?> factory;
 		public Classic(Class<?> master, Injector injector) {
-			this.master = master;
-			this.injector = injector;
+		    this(master, injector, XLambda.createByConstructor(master));
 		}
+		protected Classic(Class<?> master, Injector injector, Supplier<?> factory) {
+            this.master = master;
+            this.injector = injector;
+            this.factory = factory;
+        }
 		protected void integrate(Object bean, BeanDefiner definer) {
 			injector.inject(bean, definer);
 			Loadable.doLoad(bean);
 		}
 		protected Object newInstance() {
-			return newInstance0(master);
+			return factory.get();
 		}
 		protected List<?> getKeywords() {
 			return XReflection.getAssigners(master);
 		}
 		protected BeanBinder conflict(Object keyword, BeanBinder binder) {
 			return this;
-		}
-		protected Object newInstance0(Class<?> c) {
-			try {
-				return c.newInstance();
-			} catch (InstantiationException | IllegalAccessException e) {
-				return XCaught.throwException(e);
-			}
 		}
 		public String toString() {
 			return "Classic [" + master.getName() + "]";
