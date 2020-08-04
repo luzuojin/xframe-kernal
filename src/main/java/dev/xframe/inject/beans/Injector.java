@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dev.xframe.inject.Inject;
-import dev.xframe.utils.XCaught;
+import dev.xframe.utils.XAccessor;
 import dev.xframe.utils.XStrings;
 
 public class Injector {
@@ -33,12 +33,8 @@ public class Injector {
 	}
 
 	public void inject(Object bean, BeanDefiner definer) {
-		try {
-			for (Member member : mebmers) {
-				member.inject(bean, definer);
-			}
-		} catch (Exception e) {
-			XCaught.throwException(e);
+		for (Member member : mebmers) {
+			member.inject(bean, definer);
 		}
 	}
 
@@ -62,12 +58,13 @@ public class Injector {
 	}
 
 	public static class Member {
+		private XAccessor accessor;
 		private Field field;
 		private int index;
 		private BeanIndexing indexing;
 		public Member(Field field, BeanIndexing indexing) {
-			field.setAccessible(true);
 			this.field = field;
+			this.accessor = XAccessor.of(field);
 			this.indexing = indexing;
 			this.index = -1;
 		}
@@ -78,8 +75,8 @@ public class Injector {
 			Inject an = field.getAnnotation(Inject.class);
 			return XStrings.isEmpty(an.value()) ? field.getType() : an.value();
 		}
-		public Field getField() {
-			return field;
+		public XAccessor accessor() {
+			return accessor;
 		}
 		public int getIndex() {
 			if(index == -1) {
@@ -87,12 +84,12 @@ public class Injector {
 			}
 			return index;
 		}
-		public void inject(Object bean, BeanDefiner definer) throws Exception {
+		public void inject(Object bean, BeanDefiner definer) {
 			Object obj = definer.define(getIndex());
 			if(obj == null && !isNullable()) {
 				throw new IllegalArgumentException("Bean [" + field.getType().getName() + "] doesn`t registed");
 			}
-			field.set(bean, obj);
+			accessor.set(bean, obj);
 		}
 	}
 

@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import dev.xframe.inject.beans.BeanBinder;
 import dev.xframe.inject.beans.Injector;
 import dev.xframe.inject.beans.Injector.Member;
-import dev.xframe.utils.XCaught;
 import dev.xframe.utils.XReflection;
 
 public class DeclaredBinder extends ModularBinder {
@@ -50,18 +49,10 @@ public class DeclaredBinder extends ModularBinder {
 	private ModularListener newMemberListener(final Member member) {
 		return new ModularListener() {
 			public void onModuleLoaded(ModuleContainer mc, ModularBinder binder, Object module) {
-				try {
-					member.getField().set(mc.getBean(getIndex()), module);
-				} catch (Exception e) {
-					XCaught.throwException(e);
-				}
+				member.accessor().set(mc.getBean(getIndex()), module);
 			}
 			public void onModuleUnloaded(ModuleContainer mc, ModularBinder binder, Object module) {
-				try {
-					member.getField().set(mc.getBean(getIndex()), null);
-				} catch (Exception e) {
-					XCaught.throwException(e);
-				}
+				member.accessor().set(mc.getBean(getIndex()), null);
 			}
 		};
 	}

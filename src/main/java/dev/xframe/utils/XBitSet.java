@@ -26,9 +26,7 @@ public class XBitSet {
 
 	private void ensureCapacity(int wordsRequired) {
 		if (words.length < wordsRequired) {
-			// Allocate larger of doubled size or required size
-			int request = Math.max(2 * words.length, wordsRequired);
-			words = Arrays.copyOf(words, request);
+			words = Arrays.copyOf(words, wordsRequired);
 		}
 	}
 
