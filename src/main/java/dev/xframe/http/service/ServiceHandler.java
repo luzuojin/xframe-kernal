@@ -26,6 +26,7 @@ public class ServiceHandler {
     			if(resp == null) {
     				resp = s.exec(req);
     			}
+    			interceptor.afterHandle(req, resp);
     		} catch (Throwable ex) {
     			resp = config.getErrorhandler().handle(req, ex);
     		}

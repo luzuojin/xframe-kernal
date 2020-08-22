@@ -9,4 +9,6 @@ public interface HttpInterceptor {
     
     Response intercept(Request req);
     
+    default void afterHandle(Request req, Response resp) {}
+    
 }
