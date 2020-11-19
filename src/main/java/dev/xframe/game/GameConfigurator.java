@@ -38,7 +38,7 @@ public final class GameConfigurator implements Loadable {
 
 	private int getThreads(Class<?> assemble) {
 		int nThreads = assemble.getAnnotation(Assemble.class).threads();
-		return nThreads == 0 ? Runtime.getRuntime().availableProcessors() * 2 : nThreads;
+		return nThreads == 0 ? Runtime.getRuntime().availableProcessors() : nThreads;
 	}
 
 	private void configure(Class<?> assemble, int threads) {
@@ -46,12 +46,12 @@ public final class GameConfigurator implements Loadable {
 		
 		cmdBuilder.regist(c -> PlayerCmdAction.class.isAssignableFrom(c), PlayerCmdActionCmd::new);
 
-		ActionExecutor executor = ActionExecutors.newFixed("logic", threads);// max: 2*threads
+		ActionExecutor executor = ActionExecutors.newBindable("logic", threads);
 		PlayerFactory factory = newPlayerFactory(assemble);
 		PlayerContext context = new PlayerContext(executor, factory);
 
-		registrator.regist(BeanBinder.instanced(factory, PlayerFactory.class));
-		registrator.regist(BeanBinder.instanced(context, PlayerContext.class));
+		registrator.regist(BeanBinder.instanced(factory));
+		registrator.regist(BeanBinder.instanced(context));
 	}
 
 	private PlayerFactory newPlayerFactory(Class<?> assemble) {

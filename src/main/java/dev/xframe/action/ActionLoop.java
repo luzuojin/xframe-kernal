@@ -12,7 +12,7 @@ public class ActionLoop {
     private AtomicBoolean isRunning;
     
     public ActionLoop(ActionExecutor executor) {
-        this.executor = executor;
+        this.executor = executor.binding();
         this.queue = new ConcurrentLinkedQueue<>();
         this.isRunning = new AtomicBoolean(false);
     }

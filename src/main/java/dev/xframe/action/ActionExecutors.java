@@ -7,7 +7,9 @@ import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor.DiscardPolicy;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,11 +23,20 @@ public class ActionExecutors {
     private final static List<ActionExecutor> executors = new LinkedList<ActionExecutor>();
     
     public static ActionExecutor newSingle(String name) {
-        return new ThreadPoolActionExecutor(1, name);
+        return hold(new ThreadPoolActionExecutor(1, name));
     }
     
     public static ActionExecutor newFixed(String name, int nThreads) {
-        return new ThreadPoolActionExecutor(nThreads, name);
+        return hold(new ThreadPoolActionExecutor(nThreads, name));
+    }
+    
+    public static ActionExecutor newBindable(String name, int nThreads) {
+        return hold(new BindableActionExecutor(nThreads, name));
+    }
+    
+    private static ActionExecutor hold(ActionExecutor executor) {
+        executors.add(executor);
+        return executor;
     }
     
     public static void shutdown() {
@@ -38,14 +49,75 @@ public class ActionExecutors {
     	return executors;
     }
     
+    public static class BindableActionExecutor implements ActionExecutor {
+        
+        private final String name;
+        
+        private final int nThreads;
+        
+        private final AtomicInteger sIndex = new AtomicInteger();
+        
+        private final ActionExecutor[] internals;
+        
+        private DelayScheduler scheduler;
+        
+        public BindableActionExecutor(int nThreads, String name) {
+            this.name = name;
+            this.nThreads = nThreads;
+            this.internals = new ActionExecutor[nThreads];
+            for (int i = 0; i < internals.length; i++) {
+                XThreadFactory factory = new XThreadFactory(this.name);
+                internals[i] = new ThreadPoolActionExecutor(1, this.name, factory, this::setupScheduler);
+            }
+        }
+        
+        public void schedule(DelayAction action) {
+            if(this.scheduler == null) {
+                setupScheduler(this.name);
+            }
+            this.scheduler.checkin(action);
+        }
+        
+        private synchronized DelayScheduler setupScheduler(String name) {
+            if(this.scheduler == null) {
+                this.scheduler = DelaySchedulerFactory.make(name);
+            }
+            return this.scheduler;
+        }
+        
+        private ActionExecutor choose(int seed) {
+            int nts = this.nThreads;
+            if((nts & -nts) == nts) {//pow of 2
+                final int basis = nts - 1;
+                return internals[seed & basis];
+            }
+            return internals[seed % nThreads];
+        }
+        
+        public ActionExecutor binding() {
+            return choose(sIndex.getAndIncrement());
+        }
+
+        public void execute(Runnable action) {
+            choose(action.hashCode()).execute(action);
+        }
+        
+        public void shutdown() {
+            for (ActionExecutor e : internals) {
+                if(e != null) e.shutdown();
+            }
+        }
+    }
+    
     public static class ThreadPoolActionExecutor implements ActionExecutor {
         
         private final String name;
         
         private final ThreadPoolExecutor executor;
         
-        private volatile boolean isRunning = true;
+        private final Function<String, DelayScheduler> schedulerFactory;
         
+        private volatile boolean isRunning = true;
         //delay set
         private DelayScheduler scheduler;
         
@@ -56,16 +128,19 @@ public class ActionExecutors {
          * @param name 线程名
          */
         private ThreadPoolActionExecutor(final int poolSize, final String name) {
-            this.name = name == null ? "customer" : name;
+            this(poolSize, name, new XThreadFactory(name), DelaySchedulerFactory::make);
+        }
+        
+        private ThreadPoolActionExecutor(final int nThreads, final String name, ThreadFactory threadFactory, Function<String, DelayScheduler> schedulerFactory) {
+            this.name = name;
+            this.schedulerFactory = schedulerFactory;
             
             executor = new ThreadPoolExecutor(
-                            poolSize, Integer.MAX_VALUE,  //pool size
+                            nThreads, nThreads,  //pool size
                             5, TimeUnit.MINUTES, //alive time
                             new LinkedTransferQueue<>(),
-                            new XThreadFactory(this.name),
+                            threadFactory,
                             new DiscardPolicy());
-            
-            executors.add(this);
         }
         
         public void schedule(DelayAction action) {
@@ -77,7 +152,7 @@ public class ActionExecutors {
         
         private synchronized void setupScheduler() {
             if(this.scheduler == null) {
-                this.scheduler = DelaySchedulerFactory.makeStartedScheduler(name);
+                this.scheduler = schedulerFactory.apply(name);
             }
         }
 
@@ -97,38 +172,13 @@ public class ActionExecutors {
                 isRunning = false;
             }
         }
-        
-        public String getName() {
-            return this.name;
-        }
-        public int getWaitingActionsCount() {
-        	return executor.getQueue().size();
-        }
-        public long getCompletedActionsCount() {
-        	return executor.getCompletedTaskCount();
-        }
-		public int getActiveThreadsCount() {
-			return executor.getActiveCount();
-		}
-		public int getPooledThreadsCount() {
-			return executor.getPoolSize();
-		}
-		public void setThreadsCount(int nThreads) {
-            executor.setCorePoolSize(nThreads);
-        }
-		public int getThreadsCount() {
-			return executor.getCorePoolSize();
-		}
-		public ThreadFactory getThreadFactory() {
-		    return executor.getThreadFactory();
-		}
     }
     
     static class DelaySchedulerFactory {
         static DelayScheduler hashedwheel;//hashedwheel全局只用一个实例
         static boolean useHashedWheel = XProperties.getAsBool("xframe.hashedwheel", true);
         static int tickDuration = XProperties.getAsInt("xframe.hashedwheel.tickduration", 100);
-        static synchronized DelayScheduler makeStartedScheduler(String name) {
+        static synchronized DelayScheduler make(String name) {
             if(useHashedWheel) {
                 if(hashedwheel == null) {
                     hashedwheel = new HWDelayScheduler(tickDuration);
@@ -199,7 +249,7 @@ public class ActionExecutors {
         final static TimeUnit unit = TimeUnit.MILLISECONDS;
         final HashedWheelTimer timer;
         public HWDelayScheduler(int tickDuration) {
-            timer = new HashedWheelTimer(new XThreadFactory("delays"), tickDuration, unit);
+            timer = new HashedWheelTimer(new XThreadFactory("hwdelays"), tickDuration, unit);
         }
         @Override
         public void startup() {
