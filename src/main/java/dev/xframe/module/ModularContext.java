@@ -84,7 +84,8 @@ public class ModularContext {
         return XReflection.isImplementation(clazz) && clazz.isAnnotationPresent(Module.class) && !clazz.isAnnotationPresent(ModularIgnore.class);
     }
 	//作为实现类存在的ModularClass
-	private static Class<? extends Annotation>[] annos = new Class[] {ModularAgent.class, ModularComponent.class, Module.class};
+	@SuppressWarnings("unchecked")
+    private static Class<? extends Annotation>[] annos = new Class[] {ModularAgent.class, ModularComponent.class, Module.class};
     private static int annoOrder(Class<?> c) {
     	for (int i = 0; i < annos.length; i++) {
 			if(c.isAnnotationPresent(annos[i])) return i;

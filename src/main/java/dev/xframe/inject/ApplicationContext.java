@@ -63,6 +63,7 @@ public class ApplicationContext {
 		return c -> bc.registBinder(newBinder(c));
 	}
 	
+    @SuppressWarnings("unchecked")
     private static Class<? extends Annotation>[] annos = new Class[] {
     		Prototype.class,
     		Synthetic.class,

@@ -25,7 +25,8 @@ public class LiteParser {
 	    func = factory.build(XGeneric.parse(clazz, gerenic).getByName(typeName));
 	}
 	
-	public <T> T parse(Object body) throws Exception {
+	@SuppressWarnings("unchecked")
+    public <T> T parse(Object body) throws Exception {
 		return (T) func.apply(body);
 	}
 

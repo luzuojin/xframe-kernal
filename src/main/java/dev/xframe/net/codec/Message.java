@@ -68,6 +68,7 @@ public class Message implements BuiltinAbstMessage {
         this.version = version;
     }
 
+    @SuppressWarnings("unchecked")
     public byte[] getBody() {
         return body;
     }
@@ -316,6 +317,7 @@ public class Message implements BuiltinAbstMessage {
             return this.id;
         }
         @Override
+        @SuppressWarnings("unchecked")
         public byte[] getBody() {
             return message.getBody();
         }

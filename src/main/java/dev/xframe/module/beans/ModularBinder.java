@@ -43,7 +43,8 @@ public class ModularBinder extends BeanBinder.Classic {
 		return invoker;
 	}
 
-	public <T> T getModuleFrom(ModuleContainer mc) {
+	@SuppressWarnings("unchecked")
+    public <T> T getModuleFrom(ModuleContainer mc) {
 		return (T) mc.getBean(getIndex());
 	}
 

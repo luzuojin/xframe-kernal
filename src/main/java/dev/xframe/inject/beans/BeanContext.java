@@ -19,11 +19,13 @@ public class BeanContext extends BeanContainer implements BeanRegistrator, BeanP
 		return Stream.concat(Arrays.stream(BeanContext.class.getInterfaces()), Arrays.stream(BeanContainer.class.getInterfaces())).toArray(Class[]::new);
 	}
 	
-	@Override
+    @Override
+    @SuppressWarnings("unchecked")
 	public <T> T getBean(Class<T> clazz) {
 		return (T) getBean(indexOf(clazz));
 	}
-	@Override
+    @Override
+    @SuppressWarnings("unchecked")
 	public <T> T getBean(String name) {
 		return (T) getBean(indexOf(name));
 	}

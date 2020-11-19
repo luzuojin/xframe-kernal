@@ -18,6 +18,7 @@ import dev.xframe.utils.XLambda;
 @Providable
 public class LiteParserFactory {
 	
+    @SuppressWarnings("unchecked")
     public Function<Object, Object> build(Class<?> claz) {
         try {
             //basically use protobuf parse body by MessageLite.parseFrom
