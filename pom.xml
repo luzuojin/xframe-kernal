@@ -48,10 +48,10 @@
   		<artifactId>slf4j-api</artifactId>
   		<version>1.7.2</version>
   	</dependency>
-  	<dependency>
-		<groupId>com.google.protobuf</groupId>
-		<artifactId>protobuf-java</artifactId>
-		<version>2.5.0</version>
+	<dependency>
+	    <groupId>com.google.protobuf</groupId>
+	    <artifactId>protobuf-java</artifactId>
+	    <version>3.13.0</version>
 	</dependency>
   	<dependency>
   		<groupId>org.javassist</groupId>

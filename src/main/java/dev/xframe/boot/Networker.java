@@ -9,7 +9,6 @@ import dev.xframe.net.NetServer;
 import dev.xframe.net.WebSocketServer;
 import dev.xframe.net.cmd.CommandHandler;
 import dev.xframe.net.codec.MessageCodec;
-import dev.xframe.net.gateway.Gateway;
 import dev.xframe.net.server.ServerLifecycleListener;
 import dev.xframe.net.server.ServerMessageInterceptor;
 import dev.xframe.net.websocket.WebSocketLifecycleListener;
@@ -33,8 +32,6 @@ public class Networker implements ShutdownAgent {
     @Inject
     MessageCodec iCodec;
     
-    Gateway gateway;
-    
     int tcpPort;
     int tcpThreads;
     NetServer tcp;
@@ -54,10 +51,6 @@ public class Networker implements ShutdownAgent {
     public Networker withTcp(int port, int nThreads) {
         this.tcpPort = port;
         this.tcpThreads = nThreads;
-        return this;
-    }
-    public Networker useGateway(Gateway gateway) {
-        this.gateway = gateway;
         return this;
     }
     public Networker withWebSocket(String host, int port) {
@@ -100,7 +93,7 @@ public class Networker implements ShutdownAgent {
     }
     
     private MessageHandler newMessageHandler() {
-        return new MessageHandler(sMessageInterceptor, (gateway != null) ? gateway : cmdHandler);
+        return new MessageHandler(sMessageInterceptor, cmdHandler);
     }
 
     public void shutdown() {

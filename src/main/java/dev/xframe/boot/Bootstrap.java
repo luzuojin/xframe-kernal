@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.xframe.inject.ApplicationContext;
-import dev.xframe.net.gateway.Gateway;
 
 public class Bootstrap {
     
@@ -42,10 +41,6 @@ public class Bootstrap {
     }
     public Bootstrap withTcp(int port, int nThreads) {
         networker.withHttp(port, nThreads);
-        return this;
-    }
-    public Bootstrap useGateway(Gateway gateway) {
-        networker.useGateway(gateway);
         return this;
     }
     public Bootstrap withWebSocket(String host, int port) {
