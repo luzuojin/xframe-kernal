@@ -10,7 +10,7 @@ public interface ActionExecutor {
     default ActionLoop newLoop() {
         return new ActionLoop(this);
     }
-    default ActionExecutor binding() {
+    default ActionExecutor bind() {
         return this;
     }
     

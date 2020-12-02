@@ -32,21 +32,23 @@ public final class GameConfigurator implements Loadable {
 	public void load() {
 		Class<?> assemble = Codes.getDeclaredClasses().stream().filter(c->c.isAnnotationPresent(Assemble.class)).findAny().orElse(null);
 		if (assemble != null) {
-			configure(assemble, getThreads(assemble));
+			configure(assemble);
 		}
 	}
 
-	private int getThreads(Class<?> assemble) {
-		int nThreads = assemble.getAnnotation(Assemble.class).threads();
-		return nThreads == 0 ? Runtime.getRuntime().availableProcessors() : nThreads;
+	private ActionExecutor newExecutor(Class<?> assemble) {
+	    String name = "logics";
+	    Assemble anno = assemble.getAnnotation(Assemble.class);
+        int nThreads = anno.threads() > 0 ? anno.threads() : Runtime.getRuntime().availableProcessors();
+		return anno.sharding() ? ActionExecutors.newSharding(name, nThreads) : ActionExecutors.newFixed(name, nThreads);
 	}
 
-	private void configure(Class<?> assemble, int threads) {
+	private void configure(Class<?> assemble) {
 		modularAdapter.initial(assemble);
 		
-		cmdBuilder.regist(c -> PlayerCmdAction.class.isAssignableFrom(c), PlayerCmdActionCmd::new);
-
-		ActionExecutor executor = ActionExecutors.newBindable("logic", threads);
+		cmdBuilder.regist(PlayerCmdAction.class::isAssignableFrom, PlayerCmdActionCmd::new);
+		
+		ActionExecutor executor = newExecutor(assemble);
 		PlayerFactory factory = newPlayerFactory(assemble);
 		PlayerContext context = new PlayerContext(executor, factory);
 

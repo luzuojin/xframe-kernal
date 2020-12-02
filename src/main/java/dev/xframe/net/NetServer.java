@@ -25,9 +25,8 @@ public class NetServer {
 	private static Logger logger = LoggerFactory.getLogger(NetServer.class);
 	
 	public static int defaultThreads() {
-        return Runtime.getRuntime().availableProcessors() * 2;
+        return Runtime.getRuntime().availableProcessors();
     }
-	
 	
 	private Channel bossChannel;
 	private NioEventLoopGroup bossGroup;

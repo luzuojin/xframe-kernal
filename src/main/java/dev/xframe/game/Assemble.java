@@ -9,6 +9,14 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface Assemble {
 
+    /**
+     * 默认availableProcessors
+     */
     int threads() default 0;//logics threads
+    
+    /**
+     * 是否使用ShardingActionExecutor
+     */
+    boolean sharding() default true;
     
 }

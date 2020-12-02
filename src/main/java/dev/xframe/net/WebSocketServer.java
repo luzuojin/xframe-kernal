@@ -22,7 +22,7 @@ public class WebSocketServer {
 	private static Logger logger = LoggerFactory.getLogger(WebSocketServer.class);
 	
 	public static int defaultThreads() {
-        return Runtime.getRuntime().availableProcessors() * 2;
+        return Runtime.getRuntime().availableProcessors();
     }
 	
 	private Channel bossChannel;
