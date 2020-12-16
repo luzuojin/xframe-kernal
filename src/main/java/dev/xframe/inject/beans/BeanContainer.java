@@ -3,6 +3,7 @@ package dev.xframe.inject.beans;
 import java.util.Arrays;
 import java.util.List;
 
+import dev.xframe.inject.Loadable;
 import dev.xframe.utils.XBitSet;
 
 
@@ -62,24 +63,28 @@ public class BeanContainer implements BeanDefiner {
 	}
 	
 	private Object getOrNew(BeanBinder binder) {
-		Object bean = getBean(binder.index);
-		if(bean == null) {
-			bean = binder.newInstance();
-			setBean(binder.index, bean);
-		}
-		return bean;
+		Object bean = getBean(binder.getIndex());
+		return bean == null ? newAndCache(binder) : bean;
 	}
 	
+    private Object newAndCache(BeanBinder binder) {
+        Object bean = binder.newInstance();
+        setBean(binder.getIndex(), bean);
+        return bean;
+    }
+	
 	private void loadBean(BeanBinder binder, Object bean) {
-		if(!this.getFlag(binder.index)) {
+		int index = binder.getIndex();
+        if(!this.getFlag(index)) {
 			loadBeanExec(binder, bean);
-			this.setFlag(binder.index, true);
+			this.setFlag(index, true);
 		}
 	}
 	
 	//完成Bean初始化过程
 	protected void loadBeanExec(BeanBinder binder, Object bean) {
 		binder.integrate(bean, this);
+		Loadable.doLoad(bean);
 	}
 
 	public void integrate() {
@@ -87,9 +92,13 @@ public class BeanContainer implements BeanDefiner {
 	}
 
 	public synchronized void integrate(BeanBinder binder) {
-		if(binder.index != -1) {
+		if(binder.getIndex() != -1) {
 			this.loadBean(binder, getOrNew(binder));
 		}
+	}
+	
+	public BeanIndexes indexes() {
+	    return this.indexes;
 	}
 	
 	public List<BeanBinder> binders() {
@@ -102,8 +111,7 @@ public class BeanContainer implements BeanDefiner {
 		if(bean == null) {
 			BeanBinder binder = indexes.getBinder(index);
 			if(binder != null) {//仅创建对象, 需要调用integrate完成注入/Loadable
-				bean = binder.newInstance();
-				this.setBean(index, bean);
+				bean = newAndCache(binder);
 			}
 		}
 		return bean;

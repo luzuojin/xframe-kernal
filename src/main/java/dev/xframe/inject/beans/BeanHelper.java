@@ -5,6 +5,12 @@ import dev.xframe.inject.Loadable;
 import dev.xframe.inject.Prototype;
 import dev.xframe.utils.XCaught;
 
+/**
+ * 
+ * global bean helper
+ * @author luzj
+ *
+ */
 public class BeanHelper {
 	
 	private static Object newInstance(Class<?> c) {
@@ -28,6 +34,10 @@ public class BeanHelper {
 		injector.inject(bean, ApplicationContext.definer());
 		Loadable.doLoad(bean);
 		return bean;
+	}
+	
+	public static boolean isGlobalIndexes(BeanIndexes indexes) {
+		return indexes.offset() == 0;
 	}
 
 }

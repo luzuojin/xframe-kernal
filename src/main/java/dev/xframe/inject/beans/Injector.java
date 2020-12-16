@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dev.xframe.inject.Inject;
-import dev.xframe.utils.XAccessor;
+import dev.xframe.utils.XCaught;
 import dev.xframe.utils.XStrings;
 
 public class Injector {
@@ -58,13 +58,13 @@ public class Injector {
 	}
 
 	public static class Member {
-		private XAccessor accessor;
 		private Field field;
 		private int index;
 		private BeanIndexing indexing;
+		
 		public Member(Field field, BeanIndexing indexing) {
+		    field.setAccessible(true);
 			this.field = field;
-			this.accessor = XAccessor.of(field);
 			this.indexing = indexing;
 			this.index = -1;
 		}
@@ -72,11 +72,15 @@ public class Injector {
 			return field.getAnnotation(Inject.class).nullable();
 		}
 		private Object getKeyword() {
-			Inject an = field.getAnnotation(Inject.class);
-			return XStrings.isEmpty(an.value()) ? field.getType() : an.value();
+		    Inject an = field.getAnnotation(Inject.class);
+		    return XStrings.isEmpty(an.value()) ? field.getType() : an.value();
 		}
-		public XAccessor accessor() {
-			return accessor;
+		public void set(Object bean, Object val) {
+		    try {
+                field.set(bean, val);
+            } catch (Exception e) {
+                XCaught.throwException(e);
+            }
 		}
 		public int getIndex() {
 			if(index == -1) {
@@ -87,9 +91,9 @@ public class Injector {
 		public void inject(Object bean, BeanDefiner definer) {
 			Object obj = definer.define(getIndex());
 			if(obj == null && !isNullable()) {
-				throw new IllegalArgumentException("Bean [" + field.getType().getName() + "] doesn`t registed");
+				throw new IllegalStateException("Bean [" + field.getType().getName() + "] doesn`t registed");
 			}
-			accessor.set(bean, obj);
+			set(bean, obj);
 		}
 	}
 

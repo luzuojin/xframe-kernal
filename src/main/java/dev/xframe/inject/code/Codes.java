@@ -33,7 +33,7 @@ public class Codes {
 	private static Map<String, ClassEntry> classEntryMap = new HashMap<>();
 	private static Map<String, AtomicInteger> classVersionMap = new HashMap<>();
 	
-	private static ScanMatcher matcher = new ScanMatcher("dev.xframe.*", "dev.xframe.inject.junit.*");
+	private static ScanMatcher matcher = new ScanMatcher("*xframe-*.jar;dev.xframe.*", "dev.xframe.inject.junit.*");
 	
 	private static List<Class<?>> declares;
 	

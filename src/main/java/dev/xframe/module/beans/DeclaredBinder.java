@@ -20,7 +20,7 @@ public class DeclaredBinder extends ModularBinder {
 	}
 
 	@Override
-	protected List<?> getKeywords() {
+	protected List<Class<?>> getKeywords() {
 		//如果有.过滤掉ModuleContainer相关的接口
 		List<Class<?>> bc = XReflection.getAssigners(ModuleContainer.class);
 		return XReflection.getAssigners(master).stream().filter(c->!bc.contains(c)).collect(Collectors.toList());
@@ -49,10 +49,10 @@ public class DeclaredBinder extends ModularBinder {
 	private ModularListener newMemberListener(final Member member) {
 		return new ModularListener() {
 			public void onModuleLoaded(ModuleContainer mc, ModularBinder binder, Object module) {
-				member.accessor().set(mc.getBean(getIndex()), module);
+				member.set(mc.getBean(getIndex()), module);
 			}
 			public void onModuleUnloaded(ModuleContainer mc, ModularBinder binder, Object module) {
-				member.accessor().set(mc.getBean(getIndex()), null);
+				member.set(mc.getBean(getIndex()), null);
 			}
 		};
 	}

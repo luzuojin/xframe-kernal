@@ -33,7 +33,7 @@ public class MessageCryptTest extends MessageCrypts.SimpleCryption {
 	@Test
 	public void test() {
 		byte[] bytes = new byte[]{1,1,0,1,1,4,1,1,9};
-        Message message = Message.build(10086, bytes);
+        Message message = Message.of(10086, bytes);
         message.addParam("key", "val");
 		
 		//skip first

@@ -4,32 +4,34 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
-import dev.xframe.inject.Loadable;
+import dev.xframe.inject.code.ProxyBuilder;
 import dev.xframe.utils.XLambda;
 import dev.xframe.utils.XReflection;
 
 /**
  * 记录Bean的索引值
  * 实例化Bean
- * 完成Bean加载逻辑
+ * 完成Bean注入逻辑
  * 输出Bean的可注入Keyword(interfaces...)
  * 解决同一个Parent有多个实现时的冲突问题
  * @author luzj
  */
 public abstract class BeanBinder {
 	
-	int index = -1;
+    protected int index = -1;
 	
-	public BeanBinder() {
-	}
-	
+	public void setIndex(int index) {
+	    this.index = index;
+    }
 	public int getIndex() {
-		return index;
-	}
+        return index;
+    }
 	
 	protected abstract List<?> getKeywords();
+	//构建对象, 传入keyword方便某些特殊情况下根据keyword来生成不同的实现类
+	//keyword在非依赖注入时的调用为null
 	protected abstract Object newInstance();
-	//完成注入以及加载的过程
+	//完成注入(在Loadable.load之前调用)
 	protected abstract void integrate(Object bean, BeanDefiner definer);
 	//当某接口/父类有多个binder映射时
 	protected abstract BeanBinder conflict(Object keyword, BeanBinder binder);
@@ -60,12 +62,11 @@ public abstract class BeanBinder {
         }
 		protected void integrate(Object bean, BeanDefiner definer) {
 			injector.inject(bean, definer);
-			Loadable.doLoad(bean);
 		}
 		protected Object newInstance() {
 			return factory.get();
 		}
-		protected List<?> getKeywords() {
+		protected List<Class<?>> getKeywords() {
 			return XReflection.getAssigners(master);
 		}
 		protected BeanBinder conflict(Object keyword, BeanBinder binder) {
@@ -99,6 +100,21 @@ public abstract class BeanBinder {
 			return "Instanced [" + val.getClass().getName() + "]";
 		}
 	}
+	
+	public static class LazyInstance extends Instanced {
+	    protected final Class<?> vclazz;
+        public LazyInstance(Class<?> vclazz, Class<?>... keys) {
+            super(ProxyBuilder.build(vclazz), keys);
+            this.vclazz = vclazz;
+        }
+        protected List<?> getKeywords() {
+            return keys.length == 0 ? XReflection.getAssigners(vclazz) : Arrays.asList(keys);
+        }
+        public void setDelegate(Object delegate) {
+            ProxyBuilder.setDelegate(val, delegate);
+        }
+	}
+	
 	public static class Named extends BeanBinder {
 		protected final String key;
 		protected final Object val;

@@ -1,13 +1,14 @@
 package dev.xframe.inject.beans;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -30,10 +31,11 @@ import javassist.expr.NewExpr;
  * 分析依赖关系
  * 循环依赖问题-需要@Inject时显示标注lazy=true
  * 提供加载顺序
+ * 依赖的注入项如果在分析是不存在则跳过(动态生成的bean)
  * @author luzj
  */
-public class BeanPretreater {
-
+public class BeanPretreater implements Iterable<Class<?>> {
+    
 	private List<Class<?>> classes;
     
     private Map<Class<?>, DependenceType> dTypes;
@@ -90,11 +92,7 @@ public class BeanPretreater {
         List<Class<?>> provides = new ArrayList<>();
         List<Class<?>> analysed = new ArrayList<>();
         
-        //首先按字母排序,保证每次加载顺序一样
-        XSorter.bubble(classes, (c1, c2) -> c1.getSimpleName().compareTo(c2.getSimpleName()));
-        //Annotation排序
-        XSorter.bubble(classes, comparator);
-        
+        //处理@Providable
         for (Class<?> clazz : this.classes) {
             if(isProvidable(clazz)) {
                 provides.add(clazz);
@@ -103,13 +101,17 @@ public class BeanPretreater {
                 putUpwardIfNotPrototype(dTypes, clazz, new DependenceType(clazz));
             }
         }
-        
         for (Class<?> provide : provides) {
             if(!isProvided(provide)) {
                 analysed.add(provide);
                 putUpwardIfNotPrototype(dTypes, provide, new DependenceType(provide));
             }
         }
+        
+        //首先按字母排序,保证每次加载顺序一样
+        XSorter.bubble(analysed, (c1, c2) -> c1.getSimpleName().compareTo(c2.getSimpleName()));
+        //Annotation排序
+        XSorter.bubble(analysed, comparator);
         
         //过滤掉仅用来帮助分析依赖关系的类
         analysed = filter0(analysed, c->!pretrial.test(c));
@@ -129,11 +131,11 @@ public class BeanPretreater {
     	return new ArrayList<>(classes);
 	}
 
-    public void forEach(Consumer<Class<?>> c) {
-        for (Class<?> clazz : classes)
-        	c.accept(clazz);
+    @Override
+    public Iterator<Class<?>> iterator() {
+        return classes.iterator();
     }
-    
+
     private void analyse0(Class<?> key, DependenceLink parent) {
         parent.checkCircularDependence();
         DependenceType dtype = dTypes.get(key);
@@ -211,6 +213,10 @@ public class BeanPretreater {
         		t = t.getSuperclass();
         	} while(t!=null&&!t.isAnnotationPresent(Prototype.class) && !Object.class.equals(t));
         }
+        @Override
+        public String toString() {
+            return "DependenceType [type=" + type + ", index=" + index + "]";
+        }
     }
     
     static class DependenceField {
@@ -241,6 +247,28 @@ public class BeanPretreater {
                     link = link.parent;
                 }
             }
+        }
+    }
+    
+    public static class Annotated {
+        final Class<? extends Annotation>[] annos;
+        public Annotated(Class<? extends Annotation>[] annos) {
+            this.annos = annos;
+        }
+        int annoOrder(Class<?> c) {
+            for (int i = 0; i < annos.length; i++) {
+                if(c.isAnnotationPresent(annos[i])) {
+                    return annos.length - i;
+                }
+            }
+            return 0;
+        }
+        /**按照给定的顺序从小到大排列*/
+        public Comparator<Class<?>> comparator() {
+            return (c1, c2) -> Integer.compare(annoOrder(c2), annoOrder(c1));
+        }
+        public boolean isPresient(Class<?> c) {
+            return Arrays.stream(annos).filter(a->c.isAnnotationPresent(a)).findAny().isPresent();
         }
     }
 

@@ -35,7 +35,7 @@ public class ModularBinder extends BeanBinder.Classic {
 	}
 	
 	@Override
-	protected List<?> getKeywords() {
+	protected List<Class<?>> getKeywords() {
 		return XReflection.getAssigners(master).stream().filter(c->ModularHelper.isModularClass((Class<?>)c)).collect(Collectors.toList());
 	}
 

@@ -1,7 +1,5 @@
 package dev.xframe.module;
 
-import java.lang.annotation.Annotation;
-import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -9,6 +7,7 @@ import dev.xframe.inject.Bean;
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.beans.BeanBinder;
 import dev.xframe.inject.beans.BeanDefiner;
+import dev.xframe.inject.beans.BeanDiscovery;
 import dev.xframe.inject.beans.BeanIndexing;
 import dev.xframe.inject.beans.BeanPretreater;
 import dev.xframe.inject.beans.BeanRegistrator;
@@ -30,22 +29,29 @@ public class ModularContext {
 	private BeanIndexing gIndexing;
 	@Inject
 	private BeanDefiner gDefiner;
+	@Inject
+	private BeanDiscovery gDiscovery;
 	
 	private ModularIndexes indexes;
 	
-	public void initialize(Class<?> assembleClass) {
-		indexes = new ModularIndexes(gIndexing);
-		registrator.regist(BeanBinder.instanced(this, ModularContext.class));
-		registrator.regist(BeanBinder.instanced(indexes, ModularIndexes.class));
-		//assembleClass作为第一个Bean记录
-		indexes.regist(new DeclaredBinder(assembleClass, Injector.of(assembleClass, indexes)));
-		pretreatModules().forEach(c->indexes.regist(buildBinder(c, indexes)));
-		indexes.integrate();
+	private int assembleIndex;
+	
+	public synchronized void initialize(Class<?> assembleClass) {
+		if(indexes == null) {
+			List<Class<?>> scanned = Codes.getDeclaredClasses();
+			indexes = new ModularIndexes(gIndexing);
+			//registrator.regist(BeanBinder.instanced(indexes, ModularIndexes.class));
+			//assembleClass作为第一个Bean记录
+			assembleIndex = indexes.regist(new DeclaredBinder(assembleClass, Injector.of(assembleClass, indexes)));
+			pretreatModules(scanned).forEach(c->indexes.regist(buildBinder(c, indexes)));
+			gDiscovery.discover(scanned, indexes);
+			indexes.integrate();
+		}
 	}
 	
 	public ModuleContainer initContainer(ModuleContainer mc, Object assemble) {
 		mc.setup(gDefiner, indexes);
-		int index = indexes.getIndex(assemble.getClass());
+		int index = assembleIndex;
 		//为assembleClass赋值 @see initialize() 
 		mc.setBean(index, assemble);
 		mc.integrate(indexes.getBinder(index));
@@ -64,8 +70,10 @@ public class ModularContext {
 		return c.isAnnotationPresent(ModularAgent.class) ? new AgentBinder(c) : new ModularBinder(c, Injector.of(c, indexing));
 	}
 
-	private List<Class<?>> pretreatModules() {
-		return new BeanPretreater(Codes.getDeclaredClasses()).filter(isModularClass()).pretreat(annoComparator()).collect();
+	private List<Class<?>> pretreatModules(List<Class<?>> scanned) {
+	    @SuppressWarnings("unchecked")
+	    BeanPretreater.Annotated anns = new BeanPretreater.Annotated(new Class[] {ModularAgent.class, ModularComponent.class, Module.class});
+		return new BeanPretreater(scanned).filter(isModularClass()).pretreat(anns.comparator()).collect();
 	}
 	private Predicate<Class<?>> isModularClass() {
 		return c -> isModularClass(c);
@@ -83,17 +91,4 @@ public class ModularContext {
 	private static boolean isModule(Class<?> clazz) {
         return XReflection.isImplementation(clazz) && clazz.isAnnotationPresent(Module.class) && !clazz.isAnnotationPresent(ModularIgnore.class);
     }
-	//作为实现类存在的ModularClass
-	@SuppressWarnings("unchecked")
-    private static Class<? extends Annotation>[] annos = new Class[] {ModularAgent.class, ModularComponent.class, Module.class};
-    private static int annoOrder(Class<?> c) {
-    	for (int i = 0; i < annos.length; i++) {
-			if(c.isAnnotationPresent(annos[i])) return i;
-		}
-    	return annos.length;
-    }
-    private static Comparator<Class<?>> annoComparator() {//从小到大
-    	return (c1, c2)->Integer.compare(annoOrder(c1), annoOrder(c2));
-    }
-
 }

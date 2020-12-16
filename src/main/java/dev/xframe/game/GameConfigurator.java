@@ -43,6 +43,7 @@ public final class GameConfigurator implements Loadable {
 		return anno.sharding() ? ActionExecutors.newSharding(name, nThreads) : ActionExecutors.newFixed(name, nThreads);
 	}
 
+	@SuppressWarnings("unchecked")
 	private void configure(Class<?> assemble) {
 		modularAdapter.initial(assemble);
 		

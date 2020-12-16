@@ -7,9 +7,9 @@ import dev.xframe.inject.beans.BeanIndexes;
 import dev.xframe.inject.beans.BeanIndexing;
 import dev.xframe.module.ModularHelper;
 
-public class ModularIndexes extends BeanIndexes implements BeanIndexing {
+public class ModularIndexes extends BeanIndexes {
 	
-	static final int OFFSET = 8000;
+	public static final int OFFSET = 8000;
 	
 	BeanIndexing gIndexing;
 	
@@ -31,7 +31,7 @@ public class ModularIndexes extends BeanIndexes implements BeanIndexing {
 	@Override
 	public int indexOf(Object keyword) {
 		if(keyword instanceof Class<?>) {
-			int index = getIndex(keyword);
+			int index = super.indexOf(keyword);
 			if(index != -1 || ModularHelper.isModularClass((Class<?>) keyword)) {
 				return index;
 			}

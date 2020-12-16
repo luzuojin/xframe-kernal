@@ -58,30 +58,40 @@ public final class MessageCrypts {
         }
 
         protected short flagCodec(BuiltinAbstMessage message, byte[] cipher) {
-            return (short) codec(message.getFlag(), cipher[0], cipher[1]);
+            byte cipher1 = cipher[0];
+            byte cipher2 = cipher[1];
+            short src = message.getFlag();
+            return (short) (src ^ (((cipher1 & 0xFF) << 8) | (cipher2 & 0xFF)) & 0xFFFF);
         }
         
         protected int codeCodec(BuiltinAbstMessage message, byte[] cipher) {
-            return codec(message.getCode(), cipher[2], cipher[3]);
+            byte cipher1 = cipher[2];
+            byte cipher2 = cipher[3];
+            byte cipher3 = cipher[4];
+            byte cipher4 = cipher[5];
+            int src = message.getCode();
+            return (src ^ (((cipher1 & 0xFF) << 24) | ((cipher2 & 0xFF) << 16) | ((cipher3 & 0xFF) << 8) | (cipher4 & 0xFF)) & 0xFFFFFFFF);
         }
         
-        protected int codec(int src, byte cipher1, byte cipher2) {
-            return (src ^ (((cipher1 & 0xFF) << 8) | (cipher2 & 0xFF)) & 0xFFFF);
-        }
-
         protected void setCipher(byte[] cipher, BuiltinAbstMessage message) {
             int bodyLen = message.getBodyLen();
-            if(bodyLen > 4) {
+            if(bodyLen > 6) {
                 byte[] body = message.getBody();
                 cipher[0] = body[bodyLen-1];
                 cipher[1] = body[bodyLen-2];
                 cipher[2] = body[bodyLen-3];
                 cipher[3] = body[bodyLen-4];
+                cipher[4] = body[bodyLen-5];
+                cipher[5] = body[bodyLen-6];
             } else {
-                cipher[0] = (byte) (message.getCode() >> 8 & 0XFF);
-                cipher[1] = (byte) (message.getCode() & 0XFF);
-                cipher[2] = (byte) (message.getFlag() >> 8 & 0XFF);
-                cipher[3] = (byte) (message.getFlag() & 0XFF);
+                //flag
+                cipher[0] = (byte) ((message.getFlag() >> 8) & 0XFF);
+                cipher[1] = (byte) ( message.getFlag() & 0XFF);
+                //code
+                cipher[2] = (byte) ((message.getCode() >> 24) & 0XFF);
+                cipher[3] = (byte) ((message.getCode() >> 16) & 0XFF);
+                cipher[4] = (byte) ((message.getCode() >>  8) & 0XFF);
+                cipher[5] = (byte) ( message.getCode() & 0XFF);
             }
         }
 

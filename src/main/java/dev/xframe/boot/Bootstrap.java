@@ -3,25 +3,20 @@ package dev.xframe.boot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.xframe.inject.ApplicationContext;
-
 public class Bootstrap {
     
     static final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
     
-    Processor processor = new Processor();
+    AppRunner appRunner = new AppRunner();
     Networker networker = new Networker();
     
-    String includes = "*";
-    String excludes = "";
-    
     public Bootstrap include(String includes) {
-        this.includes = includes;
+        appRunner.include(includes);
         return this;
     }
     
     public Bootstrap exclude(String excludes) {
-        this.excludes = excludes;
+        appRunner.exclude(excludes);
         return this;
     }
     
@@ -31,7 +26,7 @@ public class Bootstrap {
      * @return
      */
     public Bootstrap withName(String name) {
-        processor.withName(name);
+        appRunner.withName(name);
         return this;
     }
     
@@ -63,9 +58,7 @@ public class Bootstrap {
     
     public Bootstrap startup() {
         try {
-            processor.startup();
-            
-            ApplicationContext.initialize(includes, excludes);
+            appRunner.startup();
             
             networker.startup();
         } catch (Throwable ex) {

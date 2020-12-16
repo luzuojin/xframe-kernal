@@ -46,11 +46,11 @@ public class TBootstrap {
 		testExecution.assertExecuted(TComponent.class);
         
         PlayerCommand<TPlayer> cmd1 = (PlayerCommand<TPlayer>) commandCtx.get((short) 100);
-        cmd1.execute(null, Message.build((short)100, ValueMsg.newBuilder().setVal("hey").build().toByteArray()).copy(playerId));
+        cmd1.execute(null, Message.of(100, ValueMsg.newBuilder().setVal("hey").build().toByteArray()).copy(playerId));
         testExecution.assertExecuted(TCommand.class);
         
         PlayerCommand<TPlayer> cmd2 = (PlayerCommand<TPlayer>)  commandCtx.get((short) 101);
-        cmd2.execute(null, Message.build((short)101, ValueMsg.newBuilder().setVal("hey").build().toByteArray()).copy(playerId));
+        cmd2.execute(null, Message.of(101, ValueMsg.newBuilder().setVal("hey").build().toByteArray()).copy(playerId));
         TimeUnit.MILLISECONDS.sleep(200);//wait queued executed
         testExecution.assertExecuted(TCmdAction.class);
         

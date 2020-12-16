@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 生成BeanBinder的索引(同一个BeanBinder对应的所有可注入的接口,索引相同)
  * @author luzj
  */
-public class BeanIndexes {
+public class BeanIndexes implements BeanIndexing {
 	
 	final AtomicInteger seed;
 	final int offset;
@@ -35,7 +35,7 @@ public class BeanIndexes {
 		}
 	}
 	
-	public int nextIndex() {
+	int nextIndex() {
 		return seed.getAndIncrement();
 	}
 	
@@ -44,8 +44,8 @@ public class BeanIndexes {
 	}
 	
 	public synchronized int regist(BeanBinder binder) {
-		if(binder.index == -1) {
-			binder.index = nextIndex();
+		if(binder.getIndex() == -1) {
+			binder.setIndex(nextIndex());
 			binder.getKeywords().forEach(k->{
 				BeanBinder ex = indexes.get(k);
 				BeanBinder cr = (ex == null) ? binder : ex.conflict(k, binder);
@@ -53,12 +53,12 @@ public class BeanIndexes {
 			});
 			setBinder(binder);
 		}
-		return binder.index;
+		return binder.getIndex();
 	}
 	
-	public int getIndex(Object keyword) {
-		BeanBinder binder = indexes.get(keyword);
-		return binder == null ? -1 : binder.index;
+	public int indexOf(Object keyword) {
+		BeanBinder binder = getBinder(keyword);
+		return binder == null ? -1 : binder.getIndex();
 	}
 	
 	public boolean isValidIndex(int binderIndex) {
@@ -70,13 +70,16 @@ public class BeanIndexes {
 		return binderIndex - offset;
 	}
 	
+	public BeanBinder getBinder(Object keyword) {
+		return indexes.get(keyword);
+	}
 	public BeanBinder getBinder(int index) {
 		int aIndex = arrayIndex(index);
 		return aIndex == -1 ? null : binders[aIndex];
 	}
 	
 	private void setBinder(BeanBinder binder) {
-		int aIndex = arrayIndex(binder.index);
+		int aIndex = arrayIndex(binder.getIndex());
 		ensureCap(aIndex + 1);
 		binders[aIndex] = binder;
 	}
@@ -88,5 +91,8 @@ public class BeanIndexes {
 	public int length() {
 		return binders.length;
 	}
-
+	
+	public int offset() {
+	    return this.offset;
+	}
 }

@@ -123,7 +123,7 @@ public class Message implements BuiltinAbstMessage {
         if (buff.readableBytes() < HDR_SIZE) // 不够字节忽略
             return null;
         buff.markReaderIndex();
-        Message message = Message.build();
+        Message message = Message.empty();
         message.readHeader(buff);
         int len = message.getBodyLen() + message.getParamsLen();
         if (len > buff.readableBytes()) {
@@ -222,29 +222,24 @@ public class Message implements BuiltinAbstMessage {
         return HDR_SIZE + getParamsLen() + getBodyLen();
     }
 
-    public static Message build() {
+    public static Message empty() {
         return new Message();
     }
-
-    public static Message build(int code) {
-        Message message = build();
+    public static Message of(int code) {
+        Message message = empty();
         message.setCode(code);
         return message;
     }
-
-    public static Message build(short code, long id) {
-        Message message = build(code);
+    public static Message of(int code, long id) {
+        Message message = of(code);
         message.setId(id);
         return message;
     }
-
-    public static Message build(int code, MessageLite lite) {
-        byte[] bytes = lite == null ? null : lite.toByteArray();
-        return build(code, bytes);
+    public static Message of(int code, MessageLite lite) {
+        return of(code, lite==null ? null : lite.toByteArray());
     }
-
-    public static Message build(int code, byte[] bytes) {
-        Message message = build(code);
+    public static Message of(int code, byte[] bytes) {
+        Message message = of(code);
         if (bytes != null) {
             if(bytes.length > MAX_BODY_LEN) {
                 throw new IllegalArgumentException("Message body is too long 4 encoding!!!");
@@ -254,7 +249,7 @@ public class Message implements BuiltinAbstMessage {
         }
         return message;
     }
-    
+
     public IMessage copy(long id) {
         return new CopiedMessage(this, id, code);
     }

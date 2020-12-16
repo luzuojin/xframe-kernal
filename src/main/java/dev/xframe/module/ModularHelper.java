@@ -2,7 +2,9 @@ package dev.xframe.module;
 
 import java.util.function.Consumer;
 
+import dev.xframe.inject.beans.BeanIndexes;
 import dev.xframe.inject.code.SyntheticBuilder;
+import dev.xframe.module.beans.ModularIndexes;
 import dev.xframe.module.beans.ModuleContainer;
 
 public class ModularHelper {
@@ -38,6 +40,10 @@ public class ModularHelper {
         return (c.isAnnotationPresent(Module.class) && c.getAnnotation(Module.class).value() == ModuleType.TRANSIENT)
             || (c.isAnnotationPresent(ModularComponent.class) && c.getAnnotation(ModularComponent.class).value() == ModuleType.TRANSIENT)
                ;
+    }
+    
+    public static boolean isModularIndexes(BeanIndexes indexes) {
+    	return indexes.offset() == ModularIndexes.OFFSET;
     }
     
 }

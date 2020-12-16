@@ -18,7 +18,7 @@ public class ModuleContainer extends BeanContainer  {
 
 	@Override
 	public synchronized Object define(int index) {
-		if(index >= ModularIndexes.OFFSET) {
+		if(indexes.isValidIndex(index)) {
 			return super.define(index);
 		}
 		return gDefiner.define(index);
@@ -41,7 +41,7 @@ public class ModuleContainer extends BeanContainer  {
 	protected void loadBeanExec(BeanBinder binder, Object bean) {
 		super.loadBeanExec(binder, bean);
 		ModularBinder mbinder = (ModularBinder)binder;
-        mbinder.getInvoker().invokeLoad(this);//正常可以由ModularBinder在integrate方法中调用. 这里因为unload/save均在此类
+        mbinder.getInvoker().invokeLoad(this);
 		mbinder.onLoaded(this, bean);
 	}
 

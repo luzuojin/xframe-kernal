@@ -303,16 +303,22 @@ public class XScanner {
             if(res != null && res.length() > 0) {
             	String[] regs = res.split(";");
             	for (int i = 0; i < regs.length; i++) {
-            		String reg = regs[i];
-            		List<Pattern> list = reg.endsWith(".jar") ? jarPatterns : clsPatterns;
-            		reg = reg.endsWith("*") ? reg : reg + "$";
-            		reg = reg.replace(".", "\\.");
-            		reg = reg.replace("*", ".*");
-            		list.add(Pattern.compile(reg));
+            	    String reg = regs[i];
+            	    List<Pattern> list = reg.endsWith(".jar") ? jarPatterns : clsPatterns;
+            		list.add(Pattern.compile(quote(reg)));
             	}
+            }
+            if(jarPatterns.isEmpty()) {
+                jarPatterns.add(Pattern.compile(quote("*.jar")));
             }
             jarMatcher = new SimpleMatcher(jarPatterns.toArray(new Pattern[0]));
             clsMatcher = new SimpleMatcher(clsPatterns.toArray(new Pattern[0]));
+        }
+        private String quote(String reg) {
+            reg = reg.endsWith("*") ? reg : reg + "$";
+            reg = reg.replace(".", "\\.");
+            reg = reg.replace("*", ".*");
+            return reg;
         }
         public boolean strict(String path) {
         	return (isJarFile(path) ? jarMatcher : clsMatcher).match(path, false);
