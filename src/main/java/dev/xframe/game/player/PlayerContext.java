@@ -96,7 +96,7 @@ public class PlayerContext {
             protected void exec() {
                 if(!player.load()) {
                     logger.error("用户初始化出错");
-                    players.remove(player.getPlayerId());
+                    players.remove(player.id());
                 }
             }
         }.checkin();
@@ -127,7 +127,7 @@ public class PlayerContext {
                 try {
                     if(!player.load()) {
                         logger.error("用户初始化出错");
-                        players.remove(player.getPlayerId());
+                        players.remove(player.id());
                     }
                 } finally {
                     latch.countDown();
@@ -178,7 +178,7 @@ public class PlayerContext {
      * @param player
      */
     public void removePlayer(Player player) {
-        players.remove(player.getPlayerId());
+        players.remove(player.id());
     }
 
     private static class PlayerCollection {

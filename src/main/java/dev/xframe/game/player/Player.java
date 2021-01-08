@@ -7,22 +7,25 @@ import dev.xframe.module.beans.ModuleContainer;
 public abstract class Player {
 
 	private ActionLoop loop;
-	private long playerId;
+	private long id;
     private int loaded;
     
     final ModuleContainer mc = new ModuleContainer();
     
-    public Player(long playerId, ActionLoop loop) {
-        this.playerId = playerId;
+    public Player(long id, ActionLoop loop) {
+        this.id = id;
         this.loop = loop;
     }
     
+    public long id() {
+    	return id;
+    }
     public ActionLoop loop() {
         return this.loop;
     }
-
+    @Deprecated
     public long getPlayerId() {
-        return playerId;
+    	return id;
     }
     
     public boolean load(ModuleType type) {

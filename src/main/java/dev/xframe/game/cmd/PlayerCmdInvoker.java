@@ -32,7 +32,7 @@ public class PlayerCmdInvoker<T extends Player> {
     }
 
     protected void onExCaught(PlayerCommand<T> cmd, T player, Throwable e) {
-        logger.error("invoke player[{}] cmd[{}] error:\n {}", player.getPlayerId(), cmd.getClazz(), XStrings.getStackTrace(e));
+        logger.error("invoke player[{}] cmd[{}] error:\n {}", player.id(), cmd.getClazz(), XStrings.getStackTrace(e));
     }
 
 }
