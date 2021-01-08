@@ -89,6 +89,11 @@ public class BeanPretreater implements Iterable<Class<?>> {
     	return pretreat(comparator, c->false);
     }
     public BeanPretreater pretreat(Comparator<Class<?>> comparator, Predicate<Class<?>> pretrial) {
+        //首先按字母排序,保证每次处理顺序一样
+        XSorter.bubble(classes, (c1, c2) -> c1.getSimpleName().compareTo(c2.getSimpleName()));
+        //Annotation排序
+        XSorter.bubble(classes, comparator);
+        
         List<Class<?>> provides = new ArrayList<>();
         List<Class<?>> analysed = new ArrayList<>();
         
@@ -108,9 +113,8 @@ public class BeanPretreater implements Iterable<Class<?>> {
             }
         }
         
-        //首先按字母排序,保证每次加载顺序一样
+        //由于@Providable的处理打乱了Classes的顺序, 重新排序
         XSorter.bubble(analysed, (c1, c2) -> c1.getSimpleName().compareTo(c2.getSimpleName()));
-        //Annotation排序
         XSorter.bubble(analysed, comparator);
         
         //过滤掉仅用来帮助分析依赖关系的类

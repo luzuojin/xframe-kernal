@@ -281,8 +281,8 @@ public class XScanner {
 	    private final SingleMatcher includes;
         private final SingleMatcher excludes;
         public ScanMatcher(String includes, String excludes) {
-            this.includes = new SingleMatcher(includes);
-            this.excludes = new SingleMatcher(excludes);
+            this.includes = new SingleMatcher(includes, true);
+            this.excludes = new SingleMatcher(excludes, false);
         }
         public boolean match(String path) {
             return includes.slack(path) && !excludes.strict(path);
@@ -297,7 +297,7 @@ public class XScanner {
     private static class SingleMatcher {
         SimpleMatcher jarMatcher;
         SimpleMatcher clsMatcher;
-        public SingleMatcher(String res) {
+        public SingleMatcher(String res, boolean matchJarWhenEmpty) {
             List<Pattern> jarPatterns = new ArrayList<>(3);
             List<Pattern> clsPatterns = new ArrayList<>(3);
             if(res != null && res.length() > 0) {
@@ -308,7 +308,7 @@ public class XScanner {
             		list.add(Pattern.compile(quote(reg)));
             	}
             }
-            if(jarPatterns.isEmpty()) {
+            if(matchJarWhenEmpty && jarPatterns.isEmpty()) {
                 jarPatterns.add(Pattern.compile(quote("*.jar")));
             }
             jarMatcher = new SimpleMatcher(jarPatterns.toArray(new Pattern[0]));
