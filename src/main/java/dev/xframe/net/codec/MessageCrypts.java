@@ -105,7 +105,7 @@ public final class MessageCrypts {
         }
 
         protected byte[] initialCipher() {
-            byte[] cipher = new byte[4];
+            byte[] cipher = new byte[6];
             for (int i = 0; i < 4; i++) {
                 cipher[i] = (byte) i;
             }
