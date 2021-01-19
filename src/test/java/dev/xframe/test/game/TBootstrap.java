@@ -59,7 +59,7 @@ public class TBootstrap {
         
         new ModularCallable<TPlayer, TPlayerInventory>() {
             @Override
-            public void call(TPlayer player, TPlayerInventory module) {
+            public void exec(TPlayer player, TPlayerInventory module) {
                 Assert.assertNotNull(player);
                 Assert.assertNotNull(module);
                 module.dosomething();

@@ -1,13 +1,8 @@
 package dev.xframe.game.callable;
 
-import java.util.HashMap;
-import java.util.Map;
+import static dev.xframe.game.callable.CallableBuilders.setup1;
 
-import dev.xframe.game.player.ModularAdapter;
-import dev.xframe.game.player.MTypedLoader;
 import dev.xframe.game.player.Player;
-import dev.xframe.inject.ApplicationContext;
-import dev.xframe.utils.XGeneric;
 
 /**
  * 
@@ -18,25 +13,14 @@ import dev.xframe.utils.XGeneric;
  */
 public interface ModularCallable<T extends Player, V> extends PlayerCallable<T> {
 	
-	static Map<Class<?>, MTypedLoader> loaders = new HashMap<>();
-	
-	static MTypedLoader getLoader(Class<?> clazz) {
-		MTypedLoader loader = loaders.get(clazz);
-		if(loader == null) {
-			loader = ApplicationContext.fetchBean(ModularAdapter.class).getTypedLoader(getModuleType(clazz));
-			loaders.put(clazz, loader);
-		}
-		return loader;
-	}
-
-    static Class<?> getModuleType(Class<?> clazz) {
-        return XGeneric.parse(clazz, ModularCallable.class).getByName("V");
-    }
-    
     default void call(T player) {
-        call(player, getLoader(this.getClass()).<V>load(player));
+        exec(player);
     }
     
-    public void call(T player, V module);
+    default void exec(T player) {
+        exec(player, setup1(player, this));
+    }
+
+    void exec(T player, V module);
 
 }
