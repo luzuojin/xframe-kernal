@@ -15,14 +15,14 @@ public class XAttachment {
     
     private volatile boolean freezon = false;
     
-    public AttachKey newKey() {
+    public <T> AttachKey<T> newKey() {
         if(freezon) {
             throw new IllegalStateException("Attachment key must instanced before holder");
         }
         if(idx.get() > 16) {
             throw new IllegalStateException("Too many attachment keys.");
         }
-        return new AttachKey(idx.getAndIncrement());
+        return new AttachKey<>(idx.getAndIncrement());
     }
     
     public AttachHolder newHolder() {
@@ -32,7 +32,7 @@ public class XAttachment {
         return new AttachHolder(idx.get());
     }
     
-    public static class AttachKey {
+    public static class AttachKey<T> {
         private final int index;
         private AttachKey(int index) {
             this.index = index;
@@ -44,11 +44,11 @@ public class XAttachment {
         private AttachHolder(int len) {
             this.values = new Object[len];
         }
-        public void set(AttachKey key, Object val) {
+        public <T> void set(AttachKey<T> key, T val) {
             this.values[key.index] = val;
         }
         @SuppressWarnings("unchecked")
-        public <T> T get(AttachKey key) {
+        public <T> T get(AttachKey<T> key) {
             return (T) values[key.index];
         }
     }
