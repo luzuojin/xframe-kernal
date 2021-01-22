@@ -28,13 +28,13 @@ public abstract class Player {
     	return id;
     }
     
-    public boolean load(ModuleType type) {
+    public synchronized boolean load(ModuleType type) {
     	this.mc.loadModules(type);
     	this.loaded |= type.code;
         return true;
     }
     
-    public boolean unload(ModuleType type) {
+    public synchronized boolean unload(ModuleType type) {
     	this.mc.unloadModules(type);
     	this.loaded ^= type.code;
         return true;
@@ -65,7 +65,7 @@ public abstract class Player {
     }
     
     private boolean unloadable(ModuleType dataType, long lastActiveTime) {
-        return this.unloadable(dataType) && (System.currentTimeMillis() - lastActiveTime) > dataType.unloadIdleTime;
+        return this.unloadable(dataType) && this.isLoaded(dataType) && (System.currentTimeMillis() - lastActiveTime) > dataType.unloadIdleTime;
     }
     
 	public boolean unloadable(ModuleType type) {
