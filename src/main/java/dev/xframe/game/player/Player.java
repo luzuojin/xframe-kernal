@@ -69,7 +69,8 @@ public abstract class Player {
     }
     
 	public boolean unloadable(ModuleType type) {
-		return type == ModuleType.TRANSIENT;
+	    //for implemention, default disable
+		return false;
 	}
 
 	public boolean isOnline() {
