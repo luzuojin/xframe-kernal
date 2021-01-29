@@ -1,5 +1,6 @@
 package dev.xframe.utils;
 
+import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.GenericArrayType;
@@ -10,34 +11,37 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class XGeneric {
-	
-    final GElement[] elements;
-    XGeneric(GElement[] elements) {
-        this.elements = elements;
+    private final GVariable[] variables;
+    private XGeneric(GVariable[] variables) {
+        this.variables = variables;
     }
     public Class<?> getByName(String name) {
-        for (GElement info : elements) {
-            if(info.name.equals(name)) return info.type;
+        for (GVariable var : variables) {
+            if(var.name.equals(name)) return var.type;
         }
         return null;
     }
     public Class<?> getByType(Class<?> type) {
-        for (GElement info : elements) {
-            if(type.isAssignableFrom(info.type)) return info.type;
+        for (GVariable var : variables) {
+            if(type.isAssignableFrom(var.type)) return var.type;
         }
         return null;
     }
+    /**
+     * [0,len)
+     */
     public Class<?> getByIndex(int index) {
-    	return elements[index].type;
+    	return variables[index].type;
     }
     public Class<?> getOnlyType() {
-        return elements.length == 1 ? elements[0].type : null;
+        return variables.length == 1 ? variables[0].type : null;
     }
-    
     public Class<?>[] getParameterTypes(Method method) {
         return XGeneric.getParamterTypes(this, method);
     }
@@ -49,11 +53,11 @@ public class XGeneric {
     
     private static XGeneric buildGeneric(Class<?> genericType, Map<String, Class<?>> map) {
         TypeVariable<?>[] typeParameters = genericType.getTypeParameters();
-        GElement[] els = new GElement[typeParameters.length];
+        GVariable[] vars = new GVariable[typeParameters.length];
         for (int i = 0; i < typeParameters.length; i++) {
-            els[i] = new GElement(typeParameters[i].getName(), map.get(keyName(genericType, typeParameters[i])));
+            vars[i] = new GVariable(typeParameters[i].getName(), map.get(keyName(genericType, typeParameters[i])));
         }
-        return new XGeneric(els);
+        return new XGeneric(vars);
     }
     
     /**
@@ -88,14 +92,18 @@ public class XGeneric {
      */
     public static XGeneric parse(Class<?> type, Class<?> genericType) {
     	if(!genericType.isAssignableFrom(type)) {
-    		return new XGeneric(new GElement[0]);
+    		return new XGeneric(new GVariable[0]);
     	}
     	
         if(genericType.isInterface() && type.isSynthetic()) {
             return parseLambda(type, genericType);
         }
         
-        return buildGeneric(genericType, parseNormal(type, new HashMap<>()));
+        return parseNormal(type, genericType);
+    }
+    
+    private static XGeneric parseNormal(Class<?> type, Class<?> genericType) {
+    	return buildGeneric(genericType, parseNormal(type, new HashMap<>()));
     }
     
     private static Map<String, Class<?>> parseNormal(Class<?> clazz, Map<String, Class<?>> map) {
@@ -152,9 +160,9 @@ public class XGeneric {
             
             if(!declaringClazz.equals(genericType)) {
                 if(genericType.isAssignableFrom(declaringClazz)) {
-                    analyseLambdaDownstream(map, declaringClazz);
+                    parseLambdaDownstream(map, declaringClazz);
                 } else if(declaringClazz.isAssignableFrom(genericType)) {
-                    analyseLambdaUpstream(map, genericType);
+                    parseLambdaUpstream(map, genericType);
                 }
             }
             return buildGeneric(genericType, map);
@@ -164,28 +172,28 @@ public class XGeneric {
         return null;
     }
     //下层先确定 同正常情况
-    private static void analyseLambdaDownstream(Map<String, Class<?>> genericInfos, Class<?> genericType) {
+    private static void parseLambdaDownstream(Map<String, Class<?>> genericInfos, Class<?> genericType) {
         for (Type ginterfaze : genericType.getGenericInterfaces()) {
             parseGenericType(genericInfos, ginterfaze);
         }
         for (Class<?> interfaze : genericType.getInterfaces()) {
-            analyseLambdaDownstream(genericInfos, interfaze);
+            parseLambdaDownstream(genericInfos, interfaze);
         }
     }
     //上层先确定
-    private static void analyseLambdaUpstream(Map<String, Class<?>> genericInfos, Class<?> genericType) {
+    private static void parseLambdaUpstream(Map<String, Class<?>> genericInfos, Class<?> genericType) {
         TypeVariable<?>[] params = genericType.getTypeParameters();
         for (TypeVariable<?> param : params) {
             if(genericInfos.containsKey(keyName(genericType, param))) return;
         }
         for (Class<?> interfaze : genericType.getInterfaces()) {
-            analyseLambdaUpstream(genericInfos, interfaze);
+            parseLambdaUpstream(genericInfos, interfaze);
         }
         for (Type ginterfaze : genericType.getGenericInterfaces()) {
-            analyseLambdaUpstream(genericInfos, ginterfaze, genericType);
+            parseLambdaUpstream(genericInfos, ginterfaze, genericType);
         }
     }
-    private static void analyseLambdaUpstream(Map<String, Class<?>> genericInfos, Type generic, Class<?> impl) {
+    private static void parseLambdaUpstream(Map<String, Class<?>> genericInfos, Type generic, Class<?> impl) {
         if(generic instanceof ParameterizedType) {
             ParameterizedType genericType = (ParameterizedType) generic;
             Class<?> type = (Class<?>) genericType.getRawType();
@@ -204,20 +212,32 @@ public class XGeneric {
     }
     
     private static Class<?> parseLambda(Class<?> type, Map<String, Class<?>> map) throws Exception {
-        Method lambdaBased = getLambdaBasedMethod(type);
+        Member lambdaImple = getLambdaBasedMethod(type);//method or constructor
         Method lambdaSuper = getLambdaSuperMethod(type.getInterfaces()[0]);
         Class<?> superClazz = lambdaSuper.getDeclaringClass();
         
         if(lambdaSuper.getGenericReturnType() instanceof TypeVariable<?>) {
-            map.put(keyName(superClazz, (TypeVariable<?>) lambdaSuper.getGenericReturnType()), lambdaBased.getReturnType());
+            Class<?> returnType = lambdaImple instanceof Method ? ((Method) lambdaImple).getReturnType()
+            		: ((Constructor<?>) lambdaImple).getDeclaringClass();
+			map.put(keyName(superClazz, (TypeVariable<?>) lambdaSuper.getGenericReturnType()), AutoBoxing.wrapperType(returnType));
         }
         
-        Class<?>[] bpcs = lambdaBased.getParameterTypes();
-        Type[] spcs = lambdaSuper.getGenericParameterTypes();
-        int offset = bpcs.length - spcs.length;//前面参数是lambda携带的局部变量(?)
-        for (int i = 0; i < spcs.length; i++) {
-            if(spcs[i] instanceof TypeVariable<?>) {
-                map.put(keyName(superClazz, (TypeVariable<?>) spcs[i]), bpcs[i+offset]);
+        Class<?>[] impleParamters = lambdaImple instanceof Method ? ((Method) lambdaImple).getParameterTypes()
+        		:  ((Constructor<?>) lambdaImple).getParameterTypes();
+        Type[] superParamters = lambdaSuper.getGenericParameterTypes();
+        //第一个参数为methodRef对象本身的lambda表达式
+        int superOffset = 0;//BiFunction<String, Integer, Character> = String::charAt;
+        if(superParamters.length > 0 && superParamters[0] instanceof TypeVariable 
+        		&& superParamters.length == impleParamters.length + 1) {
+        	map.put(keyName(superClazz, (TypeVariable<?>) superParamters[0]), lambdaImple.getDeclaringClass());
+        	superOffset = 1;
+        }
+        //superOffset>0时impleParamters<superParamters
+        //lambda表达式中带有局部(enclosing)变量
+        int impleOffset = Math.max(0, impleParamters.length - superParamters.length);
+        for (int i = 0; i + superOffset < superParamters.length; i++) {
+            if(superParamters[i] instanceof TypeVariable) {
+                map.put(keyName(superClazz, (TypeVariable<?>) superParamters[i+superOffset]), AutoBoxing.wrapperType(impleParamters[i+impleOffset]));
             }
         }
         return superClazz;
@@ -239,16 +259,23 @@ public class XGeneric {
         method.setAccessible(true);
         return method;
     }
-    private static Method getLambdaBasedMethod(Class<?> lambdaType) throws Exception {
+    private static Member getLambdaBasedMethod(Class<?> lambdaType) throws Exception {
         Object pool = poolObjGetter.invoke(lambdaType);
         int size = (Integer) poolSizeGetter.invoke(pool);
         for (int i = 0; i < size; i++) {
             Member member = poolMethodAt(pool, i);
-            if(member != null && !(member instanceof Constructor<?>) && !member.getDeclaringClass().isAssignableFrom(lambdaType)) {
-                return (Method) member;
+            if(member == null || isLambdaInternal(member, lambdaType)) {
+            	continue;
+            }
+            if(!(member instanceof Method && AutoBoxing.isAuthBoxingMethod((Method) member))) {
+            	return member;
             }
         }
         return null;
+    }
+    private static boolean isLambdaInternal(Member member, Class<?> lambdaType) {
+    	Class<?> declaringClass = member.getDeclaringClass();
+		return declaringClass == lambdaType || (member instanceof Constructor && (declaringClass == Object.class || declaringClass == SerializedLambda.class));
     }
     private static Member poolMethodAt(Object pool, int i) {
         try {
@@ -265,10 +292,57 @@ public class XGeneric {
         }
         return null;
     }
-    public static class GElement {
+    
+    public static class AutoBoxing {
+        static List<AutoBoxing> boxings = Arrays.asList(
+                new AutoBoxing(boolean.class, Boolean.class),
+                new AutoBoxing(byte.class, Byte.class),
+                new AutoBoxing(char.class, Character.class),
+                new AutoBoxing(short.class, Short.class),
+                new AutoBoxing(int.class, Integer.class),
+                new AutoBoxing(float.class, Float.class),
+                new AutoBoxing(long.class, Long.class),
+                new AutoBoxing(double.class, Double.class)
+                );
+        public static Class<?> getPrimitive(Class<?> wrapper) {
+            return boxings.stream().filter(b->b.wrapper==wrapper).map(b->b.primitive).findAny().orElse(null);
+        }
+        public static Class<?> getWrapper(Class<?> primitive) {
+            return boxings.stream().filter(b->b.primitive==primitive).map(b->b.wrapper).findAny().orElse(null);
+        }
+        public static Class<?> wrapperType(Class<?> c) {
+            return c.isPrimitive() ? getWrapper(c) : c;
+        }
+        //boxing: Integer.valueOf
+        //unboxing: Integer.intValue
+        public static boolean isAuthBoxingMethod(Method method) {
+            if(method.getReturnType().isPrimitive()) {//Integer.intValue
+                if(method.getParameterTypes().length != 0) {
+                    return false;
+                }
+                return isAutoboxingMethod(method, method.getReturnType(), method.getDeclaringClass());
+            } else {//Integer.valueOf
+                if(method.getParameterTypes().length != 1) {
+                    return false;
+                }
+                return isAutoboxingMethod(method, method.getParameterTypes()[0], method.getReturnType());
+            }
+        }
+        static boolean isAutoboxingMethod(Method method, Class<?> primitive, Class<?> wrapper) {
+            return primitive == getPrimitive(wrapper) && wrapper == getWrapper(primitive) && method.getDeclaringClass() == wrapper;
+        }
+        final Class<?> primitive;
+        final Class<?> wrapper;
+        AutoBoxing(Class<?> primitive, Class<?> wrapper) {
+            this.primitive = primitive;
+            this.wrapper = wrapper;
+        }
+    }
+    
+    public static class GVariable {
         public final String name;
         public final Class<?> type;
-        public GElement(String name, Class<?> type) {
+        public GVariable(String name, Class<?> type) {
             this.name = name;
             this.type = type;
         }
