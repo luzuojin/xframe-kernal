@@ -4,6 +4,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.function.IntUnaryOperator;
 
 import dev.xframe.action.ActionExecutor;
 import dev.xframe.action.DelayAction;
@@ -13,7 +14,7 @@ public class ShardingActionExecutor implements ActionExecutor {
     
     private final String name;
     
-    private final int nThreads;
+    private final IntUnaryOperator chooser;
     
     private final AtomicInteger sIndex = new AtomicInteger();
     
@@ -23,12 +24,12 @@ public class ShardingActionExecutor implements ActionExecutor {
     
     public ShardingActionExecutor(int nThreads, String name) {
         this.name = name;
-        this.nThreads = nThreads;
+        this.chooser = newChooser(nThreads);
         this.internals = new ActionExecutor[nThreads];
         
         XThreadFactory factory = new XThreadFactory(this.name);
         Function<String, DelayScheduler> schedulerFactory = this::setupScheduler;
-        for (int i = 0; i < internals.length; i++) {
+        for (int i = 0; i < nThreads; i++) {
             internals[i] = new SimpleActionExecutor(this.name, newExecutorService(factory), schedulerFactory);
         }
     }
@@ -51,13 +52,16 @@ public class ShardingActionExecutor implements ActionExecutor {
         return this.scheduler;
     }
     
-    private ActionExecutor choose(int seed) {
-        int nts = this.nThreads;
-        if((nts & -nts) == nts) {//pow of 2
-            final int basis = nts - 1;
-            return internals[seed & basis];
+    private IntUnaryOperator newChooser(final int nThreads) {
+        if((nThreads & -nThreads) == nThreads) {//pow of 2
+            final int basis = nThreads - 1;
+            return (seed) -> (seed & basis);
         }
-        return internals[seed % nThreads];
+        return (seed) -> (seed % nThreads);
+    }
+    
+    private ActionExecutor choose(int seed) {
+        return internals[chooser.applyAsInt(seed)];
     }
     
     public ActionExecutor bind() {

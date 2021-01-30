@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.AbstractExecutorService;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -44,7 +44,7 @@ public class SingleThreadExecutor extends AbstractExecutorService {
     
     private final BlockingQueue<Runnable> taskQueue;
     
-    private final Semaphore threadLock = new Semaphore(0);
+    private final CountDownLatch threadLock = new CountDownLatch(1);
     
     private volatile Thread thread;
 
@@ -128,12 +128,12 @@ public class SingleThreadExecutor extends AbstractExecutorService {
                 }
             } finally {
                 state.set(S_TERMINATED);
-                threadLock.release();
                 if(!taskQueue.isEmpty()) {
                     logger.warn("Executor terminated with non-empty task queue (" + taskQueue.size() + ")");
                     runAllTasks();//offerTask已经对外关闭, 继续把不应该出现的任务执行完成
                 }
                 //implemention [wakeup termination await] where
+                threadLock.countDown();
             }
         }
     }
@@ -347,11 +347,9 @@ public class SingleThreadExecutor extends AbstractExecutorService {
     @Override
     public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
         if (inExecThread()) {
-            throw new IllegalStateException("Cannot await termination of the current thread");
+            throw new IllegalStateException("Cannot await termination in worker thread");
         }
-        if (threadLock.tryAcquire(timeout, unit)) {
-            threadLock.release();
-        }
+        threadLock.await(timeout, unit);
         return isTerminated();
     }
 
