@@ -79,7 +79,7 @@ public class GlobalContainer extends BeanContainer implements BeanRegistrator, B
         if(c.isAnnotationPresent(Templates.class) || c.isAnnotationPresent(Reloadable.class)) {
             return new ReloadableBinder(c, Injector.of(c, this));
         }
-        return new BeanBinder.Classic(c, Injector.of(c, this));
+        return BeanBinder.classic(c, Injector.of(c, this));
     }
     
     public static class SyntheticBinder extends BeanBinder.Instanced {

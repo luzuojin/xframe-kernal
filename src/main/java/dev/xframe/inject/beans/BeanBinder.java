@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
+import dev.xframe.inject.Primary;
 import dev.xframe.inject.code.ProxyBuilder;
 import dev.xframe.utils.XLambda;
 import dev.xframe.utils.XReflection;
@@ -70,6 +71,10 @@ public abstract class BeanBinder {
 			return XReflection.getAssigners(master);
 		}
 		protected BeanBinder conflict(Object keyword, BeanBinder binder) {
+			if(binder instanceof Classic &&
+					((Classic) binder).master.isAnnotationPresent(Primary.class)) {
+				return binder;
+			}
 			return this;
 		}
 		public String toString() {
