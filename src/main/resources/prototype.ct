@@ -3,7 +3,7 @@
 public class XPrototype {
 
 	///injector_field
-	static final dev.xframe.inject.beans.Injector _injector = dev.xframe.inject.beans.BeanHelper.build(${prototype.classname}.class);
+	static final dev.xframe.inject.beans.Injector _injector = dev.xframe.inject.beans.BeanHelper.makeInjector(${prototype.classname}.class);
 	///
 	public XPrototype() {
 		///injector_invoke
