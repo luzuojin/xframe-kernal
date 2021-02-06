@@ -3,29 +3,17 @@ ${proxy_basic}$Proxy
 ///
 public class ${proxy_name} extends ${proxy_basic} implements dev.xframe.injection.code.ProxyBuilder.IProxy {
     
-    ///logger_field
-    static final org.slf4j.Logger _logger = org.slf4j.LoggerFactory.getLogger("${proxy_basic}");
-    ///
-
     ///delegate_field
     ${proxy_delegate} _delegate;
-    ///
-    
-    ///delegate_supplier_field
-    java.util.function.Supplier _supplier;
     ///
     
     public void methodFromSupper()
     ///simple_method_body
     {
-        if(this._delegate == null && this._supplier != null) {
-            this._delegate = (${proxy_delegate})_supplier.get();
-        }
         ${obj_invoke_part}
         ///void_invoke_part
         this._delegate.${method_name}(${method_params});
         ///
-        
         ///obj_invoke_part
         return this._delegate.${method_name}(${method_params});
         ///
@@ -41,12 +29,6 @@ public class ${proxy_name} extends ${proxy_basic} implements dev.xframe.injectio
     ///get_delegate_method
     public Object _getDelegate() {
         return this._delegate;
-    }
-    ///
-    
-    ///set_supplier_method
-    public void _setSupplier(java.util.function.Supplier supplier) {
-        this._supplier = supplier; 
     }
     ///
     

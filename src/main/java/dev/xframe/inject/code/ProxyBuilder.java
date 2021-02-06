@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -35,10 +34,6 @@ public class ProxyBuilder {
     public static Object getDelegate(Object bean) {
         return ((IProxy) bean)._getDelegate();
     }
-    public static <T> T setSupplier(T bean, Supplier<?> supplier) {
-        ((IProxy) bean)._setSupplier(supplier);
-        return bean;
-    }
 
     public static <T> T build(T bean) {
         return setDelegate(build(bean.getClass()), bean);
@@ -48,9 +43,6 @@ public class ProxyBuilder {
     }
     public static <T> T build(Class<?> type, Object delegate) {
         return setDelegate(build0(type, delegate.getClass()), delegate);
-    }
-    public static <T> T buildBySupplier(Class<T> type, Supplier<?> supplier) {
-        return setSupplier(build0(type, type), supplier);
     }
     
     @SuppressWarnings("unchecked")
@@ -66,8 +58,6 @@ public class ProxyBuilder {
                 CtClass ctClass = makeCtClassWithParent(pool, ctParent, proxyName);
                 
                 makeDelegateField(ctClass, delegate);
-                
-                makeSupplierField(ctClass);
                 
                 makeDefaultMethods(ctClass, delegate);
                 
@@ -106,10 +96,6 @@ public class ProxyBuilder {
         return String.join(",", IntStream.rangeClosed(1, cm.getParameterTypes().length).mapToObj(i->"$"+i).collect(Collectors.toList()));
     }
 
-    private static void makeSupplierField(CtClass ctClass) throws CannotCompileException {
-        ctClass.addField(CtField.make(cts.get("delegate_supplier_field"), ctClass));
-    }
-
     private static void makeDelegateField(CtClass ctClass, Class<?> delegate) throws CannotCompileException {
         ctClass.addField(CtField.make(cts.get("delegate_field").replace("${proxy_delegate}", delegate.getName()), ctClass));
     }
@@ -118,7 +104,6 @@ public class ProxyBuilder {
         ctClass.addConstructor(CtNewConstructor.make(new CtClass[]{}, new CtClass[0], ctClass));
         ctClass.addMethod(CtNewMethod.make(cts.get("get_delegate_method"), ctClass));
         ctClass.addMethod(CtNewMethod.make(cts.get("set_delegate_method").replace("${proxy_delegate}", delegate.getName()), ctClass));
-        ctClass.addMethod(CtNewMethod.make(cts.get("set_supplier_method"), ctClass));
     }
 
     private static CtClass makeCtClassWithParent(ClassPool pool, CtClass ctParent, String lazyProxyName) throws CannotCompileException, NotFoundException {
@@ -184,7 +169,6 @@ public class ProxyBuilder {
     public static interface IProxy {
         public Object _getDelegate();
         public   void _setDelegate(Object delegate);
-        public   void _setSupplier(Supplier<?> supplier);
     }
 
 }

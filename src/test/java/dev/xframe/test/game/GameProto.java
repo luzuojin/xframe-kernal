@@ -3,6 +3,7 @@
 
 package dev.xframe.test.game;
 
+@SuppressWarnings("deprecation")
 public final class GameProto {
   private GameProto() {}
   public static void registerAllExtensions(

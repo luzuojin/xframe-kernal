@@ -1,7 +1,6 @@
 package dev.xframe.inject.beans;
 
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import dev.xframe.inject.ApplicationContext;
 import dev.xframe.inject.Loadable;
@@ -41,9 +40,6 @@ public class BeanHelper {
     }
     public static Object getProxyDelegate(Object bean) {
         return ((IProxy) bean)._getDelegate();
-    }
-    public static void setProxySupplier(Object bean, Supplier<?> supplier) {
-        ((IProxy) bean)._setSupplier(supplier);
     }
     //for injection
 	public static Injector makeInjector(Class<?> c) {
