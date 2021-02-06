@@ -2,9 +2,9 @@ package dev.xframe.utils;
 
 import java.io.File;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,19 +39,28 @@ public class XScanner {
     // jar包内路径分隔符
     private static final String INSIDE_SEPARATOR = "!/";
     
+    @SuppressWarnings("unchecked")
+	private static Set<String> getClassPathes0(ClassLoader loader) throws Exception {
+    	Field ucpField = getUcpField(loader.getClass());
+    	Object ucpObj = XUnsafe.getObject(loader, XUnsafe.getFieldOffset(ucpField));
+    	//URLClassPath.path:List<URL>
+    	Field pathField = ucpObj.getClass().getDeclaredField("path");
+    	List<URL> urls = (List<URL>) XUnsafe.getObject(ucpObj, XUnsafe.getFieldOffset(pathField));
+        return urls.stream().map(XPaths::toPath).collect(Collectors.toSet());
+    }
+    //URLClassLoader/BuiltinClassLoader.ucp:URLClassPath
+	private static Field getUcpField(Class<?> loaderCls) {
+		try {
+			return loaderCls.getDeclaredField("ucp");
+		} catch (NoSuchFieldException | SecurityException e) {
+			return ClassLoader.class.isAssignableFrom(loaderCls) ? getUcpField(loaderCls.getSuperclass()) : null;
+		}
+	}
     /**
      * 获取项目的所有classpath ，包括 APP_CLASS_PATH 和所有的jar文件
      */
     private static Set<String> getClassPathes() throws Exception {
-        Set<String> set = new LinkedHashSet<String>();
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        while(set.isEmpty() && loader != null) {
-            if(loader instanceof URLClassLoader) {
-                Arrays.stream(((URLClassLoader)loader).getURLs()).map(XPaths::toPath).forEach(set::add);
-            }
-            loader = loader.getParent();
-        }
-        
+        Set<String> set = getClassPathes0(Thread.currentThread().getContextClassLoader());
         for(String cp : set.stream().filter(path->isJarFile(path)&&!isInsidePath(path)).collect(Collectors.toList())) {
             JarFile jarFile = new JarFile(new File(cp));
             String manfest = (String) jarFile.getManifest().getMainAttributes().getValue(MANFEST_CLASS_PATH);
@@ -68,7 +77,8 @@ public class XScanner {
         return set;
     }
     
-    private static boolean isClassFile(String name) {
+
+	private static boolean isClassFile(String name) {
         return name.endsWith(CLASS_FILE_EXT);
     }
     

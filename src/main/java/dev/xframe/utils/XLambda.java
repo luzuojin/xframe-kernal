@@ -1,10 +1,5 @@
 package dev.xframe.utils;
 
-import static java.lang.invoke.MethodHandles.Lookup.PACKAGE;
-import static java.lang.invoke.MethodHandles.Lookup.PRIVATE;
-import static java.lang.invoke.MethodHandles.Lookup.PROTECTED;
-import static java.lang.invoke.MethodHandles.Lookup.PUBLIC;
-
 import java.lang.invoke.CallSite;
 import java.lang.invoke.LambdaConversionException;
 import java.lang.invoke.LambdaMetafactory;
@@ -25,9 +20,6 @@ import java.util.function.Supplier;
  * @author luzj
  */
 public class XLambda {
-	
-	private static Field lookupAllowedModesField;
-	private static final int ALL_MODES = (PRIVATE | PROTECTED | PACKAGE | PUBLIC);
 	
 	@SuppressWarnings("unchecked")
 	public static <T> Supplier<T> createByConstructor(Class<?> clazz) {
@@ -107,25 +99,17 @@ public class XLambda {
 		return sam;
 	}
 	
-	private static Lookup createLookup(Class<?> clazz) throws NoSuchFieldException, IllegalAccessException {
-		Lookup lookup = MethodHandles.lookup().in(clazz);
-		getLookupsModifiersField().set(lookup, ALL_MODES);
-		return lookup;
+	private static Lookup createLookup(Class<?> clazz) throws Exception {
+		return trustedLookup().in(clazz);
 	}
-
-	static Field getLookupsModifiersField() throws NoSuchFieldException, IllegalAccessException {
-		if (lookupAllowedModesField == null || !lookupAllowedModesField.isAccessible()) {
-			Field modifiersField = Field.class.getDeclaredField("modifiers");
-			modifiersField.setAccessible(true);
-
-			Field allowedModes = MethodHandles.Lookup.class.getDeclaredField("allowedModes");
-			allowedModes.setAccessible(true);
-			int modifiers = allowedModes.getModifiers();
-			modifiersField.setInt(allowedModes, modifiers & ~Modifier.FINAL); //Remove the final flag
-			
-			lookupAllowedModesField = allowedModes;
+	private static Lookup Trusted;
+	private static Lookup trustedLookup() throws Exception {
+		if(Trusted == null) {
+			Field field = Lookup.class.getDeclaredField("IMPL_LOOKUP");
+			field.setAccessible(true);
+			Trusted = (Lookup) field.get(null);
 		}
-		return lookupAllowedModesField;
+		return Trusted;
 	}
 
 }

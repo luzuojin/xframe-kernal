@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.lang.instrument.ClassDefinition;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -134,10 +133,9 @@ public class Codes {
     }
 	
 	//加载依赖类 如果为匿名内部时 同样重命名
-	@SuppressWarnings("unchecked")
     private static ClassMap tryLoadRefClasses(ClassPool pool, CtClass ctClass, int ver) throws Exception {
         ClassMap cm = new ClassMap();
-		for (String refClass : (Collection<String>) ctClass.getRefClasses()) {
+		for (String refClass : ctClass.getRefClasses()) {
 			if(refClass.equals(ctClass.getName())) continue;
 			if(refClass.startsWith(ctClass.getName() + "$")) {//内部类
 		        CtClass ref = pool.get(refClass);

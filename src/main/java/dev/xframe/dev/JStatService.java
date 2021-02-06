@@ -18,6 +18,7 @@ import dev.xframe.http.service.Rest;
 import dev.xframe.http.service.rest.HttpMethods;
 
 @Rest("dev/jstat")
+@SuppressWarnings("restriction")
 public class JStatService {
 
 	@HttpMethods.GET("memory")
@@ -39,7 +40,6 @@ public class JStatService {
 	public Object uptime() {
 		return Response.of(formatUptime());
 	}
-	
 	
 	public static String formatGc() {
         StringBuilder ret = new StringBuilder("--------------------------------").append("\n");
