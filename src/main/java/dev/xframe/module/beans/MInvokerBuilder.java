@@ -12,6 +12,7 @@ import dev.xframe.inject.beans.BeanIndexing;
 import dev.xframe.module.ModularMethods;
 import dev.xframe.utils.CtParser;
 import dev.xframe.utils.XCaught;
+import dev.xframe.utils.XReflection;
 import dev.xframe.utils.XSorter;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -38,7 +39,7 @@ public class MInvokerBuilder {
 			cc.addMethod(CtNewMethod.make(buildMethodBody("unload_method", ModularMethods.Unload.class, module, indexing), cc));
 			cc.addMethod(CtNewMethod.make(buildMethodBody("save_method", ModularMethods.Save.class, module, indexing), cc));
 
-			return (ModularInvoker) cc.toClass().newInstance();
+			return XReflection.newInstance(cc.toClass());
 		} catch (Exception e) {
 			return XCaught.throwException(e);
 		}

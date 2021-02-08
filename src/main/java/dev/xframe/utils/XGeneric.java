@@ -3,6 +3,7 @@ package dev.xframe.utils;
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
@@ -222,8 +223,7 @@ public class XGeneric {
 			map.put(keyName(superClazz, (TypeVariable<?>) lambdaSuper.getGenericReturnType()), AutoBoxing.wrapperType(returnType));
         }
         
-        Class<?>[] impleParamters = lambdaImple instanceof Method ? ((Method) lambdaImple).getParameterTypes()
-        		:  ((Constructor<?>) lambdaImple).getParameterTypes();
+        Class<?>[] impleParamters = ((Executable) lambdaImple).getParameterTypes();
         Type[] superParamters = lambdaSuper.getGenericParameterTypes();
         //第一个参数为methodRef对象本身的lambda表达式
         int superOffset = 0;//BiFunction<String, Integer, Character> = String::charAt;
@@ -252,11 +252,12 @@ public class XGeneric {
             Class<?> poolClass = poolObjGetter.invoke(Class.class).getClass();
             poolSizeGetter = getAccessibleMethod(poolClass, "getSize");
             poolMethodGetter = getAccessibleMethod(poolClass, "getMethodAt", int.class);
-        } catch (Exception e) {}//ignore
+        } catch (Exception e) {e.printStackTrace();}//ignore
     }
     private static Method getAccessibleMethod(Class<?> clazz, String name, Class<?>... params) throws Exception {
         Method method = clazz.getDeclaredMethod(name, params);
-        method.setAccessible(true);
+        if(!Modifier.isPublic(method.getModifiers()))
+            method.setAccessible(true);
         return method;
     }
     private static Member getLambdaBasedMethod(Class<?> lambdaType) throws Exception {

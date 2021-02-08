@@ -13,6 +13,7 @@ import java.util.stream.IntStream;
 import dev.xframe.utils.CtHelper;
 import dev.xframe.utils.CtParser;
 import dev.xframe.utils.XCaught;
+import dev.xframe.utils.XReflection;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -45,7 +46,6 @@ public class ProxyBuilder {
         return setDelegate(build0(type, delegate.getClass()), delegate);
     }
     
-    @SuppressWarnings("unchecked")
     private synchronized static <T> T build0(Class<?> basic, Class<?> delegate) {
         try {
             ClassPool pool = ClassPool.getDefault();
@@ -65,7 +65,7 @@ public class ProxyBuilder {
 
                 proxyClass = ctClass.toClass();
             }
-            return (T) proxyClass.getConstructor().newInstance();
+            return XReflection.newInstance(proxyClass);
         } catch (Throwable e) {
             return XCaught.throwException(e);
         }

@@ -109,6 +109,10 @@ public class XReflection extends SecurityManager {
             return XCaught.throwException(e);
         }
     }
+    public static <T> T newInstance(Class<?> clazz) {
+    	return invoke(getConstructor(clazz));
+    }
+    
     
     /**
      * 获取Class.isAssignableFrom为true的所有类

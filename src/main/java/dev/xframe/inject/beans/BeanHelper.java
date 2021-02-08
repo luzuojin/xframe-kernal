@@ -7,7 +7,7 @@ import dev.xframe.inject.Loadable;
 import dev.xframe.inject.Prototype;
 import dev.xframe.inject.code.ProxyBuilder.IProxy;
 import dev.xframe.inject.code.SyntheticBuilder.ISynthetic;
-import dev.xframe.utils.XCaught;
+import dev.xframe.utils.XReflection;
 
 /**
  * 
@@ -17,13 +17,6 @@ import dev.xframe.utils.XCaught;
  */
 public class BeanHelper {
 	
-	private static Object newInstance(Class<?> c) {
-		try {
-			return c.newInstance();
-		} catch (Exception e) {
-			return XCaught.throwException(e);
-		}
-	}
 	//for generated Synthetic
     public static void removeSynthetic(Object synthetic, Object delegate) {
         ((ISynthetic) synthetic)._removeDelegate(delegate);
@@ -46,7 +39,7 @@ public class BeanHelper {
 		return Injector.of(c, ApplicationContext.indexing(), !c.isAnnotationPresent(Prototype.class));//prototype父类会有一个独立的Injector
 	}
 	public static Object inject(Class<?> c) {
-		return inject(newInstance(c), makeInjector(c));
+		return inject(XReflection.newInstance(c), makeInjector(c));
 	}
 	public static Object inject(Object bean) {
 		return inject(bean, makeInjector(bean.getClass()));

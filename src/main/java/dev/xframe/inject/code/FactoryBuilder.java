@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import dev.xframe.utils.CtHelper;
 import dev.xframe.utils.XCaught;
+import dev.xframe.utils.XReflection;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -36,7 +37,7 @@ public class FactoryBuilder {
             
             Class<?> dc = defineClass(factoryName);
             if(dc != null) {
-                return dc.newInstance();
+                return XReflection.newInstance(dc);
             }
             
             CtClass ct = pool.makeClass(factoryName);
@@ -73,7 +74,7 @@ public class FactoryBuilder {
                 ct.addMethod(CtHelper.copy(cm, body.toString(), ct));
             }
             
-            return (ct.toClass().newInstance());
+            return XReflection.newInstance(ct.toClass());
         } catch (Throwable e) {
             return XCaught.throwException(e);
         }

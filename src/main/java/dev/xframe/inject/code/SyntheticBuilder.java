@@ -9,6 +9,7 @@ import dev.xframe.inject.Synthetic;
 import dev.xframe.utils.CtHelper;
 import dev.xframe.utils.CtParser;
 import dev.xframe.utils.XCaught;
+import dev.xframe.utils.XReflection;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtField;
@@ -31,7 +32,7 @@ public class SyntheticBuilder {
 
     public static Object buildBean(Class<?> syntheticClazz) {
         try {
-            return buildClass(syntheticClazz).newInstance();
+            return XReflection.newInstance(buildClass(syntheticClazz));
         } catch (Exception e) {
             return XCaught.throwException(e);
         }
