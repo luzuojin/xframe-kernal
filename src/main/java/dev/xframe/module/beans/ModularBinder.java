@@ -1,5 +1,6 @@
 package dev.xframe.module.beans;
 
+import java.lang.reflect.Field;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -39,6 +40,11 @@ public class ModularBinder extends BeanBinder.Classic {
 		return XReflection.getAssigners(master).stream().filter(c->ModularHelper.isModularClass((Class<?>)c)).collect(Collectors.toList());
 	}
 
+	@Override
+	protected boolean injectable(Field field) {
+		return ModularHelper.isModularSharable(field.getType(), field.getDeclaringClass());
+	}
+	
 	public ModularInvoker getInvoker() {
 		return invoker;
 	}

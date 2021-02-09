@@ -1,5 +1,6 @@
 package dev.xframe.inject.beans;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
@@ -36,6 +37,10 @@ public abstract class BeanBinder {
 	protected abstract void integrate(Object bean, BeanDefiner definer);
 	//当某接口/父类有多个binder映射时
 	protected abstract BeanBinder conflict(Object keyword, BeanBinder binder);
+	//是否可以注入到field
+	protected boolean injectable(Field field) {
+		return true;
+	}
 	
 	public static BeanBinder classic(Class<?> clazz, Injector injector) {
 		return new Classic(clazz, injector);

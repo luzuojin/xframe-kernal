@@ -112,8 +112,8 @@ public class GlobalContainer extends BeanContainer implements BeanRegistrator, B
     }
 	
 	@Override
-	public int indexOf(Object keyword) {
-		return indexes.indexOf(keyword);
+	public BeanBinder indexOf0(Object keyword) {
+		return indexes.indexOf0(keyword);
 	}
 
 	private Class<?>[] getInterfaces() {

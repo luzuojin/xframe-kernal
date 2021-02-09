@@ -5,7 +5,6 @@ import java.util.function.Consumer;
 import dev.xframe.inject.beans.BeanIndexes;
 import dev.xframe.inject.code.SyntheticBuilder;
 import dev.xframe.module.beans.ModularIndexes;
-import dev.xframe.module.beans.ModuleContainer;
 
 public class ModularHelper {
     
@@ -22,12 +21,19 @@ public class ModularHelper {
     }
     
     public static boolean isModularClass(Class<?> c) {
-    	return ModuleContainer.class.isAssignableFrom(c) ||
-    			c.isAnnotationPresent(Module.class) ||
+    	return  c.isAnnotationPresent(Module.class) ||
     			c.isAnnotationPresent(ModularShare.class) ||
-    			c.isAnnotationPresent(ModularAgent.class) ||
-    			c.isAnnotationPresent(ModularComponent.class);
+				c.isAnnotationPresent(ModularAgent.class) ||
+				c.isAnnotationPresent(ModularComponent.class);
     }
+    
+    public static boolean isModularSharable(Class<?> m, Class<?> to) {
+    	return  m.isAnnotationPresent(ModularShare.class) ||
+    			m.isAnnotationPresent(ModularAgent.class) ||
+    			(m.isAnnotationPresent(ModularComponent.class) && m.getAnnotation(ModularComponent.class).exports().isAssignableFrom(to)) ||
+    			to.getPackage().getName().startsWith(m.getPackage().getName()) //同一个module package下
+    			;
+	}
     
     public static boolean isResidentModularClass(Class<?> c) {
         return c.isAnnotationPresent(ModularAgent.class)

@@ -8,6 +8,11 @@ package dev.xframe.inject.beans;
 public interface BeanIndexing {
 	
 	//每一个实例都对应一个index, 方便快速访问到对应的实例(Array 替代 Map)
-	int indexOf(Object keyword);
+	default int indexOf(Object keyword) {
+		BeanBinder binder = indexOf0(keyword);
+		return binder == null ? -1 : binder.index;
+	}
+	
+	BeanBinder indexOf0(Object keyword);
 
 }

@@ -56,9 +56,8 @@ public class BeanIndexes implements BeanIndexing {
 		return binder.getIndex();
 	}
 	
-	public int indexOf(Object keyword) {
-		BeanBinder binder = getBinder(keyword);
-		return binder == null ? -1 : binder.getIndex();
+	public BeanBinder indexOf0(Object keyword) {
+		return getBinder(keyword);
 	}
 	
 	public boolean isValidIndex(int binderIndex) {

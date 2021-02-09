@@ -1,5 +1,6 @@
 package dev.xframe.module.beans;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,6 +25,11 @@ public class DeclaredBinder extends ModularBinder {
 		//如果有.过滤掉ModuleContainer相关的接口
 		List<Class<?>> bc = XReflection.getAssigners(ModuleContainer.class);
 		return XReflection.getAssigners(master).stream().filter(c->!bc.contains(c)).collect(Collectors.toList());
+	}
+	
+	@Override
+	protected boolean injectable(Field field) {
+		return true;
 	}
 
 	@Override

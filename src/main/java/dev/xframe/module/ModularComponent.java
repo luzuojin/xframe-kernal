@@ -11,4 +11,6 @@ public @interface ModularComponent {
 
     ModuleType value() default ModuleType.TRANSIENT;
     
+    Class<?> exports() default Class.class;
+    
 }

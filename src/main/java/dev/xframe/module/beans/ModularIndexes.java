@@ -3,6 +3,7 @@ package dev.xframe.module.beans;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import dev.xframe.inject.beans.BeanBinder;
 import dev.xframe.inject.beans.BeanIndexes;
 import dev.xframe.inject.beans.BeanIndexing;
 import dev.xframe.module.ModularHelper;
@@ -29,14 +30,14 @@ public class ModularIndexes extends BeanIndexes {
 	}
 	
 	@Override
-	public int indexOf(Object keyword) {
+	public BeanBinder indexOf0(Object keyword) {
 		if(keyword instanceof Class<?>) {
-			int index = super.indexOf(keyword);
-			if(index != -1 || ModularHelper.isModularClass((Class<?>) keyword)) {
-				return index;
+			BeanBinder binder = super.indexOf0(keyword);
+			if(binder != null || ModularHelper.isModularClass((Class<?>) keyword)) {
+				return binder;
 			}
 		}
-		return gIndexing.indexOf(keyword);
+		return gIndexing.indexOf0(keyword);
 	}
 	
 }

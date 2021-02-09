@@ -59,7 +59,7 @@ public class ModularContext {
 	}
 	
 	public ModularBinder getBinder(Class<?> clazz) {
-		return (ModularBinder) indexes.getBinder(indexes.indexOf(clazz));
+		return (ModularBinder) indexes.indexOf0(clazz);
 	}
 	
 	public Injector newInjector(Class<?> c) {

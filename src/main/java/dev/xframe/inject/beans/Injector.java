@@ -83,8 +83,13 @@ public class Injector {
             }
 		}
 		public int getIndex() {
-			if(index == -1) {
-				index = indexing.indexOf(getKeyword());
+			if(index == -1) {//check injectable and cache index
+				Object keyword = getKeyword();
+				BeanBinder binder = indexing.indexOf0(keyword);
+				if(binder != null && !binder.injectable(field)) {
+					throw new IllegalStateException("Bean [" + keyword + "] can`t inject to Field [" + field.getDeclaringClass().getTypeName() + "." + field.getName() + "]");
+				}
+				index = binder == null ? -1 : binder.getIndex();
 			}
 			return index;
 		}
