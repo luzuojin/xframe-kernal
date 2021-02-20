@@ -7,8 +7,9 @@ import java.util.Properties;
 
 /**
  * 
- * getProperties
+ * composited properties
  * include System.properties
+ * include xframe.properties
  * @author luzj
  */
 public class XProperties {
@@ -16,6 +17,8 @@ public class XProperties {
 	static final LinkedList<Properties> propsList = new LinkedList<>();
 	static {
 		propsList.addFirst(System.getProperties());
+		//default properties file
+		XProperties.load("xframe.properties");
 	}
 	public static void addFirst(Properties props) {
 		propsList.addFirst(props);
