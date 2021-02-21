@@ -10,6 +10,7 @@ import java.lang.annotation.Target;
  * Module实例实现Agent接口, 同一个接口的所有Agent会组装到一个实例中, 使用ModularInject可以注入该Agent接口
  * @author luzj
  */
+@ModularScope
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface ModularAgent {

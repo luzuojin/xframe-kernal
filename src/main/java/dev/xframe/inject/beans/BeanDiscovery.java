@@ -17,13 +17,12 @@ import dev.xframe.inject.Synthetic;
  */
 @Synthetic
 public interface BeanDiscovery {
-
-	/**
-	 * 调用时, 该实现类还没有执行integrate. 所以不能有对其他Bean的依赖调用
-	 * 没有执行integrate的Bean只是一个新生成的instance, 所有@Inject的字段均未处理. Loadable.load也未处理
-	 * @param scanned
-	 * @param reg
-	 */
-    public void discover(List<Class<?>> scanned, BeanIndexes reg);
+    /**
+     * 调用时, 该实现类还没有执行integrate. 所以不能有对其他Bean的依赖调用
+     * 没有执行integrate的Bean只是一个新生成的instance, 所有@Inject的字段均未处理. Loadable.load也未处理
+     * @param scanned
+     * @param reg
+     */
+    public void discover(List<Class<?>> scanned, BeanRegistrator reg);
 
 }

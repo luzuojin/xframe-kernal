@@ -49,9 +49,5 @@ public class BeanHelper {
 		Loadable.doLoad(bean);
 		return bean;
 	}
-	
-	public static boolean isGlobalIndexes(BeanIndexes indexes) {
-		return indexes.offset() == 0;
-	}
 
 }

@@ -1,6 +1,7 @@
 package dev.xframe.inject.beans;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import dev.xframe.inject.Loadable;
@@ -88,7 +89,10 @@ public class BeanContainer implements BeanDefiner {
 	}
 
 	public void integrate() {
-		binders().forEach(this::integrate);
+	    Iterator<BeanBinder> it = indexes.iterator();
+	    while(it.hasNext()) {
+	        integrate(it.next());
+	    }
 	}
 
 	public synchronized void integrate(BeanBinder binder) {

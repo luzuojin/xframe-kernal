@@ -7,7 +7,9 @@ import dev.xframe.inject.beans.BeanBinder;
 import dev.xframe.inject.beans.BeanIndexes;
 import dev.xframe.inject.beans.BeanIndexing;
 import dev.xframe.module.ModularHelper;
+import dev.xframe.module.ModularScope;
 
+@ModularScope
 public class ModularIndexes extends BeanIndexes {
 	
 	public static final int OFFSET = 8000;

@@ -40,11 +40,10 @@ public class ModularContext {
 		if(indexes == null) {
 			List<Class<?>> scanned = Codes.getDeclaredClasses();
 			indexes = new ModularIndexes(gIndexing);
-			//registrator.regist(BeanBinder.instanced(indexes, ModularIndexes.class));
+			registrator.regist(indexes);
 			//assembleClass作为第一个Bean记录
 			assembleIndex = indexes.regist(new DeclaredBinder(assembleClass, Injector.of(assembleClass, indexes)));
 			pretreatModules(scanned).forEach(c->indexes.regist(buildBinder(c, indexes)));
-			gDiscovery.discover(scanned, indexes);
 			indexes.integrate();
 		}
 	}

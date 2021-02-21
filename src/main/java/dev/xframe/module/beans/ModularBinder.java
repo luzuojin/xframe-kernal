@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import dev.xframe.inject.beans.BeanBinder;
 import dev.xframe.inject.beans.Injector;
 import dev.xframe.module.ModularHelper;
+import dev.xframe.module.ModularScope;
 import dev.xframe.utils.XReflection;
 
 public class ModularBinder extends BeanBinder.Classic {
@@ -72,5 +73,8 @@ public class ModularBinder extends BeanBinder.Classic {
 			listener.onModuleUnloaded(mc, this, module);
 		}
 	}
-
+    @Override
+    protected Class<?> scope() {
+        return ModularScope.class;
+    }
 }

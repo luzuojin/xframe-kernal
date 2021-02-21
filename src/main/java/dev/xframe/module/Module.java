@@ -7,10 +7,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Inherited
+@ModularScope
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Module {
-	
-	ModuleType value() default ModuleType.TRANSIENT;
-	
+    
+    ModuleType value() default ModuleType.TRANSIENT;
+
 }

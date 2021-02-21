@@ -2,6 +2,7 @@ package dev.xframe.inject.beans;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -94,4 +95,18 @@ public class BeanIndexes implements BeanIndexing {
 	public int offset() {
 	    return this.offset;
 	}
+
+    public Iterator<BeanBinder> iterator() {
+        return new Iterator<BeanBinder>() {
+            int cursor;
+            public BeanBinder next() {
+                int index = cursor;
+                cursor ++;
+                return binders[index];
+            }
+            public boolean hasNext() {
+                return cursor < binders.length;
+            }
+        };
+    }
 }

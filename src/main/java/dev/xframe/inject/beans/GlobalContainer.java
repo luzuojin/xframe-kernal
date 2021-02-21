@@ -29,11 +29,12 @@ import dev.xframe.utils.XReflection;
  * @author luzj
  *
  */
-public class GlobalContainer extends BeanContainer implements BeanRegistrator, BeanProvider, BeanIndexing {
+public class GlobalContainer extends BeanContainer implements BeanProvider, BeanIndexing {
 	
 	public GlobalContainer() {
 		super(new BeanIndexes());
 		this.regist(BeanBinder.instanced(this, getInterfaces()));
+		this.regist(BeanBinder.instanced(new BeanRegistrator(indexes)));
 	}
 	
 	public void setup(List<Class<?>> scanned) {
@@ -69,7 +70,7 @@ public class GlobalContainer extends BeanContainer implements BeanRegistrator, B
     }
     private void registDiscovery(List<Class<?>> scanned, BeanIndexes reg) {
         this.integrate(reg.getBinder(BeanDiscovery.class));   //提前组装完成
-        this.getBean(BeanDiscovery.class).discover(scanned, reg);
+        this.getBean(BeanDiscovery.class).discover(scanned, this.getBean(BeanRegistrator.class));
     }
     
     private BeanBinder newBinder(Class<?> c) {
@@ -130,11 +131,11 @@ public class GlobalContainer extends BeanContainer implements BeanRegistrator, B
 	public <T> T getBean(String name) {
 		return (T) getBean(indexOf(name));
 	}
-	@Override
-	public synchronized void regist(BeanBinder binder) {
-		if(binder.getIndex() == -1) {//registed
-			indexes.regist(binder);
-			this.integrate(binder);
-		}
-	}
+    
+    public synchronized void regist(BeanBinder binder) {
+        if(binder.getIndex() == -1) {//registed
+            indexes.regist(binder);
+        }
+    }
+
 }

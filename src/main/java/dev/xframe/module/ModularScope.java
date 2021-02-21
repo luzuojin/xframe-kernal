@@ -5,13 +5,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@ModularScope
+import dev.xframe.inject.beans.ScopeType;
+
+@ScopeType
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface ModularComponent {
+public @interface ModularScope {
 
-    ModuleType value() default ModuleType.TRANSIENT;
-    
-    Class<?> exports() default Class.class;
-    
 }
