@@ -36,22 +36,22 @@ public class ModularContext {
 	
 	private int assembleIndex;
 	
-	public synchronized void initialize(Class<?> assembleClass) {
+	public synchronized void initial(Class<?> assembleClz) {
 		if(indexes == null) {
-			List<Class<?>> scanned = Codes.getDeclaredClasses();
 			indexes = new ModularIndexes(gIndexing);
-			registrator.regist(indexes);
 			//assembleClass作为第一个Bean记录
-			assembleIndex = indexes.regist(new DeclaredBinder(assembleClass, Injector.of(assembleClass, indexes)));
+			assembleIndex = indexes.regist(new DeclaredBinder(assembleClz, Injector.of(assembleClz, indexes)));
+			registrator.regist(indexes);
+			List<Class<?>> scanned = Codes.getDeclaredClasses();
 			pretreatModules(scanned).forEach(c->indexes.regist(buildBinder(c, indexes)));
 			indexes.integrate();
 		}
 	}
 	
-	public ModuleContainer initContainer(ModuleContainer mc, Object assemble) {
-		mc.setup(gDefiner, indexes);
+	public ModuleContainer newContainer(Object assemble) {
+	    ModuleContainer mc = new ModuleContainer(gDefiner, indexes);
 		int index = assembleIndex;
-		//为assembleClass赋值 @see initialize() 
+		//为assembleClass赋值 @see initial() 
 		mc.setBean(index, assemble);
 		mc.integrate(indexes.getBinder(index));
 		return mc;

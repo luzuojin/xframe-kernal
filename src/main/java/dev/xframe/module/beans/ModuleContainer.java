@@ -10,10 +10,9 @@ public class ModuleContainer extends BeanContainer  {
 	//global beans
 	private BeanDefiner gDefiner;
 	
-	public ModuleContainer setup(BeanDefiner gDefiner, ModularIndexes indexes) {
-		super.setup(indexes);
+	public ModuleContainer(BeanDefiner gDefiner, ModularIndexes indexes) {
+		super(indexes);
 		this.gDefiner = gDefiner;
-		return this;
 	}
 
 	@Override

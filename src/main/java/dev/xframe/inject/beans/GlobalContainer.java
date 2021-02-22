@@ -70,6 +70,7 @@ public class GlobalContainer extends BeanContainer implements BeanProvider, Bean
     }
     private void registDiscovery(List<Class<?>> scanned, BeanIndexes reg) {
         this.integrate(reg.getBinder(BeanDiscovery.class));   //提前组装完成
+        this.integrate(reg.getBinder(BeanRegistrator.class));
         this.getBean(BeanDiscovery.class).discover(scanned, this.getBean(BeanRegistrator.class));
     }
     

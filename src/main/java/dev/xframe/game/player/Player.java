@@ -9,8 +9,8 @@ public abstract class Player {
 	private ActionLoop loop;
 	private long id;
     private int loaded;
-    
-    final ModuleContainer mc = new ModuleContainer();
+    //set by player factory
+    ModuleContainer mc;
     
     public Player(long id, ActionLoop loop) {
         this.id = id;

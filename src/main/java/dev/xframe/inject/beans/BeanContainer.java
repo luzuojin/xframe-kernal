@@ -21,14 +21,7 @@ public class BeanContainer implements BeanDefiner {
 	private Object[] beans;
 	private XBitSet flags;
 	
-	protected BeanContainer() {
-		//use setup init
-	}
 	public BeanContainer(BeanIndexes indexes) {
-		setup(indexes);
-	}
-
-	protected void setup(BeanIndexes indexes) {
 		int cap = indexes.length();
 		this.indexes = indexes;
 		this.beans = new Object[cap];

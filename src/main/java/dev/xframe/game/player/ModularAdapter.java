@@ -13,7 +13,7 @@ public class ModularAdapter implements ModuleLoader {
 	private ModularContext modularCtx;
 	
 	public void initial(Class<?> assemble) {
-		modularCtx.initialize(assemble);
+		modularCtx.initial(assemble);
 	}
 
 	public Injector newInjector(Class<?> c) {
@@ -29,8 +29,8 @@ public class ModularAdapter implements ModuleLoader {
 		return modularCtx.getBinder(clazz).getModuleFrom(player.mc);
 	}
 	
-	public void initPlayer(Player player) {
-		modularCtx.initContainer(player.mc, player);
+	public void assemble(Player player) {
+	    player.mc = modularCtx.newContainer(player);
 	}
 	
 	public MTypedLoader getTypedLoader(Class<?> clazz) {
