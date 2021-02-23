@@ -14,7 +14,7 @@ import dev.xframe.utils.XBitSet;
  * 完成Bean的初始化/注入过程
  * @author luzj
  */
-public class BeanContainer implements BeanDefiner {
+public class BeanContainer implements BeanFetcher {
 	
 	protected BeanIndexes indexes;
 	
@@ -103,7 +103,7 @@ public class BeanContainer implements BeanDefiner {
 	}
 	
 	@Override
-	public synchronized Object define(int index) {
+	public synchronized Object fetch(int index) {
 		Object bean = getBean(index);
 		if(bean == null) {
 			BeanBinder binder = indexes.getBinder(index);

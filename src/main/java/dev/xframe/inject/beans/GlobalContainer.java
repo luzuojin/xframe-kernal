@@ -37,7 +37,7 @@ public class GlobalContainer extends BeanContainer implements BeanProvider, Bean
 		this.regist(BeanBinder.instanced(new BeanRegistrator(indexes)));
 	}
 	
-	public void setup(List<Class<?>> scanned) {
+	public void initial(List<Class<?>> scanned) {
         this.registBeans(scanned);
         this.integrate(); //integrate beans #.load()
         this.getBean(Eventual.class).eventuate();//execute Eventuals
@@ -89,8 +89,8 @@ public class GlobalContainer extends BeanContainer implements BeanProvider, Bean
             super(val, keys);
         }
         List<BeanBinder> impls = new ArrayList<>(); 
-        protected void integrate(Object bean, BeanDefiner definer) {//append all implements
-            impls.forEach(impl->SyntheticBuilder.append(bean, definer.define(impl.getIndex())));
+        protected void integrate(Object bean, BeanFetcher fetcher) {//append all implements
+            impls.forEach(impl->SyntheticBuilder.append(bean, fetcher.fetch(impl.getIndex())));
         }
         protected BeanBinder conflict(Object keyword, BeanBinder binder) {
             impls.add(binder);
@@ -102,8 +102,8 @@ public class GlobalContainer extends BeanContainer implements BeanProvider, Bean
         public ReloadableBinder(Class<?> master, Injector injector) {
             super(master, injector);
         }
-        protected void integrate(Object bean, BeanDefiner definer) {
-            super.integrate(ProxyBuilder.getDelegate(bean), definer);
+        protected void integrate(Object bean, BeanFetcher fetcher) {
+            super.integrate(ProxyBuilder.getDelegate(bean), fetcher);
         }
         protected Object newInstance() {
             return ProxyBuilder.build(master, super.newInstance());

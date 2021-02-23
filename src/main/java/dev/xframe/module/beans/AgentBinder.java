@@ -1,7 +1,7 @@
 package dev.xframe.module.beans;
 
 import dev.xframe.inject.beans.BeanBinder;
-import dev.xframe.inject.beans.BeanDefiner;
+import dev.xframe.inject.beans.BeanFetcher;
 import dev.xframe.inject.beans.Injector;
 import dev.xframe.inject.code.SyntheticBuilder;
 import dev.xframe.module.ModularAgent;
@@ -12,7 +12,7 @@ public class AgentBinder extends ModularBinder implements ModularListener {
         super(master, Injector.NIL, XLambda.createByConstructor(buildAgentClass(master)));
     }
     //append impl留给ModularListener来处理
-    protected void integrate(Object bean, BeanDefiner definer) {
+    protected void integrate(Object bean, BeanFetcher fetcher) {
     }
     protected BeanBinder conflict(Object keyword, BeanBinder binder) {
         assert keyword instanceof Class;

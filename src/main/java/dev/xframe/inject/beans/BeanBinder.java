@@ -35,7 +35,7 @@ public abstract class BeanBinder {
     //keyword在非依赖注入时的调用为null
     protected abstract Object newInstance();
     //完成注入(在Loadable.load之前调用)
-    protected abstract void integrate(Object bean, BeanDefiner definer);
+    protected abstract void integrate(Object bean, BeanFetcher fetcher);
     //当某接口/父类有多个binder映射时
     protected abstract BeanBinder conflict(Object keyword, BeanBinder binder);
     //是否可以注入到field
@@ -68,8 +68,8 @@ public abstract class BeanBinder {
             this.injector = injector;
             this.factory = factory;
         }
-        protected void integrate(Object bean, BeanDefiner definer) {
-            injector.inject(bean, definer);
+        protected void integrate(Object bean, BeanFetcher fetcher) {
+            injector.inject(bean, fetcher);
         }
         protected Object newInstance() {
             return factory.get();
@@ -114,7 +114,7 @@ public abstract class BeanBinder {
             this.val = val;
             this.keys = keys;
         }
-        protected void integrate(Object bean, BeanDefiner definer) {
+        protected void integrate(Object bean, BeanFetcher fetcher) {
             //do nothing now
         }
         protected Object newInstance() {
@@ -155,7 +155,7 @@ public abstract class BeanBinder {
             this.key = key;
             this.val = val;
         }
-        protected void integrate(Object bean, BeanDefiner definer) {
+        protected void integrate(Object bean, BeanFetcher fetcher) {
             //do nothing now
         }
         protected Object newInstance() {

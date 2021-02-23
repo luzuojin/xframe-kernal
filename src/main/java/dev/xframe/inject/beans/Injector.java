@@ -32,9 +32,9 @@ public class Injector {
 		return "Injector [" + type + "]";
 	}
 
-	public void inject(Object bean, BeanDefiner definer) {
+	public void inject(Object bean, BeanFetcher fetcher) {
 		for (Member member : mebmers) {
-			member.inject(bean, definer);
+			member.inject(bean, fetcher);
 		}
 	}
 
@@ -93,8 +93,8 @@ public class Injector {
 			}
 			return index;
 		}
-		public void inject(Object bean, BeanDefiner definer) {
-			Object obj = definer.define(getIndex());
+		public void inject(Object bean, BeanFetcher fetcher) {
+			Object obj = fetcher.fetch(getIndex());
 			if(obj == null && !isNullable()) {
 				throw new IllegalStateException("Bean [" + field.getType().getName() + "] doesn`t registed");
 			}

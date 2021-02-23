@@ -3,7 +3,7 @@ package dev.xframe.inject;
 import java.util.function.Predicate;
 
 import dev.xframe.inject.beans.BeanBinder;
-import dev.xframe.inject.beans.BeanDefiner;
+import dev.xframe.inject.beans.BeanFetcher;
 import dev.xframe.inject.beans.BeanHelper;
 import dev.xframe.inject.beans.BeanIndexing;
 import dev.xframe.inject.beans.GlobalContainer;
@@ -17,7 +17,7 @@ public class ApplicationContext {
 	final static GlobalContainer gContainer = new GlobalContainer();
 	
 	public static void initialize(String includes, String excludes) {
-		gContainer.setup(Codes.getClasses(includes, excludes));
+		gContainer.initial(Codes.getClasses(includes, excludes));
 	}
 	
 	public static void reload(Predicate<Class<?>> preficate) {
@@ -53,15 +53,7 @@ public class ApplicationContext {
         }
     }
 	
-    public static BeanDefiner definer() {
-    	return gContainer;
-    }
-    
-    public static BeanIndexing indexing() {
-    	return gContainer;
-    }
-    
-	public static <T> T fetchBean(Class<T> c) {
+	public static <T> T getBean(Class<T> c) {
 		return gContainer.getBean(c);
 	}
 	
@@ -69,4 +61,12 @@ public class ApplicationContext {
 	    gContainer.regist(binder);;
 	}
 	
+	public static class Internal {
+	    public static BeanFetcher fetcher() {
+	    	return gContainer;
+	    }
+	    public static BeanIndexing indexing() {
+	    	return gContainer;
+	    }
+	}
 }
