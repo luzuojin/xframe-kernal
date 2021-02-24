@@ -19,6 +19,8 @@ public class ModularIndexes extends BeanIndexes {
 	ModularBinder[] residents;
 	ModularBinder[] transients;
 	
+	boolean frozen = false;
+	
 	public ModularIndexes(BeanIndexing gIndexing) {
 		super(OFFSET);//指定偏移量
 		this.gIndexing = gIndexing;
@@ -29,8 +31,16 @@ public class ModularIndexes extends BeanIndexes {
 		residents = list.stream().filter(ModularBinder::isResident).toArray(ModularBinder[]::new);
 		transients = list.stream().filter(ModularBinder::isTransient).toArray(ModularBinder[]::new);
 		list.forEach(b->b.makeComplete(this));
+		frozen = true;
 	}
 	
+	@Override
+	public synchronized int regist(BeanBinder binder) {
+		if(frozen)
+			throw new IllegalStateException("Can`t regist Modular beans after ModularContext.initial(), use BeanDiscovery to regist");
+		return super.regist(binder);
+	}
+
 	@Override
 	public BeanBinder indexOf0(Object keyword) {
 		if(keyword instanceof Class<?>) {

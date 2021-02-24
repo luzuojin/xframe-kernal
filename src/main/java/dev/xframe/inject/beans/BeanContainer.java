@@ -41,12 +41,13 @@ public class BeanContainer implements BeanFetcher {
 		beans[aIndex] = bean;
 	}
 	
-	public Object getBean(int index) {
+	@SuppressWarnings("unchecked")
+	public <T> T getBean(int index) {
 		int aIndex = indexes.arrayIndex(index);
 		if(aIndex < 0 || aIndex >= beans.length) {
 			return null;
 		}
-		return beans[aIndex];
+		return (T) beans[aIndex];
 	}
 	
 	protected boolean getFlag(int index) {

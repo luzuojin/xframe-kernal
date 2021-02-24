@@ -123,14 +123,12 @@ public class GlobalContainer extends BeanContainer implements BeanProvider, Bean
 	}
 	
     @Override
-    @SuppressWarnings("unchecked")
 	public <T> T getBean(Class<T> clazz) {
-		return (T) getBean(indexOf(clazz));
+		return getBean(indexOf(clazz));
 	}
     @Override
-    @SuppressWarnings("unchecked")
 	public <T> T getBean(String name) {
-		return (T) getBean(indexOf(name));
+		return getBean(indexOf(name));
 	}
     
     public synchronized void regist(BeanBinder binder) {
