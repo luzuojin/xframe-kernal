@@ -36,7 +36,7 @@ public abstract class Player {
     
     public synchronized boolean unload(ModuleType type) {
     	this.mc.unloadModules(type);
-    	this.loaded ^= type.code;
+    	this.loaded &= ~type.code;
         return true;
     }
     

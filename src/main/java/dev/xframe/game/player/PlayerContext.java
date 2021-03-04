@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,81 +23,65 @@ public class PlayerContext {
     
     private Logger logger = LoggerFactory.getLogger(PlayerContext.class);
     
-    private final ActionExecutor executor;
-    private final PlayerFactory factory;
     private final PlayerCollection players;
     
     public PlayerContext(ActionExecutor executor, PlayerFactory factory) {
-        this.executor = executor;
-        this.factory = factory;
-        this.players = new PlayerCollection();
+        this.players = new PlayerCollection(makePlayerDataFunc(executor, factory));
     }
-    
-   
+
+	static Function<Long, PlayerData> makePlayerDataFunc(ActionExecutor executor, PlayerFactory factory) {
+		return id->new PlayerData(factory.newPlayer(id, executor.newLoop()));
+	}
+	
+	private void handleIncorrentId(long playerId) {
+		logger.error("Incorrect player: [{}]", playerId);
+	}
+	private void handleLoadError(long playerId) {
+		logger.error("Load player [{}] error", playerId);
+		players.remove(playerId);
+	}
+	
     public <T extends Player> T getPlayerExists(long playerId) {
         if(playerId < 1) {
-            logger.error("incorrect player id: [" + playerId + "]");
+            handleIncorrentId(playerId);
             return null;
         }
-        
         return (T) players.get(playerId);
     }
     
     public <T extends Player> T getPlayer(long playerId) {
         if(playerId < 1) {
-            logger.error("incorrect player id: [" + playerId + "]");
+            handleIncorrentId(playerId);
             return null;
         }
-        
         return (T) players.get(playerId);
     }
-    
+
     public <T extends Player> T getPlayerImmediately(long playerId) {
         if(playerId < 1) {
-            logger.error("incorrect player id: [" + playerId + "]");
+            handleIncorrentId(playerId);
             return null;
         }
-        
-        Player tmp = players.get(playerId);
-        if(tmp != null) {
-            return (T) tmp;
-        }
-        
-        //不存在缓存中, 从DB中load, 仅load共享数据(shareData)
-		Player player = factory.newPlayer(playerId, executor.newLoop());
-		players.put(playerId, player);//放入缓存中
-		
+        Player player = players.getOrNew(playerId);
         if(!player.load()) {
-            logger.error("用户初始化出错");
-            players.remove(playerId);
+            handleLoadError(playerId);
             return null;
         }
         return (T) player;
     }
-    
+
     public <T extends Player> T getPlayerWithLoad(long playerId) {
         if(playerId < 1) {
-            logger.error("incorrect player id: [" + playerId + "]");
+            handleIncorrentId(playerId);
             return null;
         }
-        
-        Player tmp = players.get(playerId);
-        if(tmp != null) {
-            return (T) tmp;
-        }
-        
-        //不存在缓存中, 从DB中load
-        final Player player = factory.newPlayer(playerId, executor.newLoop());
-        
-        players.put(playerId, player);//放入缓存中
-        
+        Player player = players.getOrNew(playerId);
         //通过playerTask Load数据
         new Action(player.loop()) {
             @Override
             protected void exec() {
                 if(!player.load()) {
-                    logger.error("用户初始化出错");
-                    players.remove(player.id());
+                    handleLoadError(playerId);
                 }
             }
         }.checkin();
@@ -108,26 +93,20 @@ public class PlayerContext {
             latch.countDown();
             return null;
         }
-        
         Player tmp = players.get(playerId);
         if(tmp != null) {
             latch.countDown();
             return (T) tmp;
         }
-        
+        final Player player = players.getOrNew(playerId);
         //不存在缓存中, 从DB中load
-        final Player player = factory.newPlayer(playerId, executor.newLoop());
-        
-        players.put(playerId, player);//放入缓存中
-        
-        //通过playerTask Load数据
+        //通过player.loop Load数据
         new Action(player.loop()) {
             @Override
             protected void exec() {
                 try {
                     if(!player.load()) {
-                        logger.error("用户初始化出错");
-                        players.remove(player.id());
+                        handleLoadError(playerId);
                     }
                 } finally {
                     latch.countDown();
@@ -182,8 +161,11 @@ public class PlayerContext {
     }
 
     private static class PlayerCollection {
+    	Function<Long, PlayerData> factory;
         Map<Long, PlayerData> datas = new ConcurrentHashMap<>();
-        
+        public PlayerCollection(Function<Long, PlayerData> factory) {
+        	this.factory = factory;
+		}
         public Player get(long playerId) {
             PlayerData item = (PlayerData) datas.get(playerId);
             if(item == null) {
@@ -192,13 +174,17 @@ public class PlayerContext {
             item.setActiveTime(System.currentTimeMillis());
             return item.getData();
         }
-        
-        public boolean isExist(long playerId) {
-            return datas.containsKey(playerId);
-        }
+        public Player getOrNew(long playerId) {
+        	Player tmp = get(playerId);
+            if(tmp != null) {
+                return tmp;
+            }
+            PlayerData pd = datas.computeIfAbsent(playerId, factory);
+            return pd.data;
+		}
 
-        public void put(long playerId, Player player) {
-        	datas.putIfAbsent(playerId, new PlayerData(player));
+		public boolean isExist(long playerId) {
+            return datas.containsKey(playerId);
         }
 
         public void remove(long playerId) {
