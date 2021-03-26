@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import dev.xframe.utils.CtHelper;
@@ -26,10 +27,10 @@ public class FactoryBuilder {
         Factory anno = factoryInteface.getAnnotation(Factory.class);
         Class<? extends Annotation> type = anno.value();
         List<Class<?>> elements = classes.stream().filter(c->c.isAnnotationPresent(type)).collect(Collectors.toList());
-        return buildBySwitchCase(factoryInteface, type, elements, anno.keyInConstructor());
+        return buildBySwitchCase(factoryInteface, anno, elements);
     }
 
-    private static Object buildBySwitchCase(Class<?> factoryInteface, Class<? extends Annotation> annoType, List<Class<?>> elements, boolean keyInConstructor) {
+    private static Object buildBySwitchCase(Class<?> factoryInteface, Factory factory, List<Class<?>> elements) {
         try {
             ClassPool pool = ClassPool.getDefault();
             CtClass ctParent = pool.getCtClass(factoryInteface.getName());
@@ -43,21 +44,21 @@ public class FactoryBuilder {
             CtClass ct = pool.makeClass(factoryName);
             ct.addInterface(ctParent);
             
-            Method method = annoType.getDeclaredMethods()[0];//annoation has one method
+            Method method = factory.value().getDeclaredMethods()[0];//annoation has only one method
             Class<?> keyType = method.getReturnType();
             
             CtMethod[] cms = ctParent.getDeclaredMethods();
             for (CtMethod cm : cms) {
                 if(cm.getParameterTypes().length == 0) continue;
                 
-                String params = buildParams(cm, keyInConstructor);
+                String params = buildParams(cm, factory.keyInConstructor());
                 String key = isCaseTypeEnum(keyType) ? ("((Enum)$1).ordinal()") : "$1";
                 
                 StringBuilder body = new StringBuilder();
                 body.append("switch(").append(key).append(") {");
                 
                 for (Class<?> clazz : elements) {
-                    Object val = method.invoke(clazz.getAnnotation(annoType));
+                    Object val = method.invoke(clazz.getAnnotation(factory.value()));
                     if(keyType.isArray()) {
                         for (int i = 0; i < Array.getLength(val); i++) {
                             appendCaseReturn(body, Array.get(val, i), clazz, params);
@@ -67,7 +68,7 @@ public class FactoryBuilder {
                     }
                 }
                 
-                appendDefaultReturn(body, factoryInteface.getAnnotation(Factory.class).defaultType(), params);
+                appendDefaultReturn(body, factory.defaultType(), params);
                 
                 body.append("}");
                 
@@ -101,21 +102,19 @@ public class FactoryBuilder {
     }
     
     private static void appendCaseReturn(StringBuilder body, Object caseVal, Class<?> element, String params) {
-        Class<?> caseType = caseVal.getClass();
-        if(caseType.isEnum()) {
-            body.append("case ").append(((Enum<?>)caseVal).ordinal()).append(":");
-            body.append("return new ").append(element.getName()).append("(").append(params).append(");");
-        } else {
-            body.append("case ").append(caseVal).append(":");
-            body.append("return new ").append(element.getName()).append("(").append(params).append(");");
-        }
+        body.append("case ").append(caseVal.getClass().isEnum()?enumCaseVal(caseVal):caseVal).append(":");
+        body.append("return new ").append(element.getName()).append("(").append(params).append(");");
+    }
+
+    private static int enumCaseVal(Object caseVal) {
+        return ((Enum<?>)caseVal).ordinal();
     }
 
     private static String buildParams(CtMethod cm, boolean keyInConstructor) throws NotFoundException {
-        StringBuilder params = new StringBuilder();
+        StringJoiner params = new StringJoiner(",");
         int st = keyInConstructor ? 0 : 1;
         for (int i = st; i < cm.getParameterTypes().length; i++) {
-            params.append((i == st ? "" : ",")).append("$").append(i + 1);
+            params.add("$" + (i+1));
         }
         return params.toString();
     }

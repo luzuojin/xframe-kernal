@@ -17,8 +17,8 @@ public class XProperties {
 	static final LinkedList<Properties> propsList = new LinkedList<>();
 	static {
 		propsList.addFirst(System.getProperties());
-		//default properties file
-		XProperties.load("xframe.properties");
+		//default properties file(xframe.properties or -Dxframe.properties.file)
+		XProperties.load(get("xframe.properties.file", "xframe.properties"));
 	}
 	public static void addFirst(Properties props) {
 		propsList.addFirst(props);
