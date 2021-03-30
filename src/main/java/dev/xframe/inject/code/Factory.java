@@ -34,4 +34,6 @@ public @interface Factory {
      */
     boolean keyInConstructor() default false;
     
+    boolean singleton() default false;
+    
 }

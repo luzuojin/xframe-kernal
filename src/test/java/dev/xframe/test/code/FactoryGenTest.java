@@ -10,7 +10,7 @@ import dev.xframe.inject.junit.Junit4ClassRunner;
 
 
 @RunWith(Junit4ClassRunner.class)
-@ContextScan(includes="dev.xframe.*")
+@ContextScan(includes="dev.xframe.test.code.*", excludes="dev.xframe.test.game.*")
 public class FactoryGenTest {
     
     @Inject
