@@ -27,13 +27,28 @@ public class SessionContext {
         return sessions.put(id, session.bind(id));
     }
     
-    public void closeSession(long id) {
-        closeSession(sessions.remove(id));
+    /**
+     * close and remove by session id
+     * @param id
+     */
+    public boolean closeSession(long id) {
+        Session s = sessions.remove(id);
+        if(s != null) {
+            s.close();
+            return true;
+        }
+        return false;
     }
-    
-    private void closeSession(Session session) {
-        if(session != null)
+    /**
+     * close and remove with session compare
+     * @param session
+     */
+    public boolean closeSession(Session session) {
+        if(sessions.remove(session.id(), session)) {
             session.close();
+            return true;
+        }
+        return false;
     }
     
     public int sessionCount() {
