@@ -1,6 +1,7 @@
 package dev.xframe.test.game;
 
 import dev.xframe.action.ActionLoop;
+import dev.xframe.action.ScheduledContext;
 import dev.xframe.event.EventBus;
 import dev.xframe.event.Registrator;
 import dev.xframe.event.Subscriber;
@@ -8,13 +9,12 @@ import dev.xframe.game.Assemble;
 import dev.xframe.game.player.Player;
 import dev.xframe.inject.Inject;
 import dev.xframe.module.ModuleType;
-import dev.xframe.task.TaskContext;
 
 @Assemble
 public class TPlayer extends Player implements Registrator {
     
     @Inject
-    public TaskContext taskCtx;
+    public ScheduledContext scheduledCtx;
     @Inject
     public TSharablePlayer player;
     @Inject
