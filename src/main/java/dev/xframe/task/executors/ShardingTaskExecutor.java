@@ -7,7 +7,7 @@ import java.util.function.IntUnaryOperator;
 
 import dev.xframe.task.DelayTask;
 import dev.xframe.task.TaskExecutor;
-import dev.xframe.task.scheduled.ScheduledExecutor;
+import dev.xframe.task.scheduled.ScheduledTimer;
 import dev.xframe.utils.XThreadFactory;
 
 public class ShardingTaskExecutor implements TaskExecutor {
@@ -20,13 +20,13 @@ public class ShardingTaskExecutor implements TaskExecutor {
     
     private final TaskExecutor[] internals;
     
-    private final ScheduledExecutor scheduler;
+    private final ScheduledTimer scheduler;
     
     public ShardingTaskExecutor(int nThreads, String name) {
         this.name = name;
         this.chooser = newChooser(nThreads);
         this.internals = new TaskExecutor[nThreads];
-        this.scheduler = new ScheduledExecutor();
+        this.scheduler = new ScheduledTimer();
         
         XThreadFactory factory = new XThreadFactory(this.name);
         for (int i = 0; i < nThreads; i++) {

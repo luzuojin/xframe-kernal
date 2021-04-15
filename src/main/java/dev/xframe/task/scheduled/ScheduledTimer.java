@@ -7,7 +7,7 @@ import dev.xframe.utils.XProperties;
 import dev.xframe.utils.XThreadFactory;
 import io.netty.util.HashedWheelTimer;
 
-public class ScheduledExecutor {
+public class ScheduledTimer {
 	
 	private static final TimeUnit TickUnit = TimeUnit.MILLISECONDS;
 	

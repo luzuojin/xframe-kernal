@@ -6,7 +6,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor.DiscardPolicy;
 import java.util.concurrent.TimeUnit;
 
-import dev.xframe.task.scheduled.ScheduledExecutor;
+import dev.xframe.task.scheduled.ScheduledTimer;
 import dev.xframe.utils.XThreadFactory;
 
 public class ThreadPoolTaskExecutor extends SimpleTaskExecutor {
@@ -17,10 +17,10 @@ public class ThreadPoolTaskExecutor extends SimpleTaskExecutor {
      * @param name 线程名
      */
     public ThreadPoolTaskExecutor(final int nThreads, final String name) {
-        this(nThreads, new XThreadFactory(name), new ScheduledExecutor());
+        this(nThreads, new XThreadFactory(name), new ScheduledTimer());
     }
     
-    public ThreadPoolTaskExecutor(final int nThreads, ThreadFactory threadFactory, ScheduledExecutor scheduler) {
+    public ThreadPoolTaskExecutor(final int nThreads, ThreadFactory threadFactory, ScheduledTimer scheduler) {
         super(newExecutorService(nThreads, threadFactory), scheduler);
     }
 

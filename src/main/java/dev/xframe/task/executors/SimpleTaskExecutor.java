@@ -4,7 +4,7 @@ import java.util.concurrent.ExecutorService;
 
 import dev.xframe.task.DelayTask;
 import dev.xframe.task.TaskExecutor;
-import dev.xframe.task.scheduled.ScheduledExecutor;
+import dev.xframe.task.scheduled.ScheduledTimer;
 
 public class SimpleTaskExecutor implements TaskExecutor {
     
@@ -12,7 +12,7 @@ public class SimpleTaskExecutor implements TaskExecutor {
     
     private volatile boolean isRunning = true;
     //delay set
-    private volatile ScheduledExecutor scheduler;
+    private volatile ScheduledTimer scheduler;
     
     /**
      * 执行task队列的线程池
@@ -21,10 +21,10 @@ public class SimpleTaskExecutor implements TaskExecutor {
      * @param name 线程名
      */
     public SimpleTaskExecutor(ExecutorService executor) {
-        this(executor, new ScheduledExecutor());
+        this(executor, new ScheduledTimer());
     }
     
-    public SimpleTaskExecutor(ExecutorService executor, ScheduledExecutor scheduler) {
+    public SimpleTaskExecutor(ExecutorService executor, ScheduledTimer scheduler) {
         this.executor = executor;
         this.scheduler = scheduler;
     }
