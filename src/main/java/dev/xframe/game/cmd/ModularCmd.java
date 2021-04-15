@@ -9,15 +9,16 @@ import dev.xframe.utils.XGeneric;
 
 /**
  * module 入口
+ * Modular必然是Looped
  * @author luzj
  * @param <T>
  * @param <V>
  */
-public abstract class ModularCmd<T extends Player, V> extends PlayerCmd<T> {
+public abstract class ModularCmd<T extends Player, V> extends LoopedCmd<T> {
 	
 	@Inject
 	private ModularAdapter adapter;
-	
+    
     private MTypedLoader loader;
     
     private MTypedLoader getLoader() {

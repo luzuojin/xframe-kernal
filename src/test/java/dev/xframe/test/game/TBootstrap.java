@@ -47,11 +47,12 @@ public class TBootstrap {
         
         PlayerCmd<TPlayer> cmd1 = (PlayerCmd<TPlayer>) commandCtx.get((short) 100);
         cmd1.execute(null, Message.of(100, ValueMsg.newBuilder().setVal("hey").build().toByteArray()).copy(playerId));
+        TimeUnit.MILLISECONDS.sleep(100);//wait queued executed
         testExecution.assertExecuted(TCommand.class);
         
         PlayerCmd<TPlayer> cmd2 = (PlayerCmd<TPlayer>)  commandCtx.get((short) 101);
         cmd2.execute(null, Message.of(101, ValueMsg.newBuilder().setVal("hey").build().toByteArray()).copy(playerId));
-        TimeUnit.MILLISECONDS.sleep(200);//wait queued executed
+        TimeUnit.MILLISECONDS.sleep(100);//wait queued executed
         testExecution.assertExecuted(TAction.class);
         
         player.player.dosomething();

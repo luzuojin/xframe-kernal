@@ -12,10 +12,8 @@ import dev.xframe.net.codec.IMessage;
 import dev.xframe.utils.XCaught;
 import dev.xframe.utils.XLambda;
 
-public final class ActionCmd<T extends Player> extends PlayerCmd<T>  {
+public final class ActionCmd<T extends Player> extends LoopedCmd<T>  {
 
-    @Inject
-    private PlayerCmdInvoker<T> invoker;
     @Inject
     private ModularAdapter adapter;
     
@@ -36,11 +34,6 @@ public final class ActionCmd<T extends Player> extends PlayerCmd<T>  {
         } catch (Throwable e) {
             throw XCaught.wrapException(clazz.getName(), e);
         }
-    }
-    
-    @Override
-    protected void execute0(T player, IMessage req) throws Exception {
-        new PlayerCmdInvokeTask<>(invoker, this, player, req, player.loop()).checkin();
     }
 
     @Override
