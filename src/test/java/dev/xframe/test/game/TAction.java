@@ -2,13 +2,13 @@ package dev.xframe.test.game;
 
 import org.junit.Assert;
 
-import dev.xframe.game.cmd.PlayerCmdLiteAction;
+import dev.xframe.game.cmd.LiteAction;
 import dev.xframe.inject.Inject;
 import dev.xframe.net.cmd.Cmd;
 import dev.xframe.test.game.GameProto.ValueMsg;
 
 @Cmd(101)
-public class TCmdAction extends PlayerCmdLiteAction<TPlayer, TPlayerInventory, ValueMsg>{
+public class TAction extends LiteAction<TPlayer, TPlayerInventory, ValueMsg>{
     
     @Inject
     private TTemplates templates;
@@ -27,7 +27,7 @@ public class TCmdAction extends PlayerCmdLiteAction<TPlayer, TPlayerInventory, V
         Assert.assertNotNull(value);
         Assert.assertNotNull(dep);
         Assert.assertNotNull(agent);
-        execution.executing(TCmdAction.class);
+        execution.executing(TAction.class);
     }
 
 }

@@ -12,7 +12,7 @@ import dev.xframe.net.codec.IMessage;
 import dev.xframe.utils.XCaught;
 import dev.xframe.utils.XLambda;
 
-public final class PlayerCmdActionCmd<T extends Player> extends PlayerCommand<T>  {
+public final class ActionCmd<T extends Player> extends PlayerCmd<T>  {
 
     @Inject
     private PlayerCmdInvoker<T> invoker;
@@ -25,14 +25,14 @@ public final class PlayerCmdActionCmd<T extends Player> extends PlayerCommand<T>
     final MTypedLoader loader;
     final LiteParser liteParser;
     
-    public PlayerCmdActionCmd(Class<?> clazz) {
+    public ActionCmd(Class<?> clazz) {
         try {
             BeanHelper.inject(this);
             this.clazz = clazz;
             this.getter = XLambda.createByConstructor(clazz);
-            this.loader = adapter.getTypedLoader(PlayerCmdAction.getModuleType(clazz));
+            this.loader = adapter.getTypedLoader(Action.getModuleType(clazz));
             this.injector = adapter.newInjector(clazz);
-            this.liteParser = PlayerCmdLiteAction.class.isAssignableFrom(clazz) ? new LiteParser(clazz, PlayerCmdLiteAction.class, "L") : null;
+            this.liteParser = LiteAction.class.isAssignableFrom(clazz) ? new LiteParser(clazz, LiteAction.class, "L") : null;
         } catch (Throwable e) {
             throw XCaught.wrapException(clazz.getName(), e);
         }
@@ -40,16 +40,16 @@ public final class PlayerCmdActionCmd<T extends Player> extends PlayerCommand<T>
     
     @Override
     protected void execute0(T player, IMessage req) throws Exception {
-        new PlayerCmdInvokeAction<>(invoker, this, player, req, player.loop()).checkin();
+        new PlayerCmdInvokeTask<>(invoker, this, player, req, player.loop()).checkin();
     }
 
     @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void exec(T player, IMessage req) throws Exception {
-        PlayerCmdAction<T, ?> action = (PlayerCmdAction<T, ?>) getter.get();
+        Action<T, ?> action = (Action<T, ?>) getter.get();
         adapter.runInject(injector, action, player);
-        if(action instanceof PlayerCmdLiteAction) {
-        	((PlayerCmdLiteAction) action).parser = liteParser;
+        if(action instanceof LiteAction) {
+        	((LiteAction) action).parser = liteParser;
         }
         action.exec(player, loader.load(player), req);
     }

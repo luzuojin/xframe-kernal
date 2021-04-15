@@ -6,20 +6,20 @@ import dev.xframe.task.Task;
 import dev.xframe.task.TaskLoop;
 
 /**
- * 通过player action loop 执行的 request command
+ * 通过player TaskLoop 执行的 request command
  * @author luzj
  */
-final class PlayerCmdInvokeAction<T extends Player> extends Task {
+final class PlayerCmdInvokeTask<T extends Player> extends Task {
     
     private PlayerCmdInvoker<T> invoker;
     
-    private PlayerCommand<T> cmd;
+    private PlayerCmd<T> cmd;
     
     private T player;
     
     private IMessage req;
     
-    public PlayerCmdInvokeAction(PlayerCmdInvoker<T> invoker, PlayerCommand<T> cmd, T player, IMessage req, TaskLoop loop) {
+    public PlayerCmdInvokeTask(PlayerCmdInvoker<T> invoker, PlayerCmd<T> cmd, T player, IMessage req, TaskLoop loop) {
         super(loop);
         this.invoker = invoker;
         this.cmd = cmd;

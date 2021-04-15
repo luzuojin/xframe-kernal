@@ -15,7 +15,7 @@ public class PlayerCmdInvoker<T extends Player> {
     
     protected static final Logger logger = LoggerFactory.getLogger(PlayerCmdInvoker.class);
     
-    public final void invoke(PlayerCommand<T> cmd, T player, IMessage req) {
+    public final void invoke(PlayerCmd<T> cmd, T player, IMessage req) {
         try {
             doInvoke(cmd, player, req);
         } catch (Throwable e) {
@@ -23,15 +23,15 @@ public class PlayerCmdInvoker<T extends Player> {
         }
     }
 
-    protected void doInvoke(PlayerCommand<T> cmd, T player, IMessage req) throws Exception {
+    protected void doInvoke(PlayerCmd<T> cmd, T player, IMessage req) throws Exception {
         doExec(cmd, player, req);
     }
 
-    protected void doExec(PlayerCommand<T> cmd, T player, IMessage req) throws Exception {
+    protected void doExec(PlayerCmd<T> cmd, T player, IMessage req) throws Exception {
         cmd.exec(player, req);
     }
 
-    protected void onExCaught(PlayerCommand<T> cmd, T player, Throwable e) {
+    protected void onExCaught(PlayerCmd<T> cmd, T player, Throwable e) {
         logger.error("invoke player[{}] cmd[{}] error:\n {}", player.id(), cmd.getClazz(), XStrings.getStackTrace(e));
     }
 

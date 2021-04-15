@@ -8,7 +8,7 @@ import dev.xframe.net.codec.IMessage;
  * 直接的, 没有经过player.loop
  * @author luzj
  */
-public abstract class DirectModularCmd<T extends Player, V> extends ModularCommand<T, V> {
+public abstract class DirectModularCmd<T extends Player, V> extends ModularCmd<T, V> {
     
     @Inject
     private PlayerCmdInvoker<T> invoker;

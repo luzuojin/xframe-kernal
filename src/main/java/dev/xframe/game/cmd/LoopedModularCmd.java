@@ -10,14 +10,14 @@ import dev.xframe.net.codec.IMessage;
  * @author luzj
  *
  */
-public abstract class LoopedModularCmd<T extends Player, V> extends ModularCommand<T, V> {
+public abstract class LoopedModularCmd<T extends Player, V> extends ModularCmd<T, V> {
 
     @Inject
     private PlayerCmdInvoker<T> invoker;
     
     @Override
     protected final void execute0(T player, IMessage req) throws Exception {
-        new PlayerCmdInvokeAction<>(invoker, this, player, req, player.loop()).checkin();
+        new PlayerCmdInvokeTask<>(invoker, this, player, req, player.loop()).checkin();
     }
     
 }

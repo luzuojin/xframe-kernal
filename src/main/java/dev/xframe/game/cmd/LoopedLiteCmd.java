@@ -3,7 +3,7 @@ package dev.xframe.game.cmd;
 import dev.xframe.game.player.Player;
 import dev.xframe.net.codec.IMessage;
 
-public abstract class LoopedLiteCmd<T extends Player, L> extends LoopedCommand<T> {
+public abstract class LoopedLiteCmd<T extends Player, L> extends LoopedCmd<T> {
 
 	private LiteParser parser = new LiteParser(this.getClass(), LoopedLiteCmd.class, "L");
 	

@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import dev.xframe.game.callable.ModularCallable;
-import dev.xframe.game.cmd.PlayerCommand;
+import dev.xframe.game.cmd.PlayerCmd;
 import dev.xframe.game.player.ModularAdapter;
 import dev.xframe.game.player.PlayerContext;
 import dev.xframe.inject.Inject;
@@ -45,14 +45,14 @@ public class TBootstrap {
 		testExecution.assertExecuted(TDepInventory.class);
 		testExecution.assertExecuted(TComponent.class);
         
-        PlayerCommand<TPlayer> cmd1 = (PlayerCommand<TPlayer>) commandCtx.get((short) 100);
+        PlayerCmd<TPlayer> cmd1 = (PlayerCmd<TPlayer>) commandCtx.get((short) 100);
         cmd1.execute(null, Message.of(100, ValueMsg.newBuilder().setVal("hey").build().toByteArray()).copy(playerId));
         testExecution.assertExecuted(TCommand.class);
         
-        PlayerCommand<TPlayer> cmd2 = (PlayerCommand<TPlayer>)  commandCtx.get((short) 101);
+        PlayerCmd<TPlayer> cmd2 = (PlayerCmd<TPlayer>)  commandCtx.get((short) 101);
         cmd2.execute(null, Message.of(101, ValueMsg.newBuilder().setVal("hey").build().toByteArray()).copy(playerId));
         TimeUnit.MILLISECONDS.sleep(200);//wait queued executed
-        testExecution.assertExecuted(TCmdAction.class);
+        testExecution.assertExecuted(TAction.class);
         
         player.player.dosomething();
         testExecution.assertExecuted(TPlayerInventory.class);

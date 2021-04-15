@@ -10,9 +10,9 @@ import dev.xframe.net.cmd.Command;
 import dev.xframe.net.codec.IMessage;
 import dev.xframe.net.session.Session;
 
-public abstract class PlayerCommand<T extends Player> implements Command {
+public abstract class PlayerCmd<T extends Player> implements Command {
     
-    protected static Logger logger = LoggerFactory.getLogger(PlayerCommand.class);
+    protected static Logger logger = LoggerFactory.getLogger(PlayerCmd.class);
     
     @Inject
     private PlayerLoader playerLoader;

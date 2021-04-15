@@ -1,7 +1,7 @@
 package dev.xframe.game;
 
-import dev.xframe.game.cmd.PlayerCmdAction;
-import dev.xframe.game.cmd.PlayerCmdActionCmd;
+import dev.xframe.game.cmd.Action;
+import dev.xframe.game.cmd.ActionCmd;
 import dev.xframe.game.player.ModularAdapter;
 import dev.xframe.game.player.Player;
 import dev.xframe.game.player.PlayerContext;
@@ -47,7 +47,7 @@ public final class GameConfigurator implements Loadable {
 	private void configure(Class<?> assemble) {
 		modularAdapter.initial(assemble);
 		
-		cmdBuilder.regist(PlayerCmdAction.class::isAssignableFrom, PlayerCmdActionCmd::new);
+		cmdBuilder.regist(Action.class::isAssignableFrom, ActionCmd::new);
 		
 		TaskExecutor executor = newExecutor(assemble);
 		PlayerFactory factory = newPlayerFactory(assemble);

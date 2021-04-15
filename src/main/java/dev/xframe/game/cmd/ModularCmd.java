@@ -13,7 +13,7 @@ import dev.xframe.utils.XGeneric;
  * @param <T>
  * @param <V>
  */
-public abstract class ModularCommand<T extends Player, V> extends PlayerCommand<T> {
+public abstract class ModularCmd<T extends Player, V> extends PlayerCmd<T> {
 	
 	@Inject
 	private ModularAdapter adapter;
@@ -27,7 +27,7 @@ public abstract class ModularCommand<T extends Player, V> extends PlayerCommand<
 	}
     
     public static Class<?> getModuleType(Class<?> clazz) {
-        return XGeneric.parse(clazz, ModularCommand.class).getByName("V");
+        return XGeneric.parse(clazz, ModularCmd.class).getByName("V");
     }
 
     public final void exec(T player, IMessage req) throws Exception {

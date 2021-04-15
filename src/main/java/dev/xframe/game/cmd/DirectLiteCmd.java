@@ -3,7 +3,7 @@ package dev.xframe.game.cmd;
 import dev.xframe.game.player.Player;
 import dev.xframe.net.codec.IMessage;
 
-public abstract class DirectLiteCmd<T extends Player, L> extends DirectCommand<T> {
+public abstract class DirectLiteCmd<T extends Player, L> extends DirectCmd<T> {
 
 	private LiteParser parser = new LiteParser(this.getClass(), DirectLiteCmd.class, "L");
 	
