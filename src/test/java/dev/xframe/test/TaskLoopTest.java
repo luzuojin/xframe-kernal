@@ -2,21 +2,21 @@ package dev.xframe.test;
 
 import org.junit.Ignore;
 
-import dev.xframe.action.Action;
-import dev.xframe.action.ActionExecutor;
-import dev.xframe.action.ActionExecutors;
-import dev.xframe.action.ActionLoop;
-import dev.xframe.action.DelayAction;
+import dev.xframe.task.DelayTask;
+import dev.xframe.task.Task;
+import dev.xframe.task.TaskExecutor;
+import dev.xframe.task.TaskExecutors;
+import dev.xframe.task.TaskLoop;
 
 @Ignore
-public class ActionLoopTest {
+public class TaskLoopTest {
     
     public static void main(String[] args) {
-        ActionExecutor executor = ActionExecutors.newFixed("Test", 2);
+        TaskExecutor executor = TaskExecutors.newFixed("Test", 2);
         for (int i = 10; i < 20; i++) {
-            ActionLoop loop = executor.newLoop();
+            TaskLoop loop = executor.newLoop();
             final int j = i;
-            (new DelayAction(loop, i*10) {
+            (new DelayTask(loop, i*10) {
                 @Override
                 protected void exec() {
                     System.out.println(Thread.currentThread().getName() + "\t" + j);
@@ -25,8 +25,8 @@ public class ActionLoopTest {
         }
         for (int i = 0; i < 10; i++) {
             final int j = i;
-            ActionLoop loop = executor.newLoop();
-            (new Action(loop) {
+            TaskLoop loop = executor.newLoop();
+            (new Task(loop) {
                 @Override
                 protected void exec() {
                     System.out.println(Thread.currentThread().getName() + "\t" + j);

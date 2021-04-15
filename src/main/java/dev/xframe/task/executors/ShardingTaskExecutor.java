@@ -1,16 +1,16 @@
-package dev.xframe.action.executors;
+package dev.xframe.task.executors;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntUnaryOperator;
 
-import dev.xframe.action.ActionExecutor;
-import dev.xframe.action.DelayAction;
-import dev.xframe.action.scheduled.ScheduledExecutor;
+import dev.xframe.task.DelayTask;
+import dev.xframe.task.TaskExecutor;
+import dev.xframe.task.scheduled.ScheduledExecutor;
 import dev.xframe.utils.XThreadFactory;
 
-public class ShardingActionExecutor implements ActionExecutor {
+public class ShardingTaskExecutor implements TaskExecutor {
     
     private final String name;
     
@@ -18,19 +18,19 @@ public class ShardingActionExecutor implements ActionExecutor {
     
     private final AtomicInteger sIndex = new AtomicInteger();
     
-    private final ActionExecutor[] internals;
+    private final TaskExecutor[] internals;
     
     private final ScheduledExecutor scheduler;
     
-    public ShardingActionExecutor(int nThreads, String name) {
+    public ShardingTaskExecutor(int nThreads, String name) {
         this.name = name;
         this.chooser = newChooser(nThreads);
-        this.internals = new ActionExecutor[nThreads];
+        this.internals = new TaskExecutor[nThreads];
         this.scheduler = new ScheduledExecutor();
         
         XThreadFactory factory = new XThreadFactory(this.name);
         for (int i = 0; i < nThreads; i++) {
-            internals[i] = new SimpleActionExecutor(newExecutorService(factory), scheduler);
+            internals[i] = new SimpleTaskExecutor(newExecutorService(factory), scheduler);
         }
     }
 
@@ -38,8 +38,8 @@ public class ShardingActionExecutor implements ActionExecutor {
         return new SingleThreadExecutor(factory, new LinkedTransferQueue<Runnable>());
     }
     
-    public void schedule(DelayAction action) {
-        this.scheduler.checkin(action);
+    public void schedule(DelayTask task) {
+        this.scheduler.checkin(task);
     }
     
     private IntUnaryOperator newChooser(final int nThreads) {
@@ -50,20 +50,20 @@ public class ShardingActionExecutor implements ActionExecutor {
         return (seed) -> (seed % nThreads);
     }
     
-    private ActionExecutor choose(int seed) {
+    private TaskExecutor choose(int seed) {
         return internals[chooser.applyAsInt(seed)];
     }
     
-    public ActionExecutor bind() {
+    public TaskExecutor bind() {
         return choose(sIndex.getAndIncrement());
     }
 
-    public void execute(Runnable action) {
-        choose(action.hashCode()).execute(action);
+    public void execute(Runnable task) {
+        choose(task.hashCode()).execute(task);
     }
     
     public void shutdown() {
-        for (ActionExecutor e : internals) {
+        for (TaskExecutor e : internals) {
             if(e != null) e.shutdown();
         }
     }

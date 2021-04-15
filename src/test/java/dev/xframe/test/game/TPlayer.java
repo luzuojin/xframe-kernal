@@ -1,7 +1,5 @@
 package dev.xframe.test.game;
 
-import dev.xframe.action.ActionLoop;
-import dev.xframe.action.ScheduledContext;
 import dev.xframe.event.EventBus;
 import dev.xframe.event.Registrator;
 import dev.xframe.event.Subscriber;
@@ -9,6 +7,8 @@ import dev.xframe.game.Assemble;
 import dev.xframe.game.player.Player;
 import dev.xframe.inject.Inject;
 import dev.xframe.module.ModuleType;
+import dev.xframe.task.ScheduledContext;
+import dev.xframe.task.TaskLoop;
 
 @Assemble
 public class TPlayer extends Player implements Registrator {
@@ -24,7 +24,7 @@ public class TPlayer extends Player implements Registrator {
     
     private EventBus events;
 
-	public TPlayer(long playerId, ActionLoop loop) {
+	public TPlayer(long playerId, TaskLoop loop) {
 		super(playerId, loop);
 		this.events = new EventBus();
 	}

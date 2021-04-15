@@ -1,10 +1,10 @@
-package dev.xframe.action;
+package dev.xframe.task;
 
-public final class RunnableAction extends Action {
+public final class RunnableTask extends Task {
 
     private final Runnable runnable;
     
-    public RunnableAction(ActionLoop loop, Runnable runnable) {
+    public RunnableTask(TaskLoop loop, Runnable runnable) {
         super(loop);
         this.runnable = runnable;
     }
@@ -19,8 +19,8 @@ public final class RunnableAction extends Action {
 		return runnable.getClass();
 	}
 
-	public static final RunnableAction of(ActionLoop loop, Runnable runnable) {
-        return new RunnableAction(loop, runnable);
+	public static final RunnableTask of(TaskLoop loop, Runnable runnable) {
+        return new RunnableTask(loop, runnable);
     }
     
 }

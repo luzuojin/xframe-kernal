@@ -15,7 +15,7 @@ public @interface Assemble {
     int threads() default 0;//logics threads
     
     /**
-     * 是否使用ShardingActionExecutor
+     * 是否使用ShardingTaskExecutor
      */
     boolean sharding() default true;
     

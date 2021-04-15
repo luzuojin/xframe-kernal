@@ -1,39 +1,39 @@
-package dev.xframe.action;
+package dev.xframe.task;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import dev.xframe.utils.XThreadLocal;
 
-public abstract class ActionLoop {
+public abstract class TaskLoop {
     
-    protected ActionExecutor executor;
-    public ActionLoop(ActionExecutor executor) {
+    protected TaskExecutor executor;
+    public TaskLoop(TaskExecutor executor) {
         this.executor = executor.bind();
     }
     
-    abstract void schedule(DelayAction action);
+    abstract void schedule(DelayTask task);
     
-    abstract void checkin(Runnable action);
+    abstract void checkin(Runnable task);
     
-    abstract void checkout(Runnable action);
+    abstract void checkout(Runnable task);
     
-    public static class Queued extends ActionLoop {
+    public static class Queued extends TaskLoop {
     	private ConcurrentLinkedQueue<Runnable> queue;
     	private AtomicBoolean isRunning;
     	
-    	public Queued(ActionExecutor executor) {
+    	public Queued(TaskExecutor executor) {
     		super(executor);
             this.queue = new ConcurrentLinkedQueue<>();
             this.isRunning = new AtomicBoolean(false);
         }
         
-        void schedule(DelayAction action) {
-            executor.schedule(action);
+        void schedule(DelayTask task) {
+            executor.schedule(task);
         }
         
-        void checkin(Runnable action) {
-            this.queue.offer(action);
+        void checkin(Runnable task) {
+            this.queue.offer(task);
             
             if(this.isRunning.compareAndSet(false, true)){
                this.execNext();
@@ -56,30 +56,30 @@ public abstract class ActionLoop {
             return next;
         }
         
-        void checkout(Runnable action) {
+        void checkout(Runnable task) {
             Runnable poll = this.queue.poll();
-            if(poll != action) {
-            	Action.logger.warn("Action can`t call run() directly");
+            if(poll != task) {
+            	Task.logger.warn("Task can`t call run() directly");
             }
             this.execNext();
         }
     }
     
-    public static class Direct extends ActionLoop {
+    public static class Direct extends TaskLoop {
     	
-		public Direct(ActionExecutor executor) {
+		public Direct(TaskExecutor executor) {
 			super(executor);
 		}
 		
-		void schedule(DelayAction action) {
-			executor.schedule(action);
+		void schedule(DelayTask task) {
+			executor.schedule(task);
 		}
 		
-		void checkin(Runnable action) {
-			executor.execute(action);
+		void checkin(Runnable task) {
+			executor.execute(task);
 		}
 		
-		void checkout(Runnable action) {
+		void checkout(Runnable task) {
 			//do nothing
 		}
     }
@@ -88,11 +88,11 @@ public abstract class ActionLoop {
         return this == getCurrent();
     }
     
-    static XThreadLocal<ActionLoop> tloop = new XThreadLocal<>();
-    static ActionLoop getCurrent() {
+    static XThreadLocal<TaskLoop> tloop = new XThreadLocal<>();
+    static TaskLoop getCurrent() {
         return tloop.get();
     }
-    static void setCurrent(ActionLoop loop) {
+    static void setCurrent(TaskLoop loop) {
         tloop.set(loop);
     }
     static void unsetCurrent() {

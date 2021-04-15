@@ -1,4 +1,4 @@
-package dev.xframe.action;
+package dev.xframe.task;
 
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
@@ -9,13 +9,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 
- * Future action
- * Method await for the action exec done
+ * Future task
+ * Method await for the task exec done
  * @author luzj
  *
  * @param <V>
  */
-public abstract class FutureAction extends Action {
+public abstract class FutureTask extends Task {
     
     private CountDownLatch latch;
     private AtomicInteger status;
@@ -27,7 +27,7 @@ public abstract class FutureAction extends Action {
     static final int STATUS_CANCEL   = 3;
     static final int STATUS_COMPLETE = 4;
 
-    public FutureAction(ActionLoop loop) {
+    public FutureTask(TaskLoop loop) {
         super(loop);
         this.status = new AtomicInteger(STATUS_NORMAL);
         this.latch = new CountDownLatch(1);
@@ -86,8 +86,8 @@ public abstract class FutureAction extends Action {
         return status.compareAndSet(STATUS_NORMAL, STATUS_RUNNING);
     }
     
-    public static final FutureAction of(ActionLoop loop, Runnable runnable) {
-        return new FutureAction(loop) {protected void exec() {runnable.run();}};
+    public static final FutureTask of(TaskLoop loop, Runnable runnable) {
+        return new FutureTask(loop) {protected void exec() {runnable.run();}};
     }
     
 }

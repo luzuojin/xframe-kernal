@@ -1,15 +1,15 @@
 package dev.xframe.game.cmd;
 
-import dev.xframe.action.Action;
-import dev.xframe.action.ActionLoop;
 import dev.xframe.game.player.Player;
 import dev.xframe.net.codec.IMessage;
+import dev.xframe.task.Task;
+import dev.xframe.task.TaskLoop;
 
 /**
  * 通过player action loop 执行的 request command
  * @author luzj
  */
-final class PlayerCmdInvokeAction<T extends Player> extends Action {
+final class PlayerCmdInvokeAction<T extends Player> extends Task {
     
     private PlayerCmdInvoker<T> invoker;
     
@@ -19,7 +19,7 @@ final class PlayerCmdInvokeAction<T extends Player> extends Action {
     
     private IMessage req;
     
-    public PlayerCmdInvokeAction(PlayerCmdInvoker<T> invoker, PlayerCommand<T> cmd, T player, IMessage req, ActionLoop loop) {
+    public PlayerCmdInvokeAction(PlayerCmdInvoker<T> invoker, PlayerCommand<T> cmd, T player, IMessage req, TaskLoop loop) {
         super(loop);
         this.invoker = invoker;
         this.cmd = cmd;

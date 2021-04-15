@@ -1,4 +1,4 @@
-package dev.xframe.action;
+package dev.xframe.task;
 
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
@@ -7,13 +7,13 @@ import dev.xframe.utils.XDateFormatter;
 import io.netty.util.Timeout;
 import io.netty.util.TimerTask;
 
-public abstract class DelayAction extends Action implements Delayed, TimerTask {
+public abstract class DelayTask extends Task implements Delayed, TimerTask {
     
     protected long execTime;
     
     volatile boolean isCancelled;
     
-	public DelayAction(ActionLoop loop, int delay) {
+	public DelayTask(TaskLoop loop, int delay) {
 	    super(loop);
 	    this.reset(createTime, delay);
 	}
@@ -56,7 +56,7 @@ public abstract class DelayAction extends Action implements Delayed, TimerTask {
 	public final void run(Timeout timeout) throws Exception {
     	if(isCancelled || timeout.isCancelled())
     		return;
-    	//checkin as action
+    	//checkin as simple task
     	createTime = execTime;
     	loop.checkin(this);
 	}
@@ -76,7 +76,7 @@ public abstract class DelayAction extends Action implements Delayed, TimerTask {
     
     @Override
     public int compareTo(Delayed o) {
-        return Long.compare(this.execTime, ((DelayAction)o).execTime);
+        return Long.compare(this.execTime, ((DelayTask)o).execTime);
     }
 
     @Override
@@ -89,8 +89,8 @@ public abstract class DelayAction extends Action implements Delayed, TimerTask {
         return getName() + "[" + XDateFormatter.from(execTime) + "]";
     }
 
-    public static final DelayAction of(ActionLoop loop, int delay, Runnable runnable) {
-		return new DelayAction(loop, delay) {
+    public static final DelayTask of(TaskLoop loop, int delay, Runnable runnable) {
+		return new DelayTask(loop, delay) {
 			protected void exec() {
 				runnable.run();
 			}

@@ -1,8 +1,5 @@
 package dev.xframe.game;
 
-import dev.xframe.action.ActionExecutor;
-import dev.xframe.action.ActionExecutors;
-import dev.xframe.action.ActionLoop;
 import dev.xframe.game.cmd.PlayerCmdAction;
 import dev.xframe.game.cmd.PlayerCmdActionCmd;
 import dev.xframe.game.player.ModularAdapter;
@@ -16,6 +13,9 @@ import dev.xframe.inject.beans.BeanBinder;
 import dev.xframe.inject.beans.BeanRegistrator;
 import dev.xframe.inject.code.Codes;
 import dev.xframe.net.cmd.CommandBuilder;
+import dev.xframe.task.TaskExecutor;
+import dev.xframe.task.TaskExecutors;
+import dev.xframe.task.TaskLoop;
 import dev.xframe.utils.XLambda;
 
 @Configurator
@@ -36,11 +36,11 @@ public final class GameConfigurator implements Loadable {
 		}
 	}
 
-	private ActionExecutor newExecutor(Class<?> assemble) {
+	private TaskExecutor newExecutor(Class<?> assemble) {
 	    String name = "logics";
 	    Assemble anno = assemble.getAnnotation(Assemble.class);
         int nThreads = anno.threads() > 0 ? anno.threads() : Runtime.getRuntime().availableProcessors();
-		return anno.sharding() ? ActionExecutors.newSharding(name, nThreads) : ActionExecutors.newFixed(name, nThreads);
+		return anno.sharding() ? TaskExecutors.newSharding(name, nThreads) : TaskExecutors.newFixed(name, nThreads);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -49,7 +49,7 @@ public final class GameConfigurator implements Loadable {
 		
 		cmdBuilder.regist(PlayerCmdAction.class::isAssignableFrom, PlayerCmdActionCmd::new);
 		
-		ActionExecutor executor = newExecutor(assemble);
+		TaskExecutor executor = newExecutor(assemble);
 		PlayerFactory factory = newPlayerFactory(assemble);
 		PlayerContext context = new PlayerContext(executor, factory);
 
@@ -58,8 +58,8 @@ public final class GameConfigurator implements Loadable {
 	}
 
 	private PlayerFactory newPlayerFactory(Class<?> assemble) {
-		PlayerFactory factory = XLambda.createByConstructor(PlayerFactory.class, assemble, long.class, ActionLoop.class);
-		return (long playerId, ActionLoop loop) -> {
+		PlayerFactory factory = XLambda.createByConstructor(PlayerFactory.class, assemble, long.class, TaskLoop.class);
+		return (long playerId, TaskLoop loop) -> {
 					Player player = factory.newPlayer(playerId, loop);
 					modularAdapter.assemble(player);
 					return player;

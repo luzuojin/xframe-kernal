@@ -1,4 +1,4 @@
-package dev.xframe.action.scheduled;
+package dev.xframe.task.scheduled;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

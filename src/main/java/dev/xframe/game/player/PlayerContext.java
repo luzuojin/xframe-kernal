@@ -9,9 +9,9 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.xframe.action.Action;
-import dev.xframe.action.ActionExecutor;
 import dev.xframe.game.callable.PlayerCallable;
+import dev.xframe.task.Task;
+import dev.xframe.task.TaskExecutor;
 
 
 /**
@@ -25,11 +25,11 @@ public class PlayerContext {
     
     private final PlayerCollection players;
     
-    public PlayerContext(ActionExecutor executor, PlayerFactory factory) {
+    public PlayerContext(TaskExecutor executor, PlayerFactory factory) {
         this.players = new PlayerCollection(makePlayerDataFunc(executor, factory));
     }
 
-	static Function<Long, PlayerData> makePlayerDataFunc(ActionExecutor executor, PlayerFactory factory) {
+	static Function<Long, PlayerData> makePlayerDataFunc(TaskExecutor executor, PlayerFactory factory) {
 		return id->new PlayerData(factory.newPlayer(id, executor.newLoop()));
 	}
 	
@@ -77,7 +77,7 @@ public class PlayerContext {
         }
         Player player = players.getOrNew(playerId);
         //通过playerTask Load数据
-        new Action(player.loop()) {
+        new Task(player.loop()) {
             @Override
             protected void exec() {
                 if(!player.load()) {
@@ -101,7 +101,7 @@ public class PlayerContext {
         final Player player = players.getOrNew(playerId);
         //不存在缓存中, 从DB中load
         //通过player.loop Load数据
-        new Action(player.loop()) {
+        new Task(player.loop()) {
             @Override
             protected void exec() {
                 try {

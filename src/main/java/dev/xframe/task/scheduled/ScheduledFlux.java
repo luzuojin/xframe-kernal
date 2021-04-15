@@ -1,28 +1,28 @@
-package dev.xframe.action.scheduled;
+package dev.xframe.task.scheduled;
 
 import java.util.PriorityQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
-import dev.xframe.action.ActionLoop;
-import dev.xframe.action.DelayAction;
-import dev.xframe.action.RunnableAction;
+import dev.xframe.task.DelayTask;
+import dev.xframe.task.RunnableTask;
+import dev.xframe.task.TaskLoop;
 import dev.xframe.utils.XLogger;
 
 public class ScheduledFlux implements Runnable {
 	
 	private PriorityQueue<Unit> units = new PriorityQueue<>();
 	
-	private ActionLoop loop;
+	private TaskLoop loop;
 	
-	public ScheduledFlux(ActionLoop loop) {
+	public ScheduledFlux(TaskLoop loop) {
 	    this.loop = loop;
 	}
 	
 	public void regist(Runnable task, int delay) {
 	    if(!loop.inLoop()) {//can`t be here
             XLogger.warn("Flux non loopped regist");
-	        RunnableAction.of(loop, ()->doRegist(task, delay)).checkin();
+	        RunnableTask.of(loop, ()->doRegist(task, delay)).checkin();
 	    } else {
 	        doRegist(task, delay);
 	    }
@@ -56,7 +56,7 @@ public class ScheduledFlux implements Runnable {
     public void clear() {
         if(!loop.inLoop()) {//can`t be here
         	XLogger.warn("Flux non loopped clear");
-            RunnableAction.of(loop, ()->doClear()).checkin();
+            RunnableTask.of(loop, ()->doClear()).checkin();
         } else {
             doClear();
         }
@@ -74,7 +74,7 @@ public class ScheduledFlux implements Runnable {
         if(unit != null && !unit.checked) {
             unit.checked = true;
             int delay = (int) unit.getDelay(TimeUnit.MILLISECONDS);
-            DelayAction.of(loop, delay, this).checkin();;
+            DelayTask.of(loop, delay, this).checkin();;
         }
 	}
 

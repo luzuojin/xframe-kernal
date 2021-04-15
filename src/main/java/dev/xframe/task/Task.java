@@ -1,4 +1,4 @@
-package dev.xframe.action;
+package dev.xframe.task;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -6,14 +6,14 @@ import org.slf4j.LoggerFactory;
 import dev.xframe.metric.Gauge;
 import dev.xframe.utils.XDateFormatter;
 
-public abstract class Action implements Runnable {
+public abstract class Task implements Runnable {
     
-    protected static final Logger logger = LoggerFactory.getLogger(Action.class);
+    protected static final Logger logger = LoggerFactory.getLogger(Task.class);
     
-    protected ActionLoop loop;
+    protected TaskLoop loop;
     protected long createTime;
 
-    public Action(ActionLoop loop) {
+    public Task(TaskLoop loop) {
         this.loop = loop;
         this.createTime = System.currentTimeMillis();
     }
@@ -29,7 +29,7 @@ public abstract class Action implements Runnable {
 	@Override
     public final void run() {
         try {
-        	ActionLoop.setCurrent(loop);
+        	TaskLoop.setCurrent(loop);
             if(runable()) {
             	Gauge g = Gauge.of(getClazz()).creating(createTime).beginning();
                 this.exec();
@@ -40,7 +40,7 @@ public abstract class Action implements Runnable {
             failure(e);
         } finally {
             done();
-            ActionLoop.unsetCurrent();
+            TaskLoop.unsetCurrent();
         	loop.checkout(this);
         }
     }

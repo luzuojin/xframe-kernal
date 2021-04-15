@@ -1,12 +1,12 @@
-package dev.xframe.action.executors;
+package dev.xframe.task.executors;
 
 import java.util.concurrent.ExecutorService;
 
-import dev.xframe.action.ActionExecutor;
-import dev.xframe.action.DelayAction;
-import dev.xframe.action.scheduled.ScheduledExecutor;
+import dev.xframe.task.DelayTask;
+import dev.xframe.task.TaskExecutor;
+import dev.xframe.task.scheduled.ScheduledExecutor;
 
-public class SimpleActionExecutor implements ActionExecutor {
+public class SimpleTaskExecutor implements TaskExecutor {
     
     private final ExecutorService executor;
     
@@ -15,26 +15,26 @@ public class SimpleActionExecutor implements ActionExecutor {
     private volatile ScheduledExecutor scheduler;
     
     /**
-     * 执行action队列的线程池
+     * 执行task队列的线程池
      * @param corePoolSize 最小线程数
      * @param maxPoolSize 最大线程数
      * @param name 线程名
      */
-    public SimpleActionExecutor(ExecutorService executor) {
+    public SimpleTaskExecutor(ExecutorService executor) {
         this(executor, new ScheduledExecutor());
     }
     
-    public SimpleActionExecutor(ExecutorService executor, ScheduledExecutor scheduler) {
+    public SimpleTaskExecutor(ExecutorService executor, ScheduledExecutor scheduler) {
         this.executor = executor;
         this.scheduler = scheduler;
     }
     
-    public void schedule(DelayAction action) {
-        this.scheduler.checkin(action);
+    public void schedule(DelayTask task) {
+        this.scheduler.checkin(task);
     }
     
-    public void execute(Runnable action) {
-        executor.execute(action);
+    public void execute(Runnable task) {
+        executor.execute(task);
     }
     
     public synchronized void shutdown() {

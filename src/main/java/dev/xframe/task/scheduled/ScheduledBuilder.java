@@ -1,20 +1,20 @@
-package dev.xframe.action.scheduled;
+package dev.xframe.task.scheduled;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import dev.xframe.action.ActionLoop;
+import dev.xframe.task.TaskLoop;
 
 public class ScheduledBuilder {
 	
-	public static List<ScheduledAction> newTasks(ActionLoop loop, Object delegate) {
+	public static List<ScheduledTask> newTasks(TaskLoop loop, Object delegate) {
 		return newTasks(loop, delegate.getClass(), delegate);
 	}
-	public static List<ScheduledAction> newTasks(ActionLoop loop, Class<?> cls, Object delegate) {
+	public static List<ScheduledTask> newTasks(TaskLoop loop, Class<?> cls, Object delegate) {
 		return newTasks0(new ArrayList<>(), loop, cls, delegate);
 	}
-	private static List<ScheduledAction> newTasks0(List<ScheduledAction> sts, ActionLoop loop, Class<?> cls, Object delegate) {
+	private static List<ScheduledTask> newTasks0(List<ScheduledTask> sts, TaskLoop loop, Class<?> cls, Object delegate) {
 		if(cls != Object.class) {
 			newTasks0(sts, loop, cls.getSuperclass(), delegate);
 			//make task
@@ -22,7 +22,7 @@ public class ScheduledBuilder {
 		}
 		return sts;
 	}
-	private static void newTasks1(List<ScheduledAction> sts, ActionLoop loop, Class<?> cls, Object delegate) {
+	private static void newTasks1(List<ScheduledTask> sts, TaskLoop loop, Class<?> cls, Object delegate) {
 		Method[] methods = cls.getDeclaredMethods();
 		for (Method method : methods) {
 			if(method.isAnnotationPresent(Scheduled.class)) {
@@ -31,11 +31,11 @@ public class ScheduledBuilder {
 		}
 	}
 	@SuppressWarnings("unchecked")
-	private static ScheduledAction newTask(ActionLoop loop, Method scheduledMethod, Object delegate) {
+	private static ScheduledTask newTask(TaskLoop loop, Method scheduledMethod, Object delegate) {
 		int delay = getDelay(scheduledMethod);
 		int period = getPeriod(scheduledMethod);
 		String name = getName(scheduledMethod);
-		return new ScheduledAction.MethodBased(name, loop, delay, period, delegate, scheduledMethod);
+		return new ScheduledTask.MethodBased(name, loop, delay, period, delegate, scheduledMethod);
 	}
 	private static String getName(Method scheduledMethod) {
 		return scheduledMethod.getDeclaringClass().getSimpleName() + "." + scheduledMethod.getName();

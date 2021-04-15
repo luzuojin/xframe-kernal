@@ -3,8 +3,8 @@ package dev.xframe.event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.xframe.action.Action;
-import dev.xframe.action.ActionLoop;
+import dev.xframe.task.Task;
+import dev.xframe.task.TaskLoop;
 
 public interface Dispatcher {
 	
@@ -23,7 +23,7 @@ public interface Dispatcher {
 		}
     }
 	
-	public static Dispatcher looped(ActionLoop loop) {
+	public static Dispatcher looped(TaskLoop loop) {
 		return new LoopedDispatcher(loop);
 	}
 	
@@ -39,8 +39,8 @@ public interface Dispatcher {
 	}
 	
 	static class LoopedDispatcher implements Dispatcher {
-		final ActionLoop loop;
-		public LoopedDispatcher(ActionLoop loop) {
+		final TaskLoop loop;
+		public LoopedDispatcher(TaskLoop loop) {
 			this.loop = loop;
 		}
 		@Override
@@ -48,7 +48,7 @@ public interface Dispatcher {
 			if(loop.inLoop()) {
 				Dispatcher.doDispatch(subscribers, evt);
 			} else {
-				new Action(loop) {
+				new Task(loop) {
 					protected void exec() {
 						Dispatcher.doDispatch(subscribers, evt);
 					}

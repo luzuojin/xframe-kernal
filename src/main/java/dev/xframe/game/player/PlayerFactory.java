@@ -1,10 +1,10 @@
 package dev.xframe.game.player;
 
-import dev.xframe.action.ActionLoop;
+import dev.xframe.task.TaskLoop;
 
 @FunctionalInterface
 public interface PlayerFactory {
 
-    Player newPlayer(long playerId, ActionLoop loop);
+    Player newPlayer(long playerId, TaskLoop loop);
 
 }

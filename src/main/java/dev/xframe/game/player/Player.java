@@ -1,18 +1,18 @@
 package dev.xframe.game.player;
 
-import dev.xframe.action.ActionLoop;
 import dev.xframe.module.ModuleType;
 import dev.xframe.module.beans.ModuleContainer;
+import dev.xframe.task.TaskLoop;
 
 public abstract class Player {
 
-	private ActionLoop loop;
+	private TaskLoop loop;
 	private long id;
     private int loaded;
     //set by player factory
     ModuleContainer mc;
     
-    public Player(long id, ActionLoop loop) {
+    public Player(long id, TaskLoop loop) {
         this.id = id;
         this.loop = loop;
     }
@@ -20,7 +20,7 @@ public abstract class Player {
     public long id() {
     	return id;
     }
-    public ActionLoop loop() {
+    public TaskLoop loop() {
         return this.loop;
     }
     @Deprecated

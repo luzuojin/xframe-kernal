@@ -1,17 +1,17 @@
-package dev.xframe.action.scheduled;
+package dev.xframe.task.scheduled;
 
 import java.lang.reflect.Method;
 import java.util.function.Consumer;
 
-import dev.xframe.action.ActionLoop;
-import dev.xframe.action.DelayAction;
+import dev.xframe.task.DelayTask;
+import dev.xframe.task.TaskLoop;
 import dev.xframe.utils.XLambda;
 
-public abstract class ScheduledAction extends DelayAction {
+public abstract class ScheduledTask extends DelayTask {
 	
 	protected final int period;
 	
-	public ScheduledAction(ActionLoop loop, int delay, int period) {
+	public ScheduledTask(TaskLoop loop, int delay, int period) {
 		super(loop, delay);
 		this.period = period;
 	}
@@ -23,20 +23,20 @@ public abstract class ScheduledAction extends DelayAction {
 		}
 	}
 	
-	public static ScheduledAction once(ActionLoop loop, int delay, Runnable runnable) {
+	public static ScheduledTask once(TaskLoop loop, int delay, Runnable runnable) {
 		return period(loop, delay, -1, runnable);
 	}
 	
-	public static ScheduledAction period(ActionLoop loop, int period, Runnable runnable) {
+	public static ScheduledTask period(TaskLoop loop, int period, Runnable runnable) {
 		return period(loop, period, period, runnable);
 	}
-	public static ScheduledAction period(ActionLoop loop, int delay, int period, Runnable runnable) {
+	public static ScheduledTask period(TaskLoop loop, int delay, int period, Runnable runnable) {
 		return new Simple(loop, delay, period, runnable);
 	}
 	
-	public static final class Simple extends ScheduledAction {
+	public static final class Simple extends ScheduledTask {
 		final Runnable runnable;
-		public Simple(ActionLoop loop, int delay, int period, Runnable runnable) {
+		public Simple(TaskLoop loop, int delay, int period, Runnable runnable) {
 			super(loop, delay, period);
 			this.runnable = runnable;
 		}
@@ -48,12 +48,12 @@ public abstract class ScheduledAction extends DelayAction {
 		}
 	}
 	
-	public static class MethodBased extends ScheduledAction {
+	public static class MethodBased extends ScheduledTask {
 		protected final String name;
 		protected final Object delegate;
 		protected final Consumer<Object> runner;
 		@SuppressWarnings("unchecked")
-		public MethodBased(String name, ActionLoop loop, int delay, int period, Object delegate, Method method) {
+		public MethodBased(String name, TaskLoop loop, int delay, int period, Object delegate, Method method) {
 			super(loop, delay, period);
 			this.name = name;
 			this.delegate = delegate;
