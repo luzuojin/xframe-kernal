@@ -81,7 +81,7 @@ public abstract class DelayTask extends Task implements Delayed, TimerTask {
 
     @Override
     public long getDelay(TimeUnit unit) {
-        return unit.convert(this.execTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+        return Math.max(0, unit.convert(this.execTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS));
     }
     
     @Override

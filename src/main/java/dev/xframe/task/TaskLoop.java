@@ -8,11 +8,14 @@ import dev.xframe.utils.XThreadLocal;
 public abstract class TaskLoop {
     
     protected TaskExecutor executor;
+    
     public TaskLoop(TaskExecutor executor) {
         this.executor = executor.bind();
     }
     
-    abstract void schedule(DelayTask task);
+    void schedule(DelayTask task) {
+    	executor.schedule(task);
+    }
     
     abstract void checkin(Runnable task);
     
@@ -26,10 +29,6 @@ public abstract class TaskLoop {
     		super(executor);
             this.queue = new ConcurrentLinkedQueue<>();
             this.isRunning = new AtomicBoolean(false);
-        }
-        
-        void schedule(DelayTask task) {
-            executor.schedule(task);
         }
         
         void checkin(Runnable task) {
@@ -69,10 +68,6 @@ public abstract class TaskLoop {
     	
 		public Direct(TaskExecutor executor) {
 			super(executor);
-		}
-		
-		void schedule(DelayTask task) {
-			executor.schedule(task);
 		}
 		
 		void checkin(Runnable task) {

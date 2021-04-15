@@ -3,6 +3,7 @@ package dev.xframe.task.scheduled;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import dev.xframe.task.TaskLoop;
 
@@ -42,14 +43,22 @@ public class ScheduledBuilder {
 	}
 	private static int getDelay(Method scheduledMethod) {
 		Scheduled scheduled = scheduledMethod.getAnnotation(Scheduled.class);
-		int delay = scheduled.delay();
-		if(delay == 0) {
-			delay = scheduled.period();
+		if(scheduled.dailyOffset() > 0) {//daily
+			long now = System.currentTimeMillis();
+			long off = scheduled.dailyOffset() - (now - TimeUnit.MILLISECONDS.toDays(now));
+			long dly = off > 0 ? off : TimeUnit.DAYS.toMillis(1) + off;//off < 0
+			return (int) dly;
 		}
-		return delay;
+		if(scheduled.delay() > 0) {
+			return scheduled.delay();
+		}
+		return scheduled.period();
 	}
 	private static int getPeriod(Method scheduledMethod) {
 		Scheduled scheduled = scheduledMethod.getAnnotation(Scheduled.class);
+		if(scheduled.dailyOffset() > 0) {//daily
+			return (int) TimeUnit.DAYS.toMillis(1);
+		}
 		return scheduled.period();
 	}
 }
