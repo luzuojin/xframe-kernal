@@ -1,6 +1,6 @@
 package dev.xframe.game.callable;
 
-import static dev.xframe.game.callable.CallableBuilders.setup0;
+import static dev.xframe.game.callable.CallableInjector.doInject;
 
 import dev.xframe.game.player.Player;
 
@@ -12,7 +12,7 @@ import dev.xframe.game.player.Player;
 public interface PlayerCallable<T extends Player> {
 
     default void call(T player) {
-        exec(setup0(player, this));
+        exec(doInject(player, this));
     }
 
     void exec(T player);
