@@ -8,7 +8,7 @@ package dev.xframe.action;
 public interface ActionExecutor {
     
     default ActionLoop newLoop() {
-        return new ActionLoop(this);
+        return new ActionLoop.Queued(this);
     }
     default ActionExecutor bind() {
         return this;

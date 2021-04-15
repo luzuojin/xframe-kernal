@@ -3,11 +3,11 @@ package dev.xframe.action.executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.function.IntUnaryOperator;
 
 import dev.xframe.action.ActionExecutor;
 import dev.xframe.action.DelayAction;
+import dev.xframe.action.scheduled.ScheduledExecutor;
 import dev.xframe.utils.XThreadFactory;
 
 public class ShardingActionExecutor implements ActionExecutor {
@@ -20,17 +20,17 @@ public class ShardingActionExecutor implements ActionExecutor {
     
     private final ActionExecutor[] internals;
     
-    private volatile DelayScheduler scheduler;
+    private final ScheduledExecutor scheduler;
     
     public ShardingActionExecutor(int nThreads, String name) {
         this.name = name;
         this.chooser = newChooser(nThreads);
         this.internals = new ActionExecutor[nThreads];
+        this.scheduler = new ScheduledExecutor();
         
         XThreadFactory factory = new XThreadFactory(this.name);
-        Function<String, DelayScheduler> schedulerFactory = this::setupScheduler;
         for (int i = 0; i < nThreads; i++) {
-            internals[i] = new SimpleActionExecutor(this.name, newExecutorService(factory), schedulerFactory);
+            internals[i] = new SimpleActionExecutor(newExecutorService(factory), scheduler);
         }
     }
 
@@ -39,17 +39,7 @@ public class ShardingActionExecutor implements ActionExecutor {
     }
     
     public void schedule(DelayAction action) {
-        if(this.scheduler == null) {
-            setupScheduler(this.name);
-        }
         this.scheduler.checkin(action);
-    }
-    
-    private synchronized DelayScheduler setupScheduler(String name) {
-        if(this.scheduler == null) {
-            this.scheduler = DelaySchedulers.make(name);
-        }
-        return this.scheduler;
     }
     
     private IntUnaryOperator newChooser(final int nThreads) {

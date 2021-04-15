@@ -24,6 +24,14 @@ public class ModularAdapter implements ModuleLoader {
 		injector.inject(bean, player.mc);
 	}
 	
+	public int indexOf(Class<?> moduleCls) {
+		return modularCtx.getBinder(moduleCls).getIndex();
+	}
+	
+	public <T> T loadModule(Player player, int moduleIndex) {
+		return player.mc.getBean(moduleIndex);
+	}
+	
 	@Override
 	public <T> T loadModule(Player player, Class<T> clazz) {
 		return modularCtx.getBinder(clazz).getModuleFrom(player.mc);

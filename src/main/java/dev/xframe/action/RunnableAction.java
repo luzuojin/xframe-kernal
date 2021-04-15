@@ -14,7 +14,12 @@ public final class RunnableAction extends Action {
         runnable.run();
     }
 
-    public static final RunnableAction of(ActionLoop loop, Runnable runnable) {
+    @Override
+	protected Class<?> getClazz() {
+		return runnable.getClass();
+	}
+
+	public static final RunnableAction of(ActionLoop loop, Runnable runnable) {
         return new RunnableAction(loop, runnable);
     }
     

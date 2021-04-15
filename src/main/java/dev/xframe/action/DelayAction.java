@@ -1,26 +1,21 @@
 package dev.xframe.action;
 
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
-public abstract class DelayAction extends Action implements Delayed {
+import dev.xframe.utils.XDateFormatter;
+import io.netty.util.Timeout;
+import io.netty.util.TimerTask;
+
+public abstract class DelayAction extends Action implements Delayed, TimerTask {
     
-    long execTime;
+    protected long execTime;
     
     volatile boolean isCancelled;
     
 	public DelayAction(ActionLoop loop, int delay) {
 	    super(loop);
-	    this.initial(createTime, delay);
-	}
-	
-	public DelayAction(ActionLoop loop, long curTime, int delay) {
-		super(loop);
-		this.initial(curTime, delay);
+	    this.reset(createTime, delay);
 	}
 
 	@Override
@@ -28,7 +23,7 @@ public abstract class DelayAction extends Action implements Delayed {
 	    return !isCancelled;
     }
 
-    private void initial(long curTime, int delay) {
+    private void reset(long curTime, int delay) {
         this.isCancelled = false;
         this.createTime = curTime;
         this.execTime = delay > 0 ? (curTime + delay) : 0;
@@ -52,11 +47,21 @@ public abstract class DelayAction extends Action implements Delayed {
 	}
 	
 	public void recheckin(long curTime, int delay) {
-		initial(curTime, delay);
+		reset(curTime, delay);
 		checkin();
 	}
 
-    public boolean tryExec(long curTime) {
+	//timeout
+    @Override
+	public final void run(Timeout timeout) throws Exception {
+    	if(isCancelled || timeout.isCancelled())
+    		return;
+    	//checkin as action
+    	createTime = execTime;
+    	loop.checkin(this);
+	}
+
+	public boolean tryExec(long curTime) {
         if(isCancelled) {
             return true;
         }
@@ -81,11 +86,18 @@ public abstract class DelayAction extends Action implements Delayed {
     
     @Override
     public String toString() {
-        return getClazz().getName() + "[" + DateTimeFormatter.ofPattern("HH:mm:ss").format(ZonedDateTime.ofInstant(Instant.ofEpochMilli(execTime), ZoneOffset.systemDefault())) + "]";
-    }  
+        return getName() + "[" + XDateFormatter.from(execTime) + "]";
+    }
 
     public static final DelayAction of(ActionLoop loop, int delay, Runnable runnable) {
-        return new DelayAction(loop, delay) {protected void exec() {runnable.run();}};
+		return new DelayAction(loop, delay) {
+			protected void exec() {
+				runnable.run();
+			}
+			protected Class<?> getClazz() {
+				return runnable.getClass();
+			}
+		};
     }
     
 }

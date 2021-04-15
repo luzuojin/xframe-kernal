@@ -5,8 +5,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor.DiscardPolicy;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
+import dev.xframe.action.scheduled.ScheduledExecutor;
 import dev.xframe.utils.XThreadFactory;
 
 public class ThreadPoolActionExecutor extends SimpleActionExecutor {
@@ -17,11 +17,11 @@ public class ThreadPoolActionExecutor extends SimpleActionExecutor {
      * @param name 线程名
      */
     public ThreadPoolActionExecutor(final int nThreads, final String name) {
-        this(nThreads, name, new XThreadFactory(name), DelaySchedulers::make);
+        this(nThreads, new XThreadFactory(name), new ScheduledExecutor());
     }
     
-    public ThreadPoolActionExecutor(final int nThreads, final String name, ThreadFactory threadFactory, Function<String, DelayScheduler> schedulerFactory) {
-        super(name, newExecutorService(nThreads, threadFactory), schedulerFactory);
+    public ThreadPoolActionExecutor(final int nThreads, ThreadFactory threadFactory, ScheduledExecutor scheduler) {
+        super(newExecutorService(nThreads, threadFactory), scheduler);
     }
 
     private static ThreadPoolExecutor newExecutorService(int nThreads, ThreadFactory threadFactory) {

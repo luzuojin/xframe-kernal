@@ -11,7 +11,11 @@ public class ActionExecutors {
     private final static List<ActionExecutor> executors = new LinkedList<ActionExecutor>();
     
     public static ActionExecutor newSingle(String name) {
-        return hold(new ThreadPoolActionExecutor(1, name));
+        return hold(new ThreadPoolActionExecutor(1, name) {
+			public ActionLoop newLoop() {
+				return new ActionLoop.Direct(this);
+			}
+        });
     }
     
     public static ActionExecutor newFixed(String name, int nThreads) {

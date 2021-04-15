@@ -36,7 +36,7 @@ public abstract class Action implements Runnable {
                 g.ending().apply();
             }
         } catch (Throwable e) {
-            logger.error("Execute exception: " + getClazz().getName(), e);
+            logger.error("Execute exception: " + getName(), e);
             failure(e);
         } finally {
             done();
@@ -44,7 +44,7 @@ public abstract class Action implements Runnable {
         	loop.checkout(this);
         }
     }
-    
+
     public final void execute() {
         this.exec();
     }
@@ -66,10 +66,13 @@ public abstract class Action implements Runnable {
     protected Class<?> getClazz() {
     	return this.getClass();
     }
+    protected String getName() {
+		return getClazz().getName();
+	}
     
 	@Override
     public String toString() {
-        return getClazz().getName() + "[" + XDateFormatter.from(createTime) + "]";
+        return getName() + "[" + XDateFormatter.from(createTime) + "]";
     }
 
 }
