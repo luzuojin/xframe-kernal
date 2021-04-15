@@ -1,5 +1,6 @@
 package dev.xframe.task;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import dev.xframe.inject.Configurator;
@@ -32,14 +33,23 @@ public class ScheduledContext {
 	}
 	
 	public void once(Runnable task, int delay) {
-		ScheduledTask.once(loop(), delay, task).checkin();
+		period(task, delay, -1);
+	}
+	public void once(Runnable task, int delay, TimeUnit unit) {
+		period(task, delay, -1, unit);
 	}
 	
 	public void period(Runnable task, int period) {
-		ScheduledTask.period(loop(), period, task).checkin();
+		period(task, period, period);
+	}
+	public void period(Runnable task, int period, TimeUnit unit) {
+		period(task, period, period, unit);
 	}
 	
 	public void period(Runnable task, int delay, int period) {
+		period(task, delay, period, TimeUnit.MILLISECONDS);
+	}
+	public void period(Runnable task, int delay, int period, TimeUnit unit) {
 		ScheduledTask.period(loop(), delay, period, task).checkin();
 	}
 	
