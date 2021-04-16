@@ -1,20 +1,28 @@
 package dev.xframe.utils;
 
+import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Field;
 
 @SuppressWarnings("restriction")
 public class XUnsafe {
 
     static sun.misc.Unsafe unsafe;
+    static Lookup Trusted;
     static {
         try {
-            Field field = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
-            field.setAccessible(true);
-            unsafe = (sun.misc.Unsafe) field.get(null);
+            Field unsafeField = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
+            unsafeField.setAccessible(true);
+            unsafe = (sun.misc.Unsafe) unsafeField.get(null);
+            
+            Field lookupField = Lookup.class.getDeclaredField("IMPL_LOOKUP");
+            Trusted = (Lookup) getObject(staticFieldBase(lookupField), staticFieldOffset(lookupField));
         } catch (Exception e) {
-            //ignore
-            e.printStackTrace();
+            e.printStackTrace(); //ignore
         }
+    }
+    
+    public static Lookup lookup() {
+    	return Trusted;
     }
     
     public static void setBoolean(Object obj, long fieldOffset, boolean val) {
@@ -75,5 +83,12 @@ public class XUnsafe {
     
     public static long getFieldOffset(Field field) {
         return unsafe.objectFieldOffset(field);
+    }
+    
+    public static long staticFieldOffset(Field field) {
+    	return unsafe.staticFieldOffset(field);
+    }
+    public static Object staticFieldBase(Field field) {
+    	return unsafe.staticFieldBase(field);
     }
 }

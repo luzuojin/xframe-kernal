@@ -10,6 +10,7 @@ import dev.xframe.http.Request;
 import dev.xframe.http.service.config.BodyDecoder;
 import dev.xframe.http.service.path.PathMatcher;
 import dev.xframe.utils.XCaught;
+import dev.xframe.utils.XReflection;
 
 public class RestServiceAdapter implements RestService  {
 	
@@ -85,8 +86,8 @@ public class RestServiceAdapter implements RestService  {
         Method method;
         ArgParser[] parsers;
         Invoker(Method method, BodyDecoder decoder) {
+        	XReflection.setAccessible(method);
             this.method = method;
-            this.method.setAccessible(true);
             this.parsers = newParsers(method.getParameters(), decoder);
         }
         Object doInvoke(Object delegate, Request req, PathMatcher matcher) {

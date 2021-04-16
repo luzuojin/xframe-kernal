@@ -35,7 +35,7 @@ public final class Registry {
 	    
 		public Declaring(int group, Method m) {
             try {
-				m.setAccessible(true);
+				XReflection.setAccessible(m);
 				this.group = group;
 				this.type = checkAndGetEventType(m);
 				this.invoker = XLambda.create(BiConsumer.class, m);

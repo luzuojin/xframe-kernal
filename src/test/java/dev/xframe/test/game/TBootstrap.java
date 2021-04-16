@@ -66,6 +66,7 @@ public class TBootstrap {
                 module.dosomething();
             }
         }.call(player);
+        TimeUnit.MILLISECONDS.sleep(100);//wait queued executed
         testExecution.assertExecuted(TPlayerInventory.class);
         
         player.post(new TEvent());

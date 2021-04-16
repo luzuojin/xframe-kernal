@@ -6,6 +6,7 @@ import java.util.List;
 
 import dev.xframe.inject.Inject;
 import dev.xframe.utils.XCaught;
+import dev.xframe.utils.XReflection;
 import dev.xframe.utils.XStrings;
 
 public class Injector {
@@ -63,7 +64,7 @@ public class Injector {
 		private BeanIndexing indexing;
 		
 		public Member(Field field, BeanIndexing indexing) {
-		    field.setAccessible(true);
+		    XReflection.setAccessible(field);
 			this.field = field;
 			this.indexing = indexing;
 			this.index = -1;

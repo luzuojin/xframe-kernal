@@ -8,7 +8,6 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -27,8 +26,7 @@ public class XLambda {
 	}
 	public static <T> T createByConstructor(Class<T> lambdaInterface, Class<?> clazz, Class<?>... parameterTypes) {
 		try {
-            Constructor<?> constructor = clazz.getDeclaredConstructor(parameterTypes);
-            constructor.setAccessible(true);
+            Constructor<?> constructor = XReflection.getConstructor(clazz, parameterTypes);
             MethodHandles.Lookup lookup = createLookup(clazz);
             MethodHandle methodHandle = lookup.unreflectConstructor(constructor);
             return _create(lambdaInterface, lookup, methodHandle);
@@ -100,16 +98,6 @@ public class XLambda {
 	}
 	
 	private static Lookup createLookup(Class<?> clazz) throws Exception {
-		return trustedLookup().in(clazz);
+		return XUnsafe.lookup().in(clazz);
 	}
-	private static Lookup Trusted;
-	private static Lookup trustedLookup() throws Exception {
-		if(Trusted == null) {
-			Field field = Lookup.class.getDeclaredField("IMPL_LOOKUP");
-			field.setAccessible(true);
-			Trusted = (Lookup) field.get(null);
-		}
-		return Trusted;
-	}
-
 }

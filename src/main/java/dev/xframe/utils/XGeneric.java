@@ -52,7 +52,7 @@ public class XGeneric {
         return clazz.getName() + '@' + variable.getName();
     }
     
-    private static XGeneric buildGeneric(Class<?> genericType, Map<String, Class<?>> map) {
+    private static XGeneric makeGeneric(Class<?> genericType, Map<String, Class<?>> map) {
         TypeVariable<?>[] typeParameters = genericType.getTypeParameters();
         GVariable[] vars = new GVariable[typeParameters.length];
         for (int i = 0; i < typeParameters.length; i++) {
@@ -104,7 +104,7 @@ public class XGeneric {
     }
     
     private static XGeneric parseNormal(Class<?> type, Class<?> genericType) {
-    	return buildGeneric(genericType, parseNormal(type, new HashMap<>()));
+    	return makeGeneric(genericType, parseNormal(type, new HashMap<>()));
     }
     
     private static Map<String, Class<?>> parseNormal(Class<?> clazz, Map<String, Class<?>> map) {
@@ -166,9 +166,9 @@ public class XGeneric {
                     parseLambdaUpstream(map, genericType);
                 }
             }
-            return buildGeneric(genericType, map);
-        } catch (Exception e) {
-            //ignore
+            return makeGeneric(genericType, map);
+        } catch (Exception e) {//ignore
+        	e.printStackTrace();
         }
         return null;
     }
@@ -248,17 +248,11 @@ public class XGeneric {
     private static Method poolMethodGetter;
     static {
         try {
-            poolObjGetter = getAccessibleMethod(Class.class, "getConstantPool");
+            poolObjGetter = XReflection.getMethod(Class.class, "getConstantPool");
             Class<?> poolClass = poolObjGetter.invoke(Class.class).getClass();
-            poolSizeGetter = getAccessibleMethod(poolClass, "getSize");
-            poolMethodGetter = getAccessibleMethod(poolClass, "getMethodAt", int.class);
+            poolSizeGetter = XReflection.getMethod(poolClass, "getSize");
+            poolMethodGetter = XReflection.getMethod(poolClass, "getMethodAt", int.class);
         } catch (Exception e) {e.printStackTrace();}//ignore
-    }
-    private static Method getAccessibleMethod(Class<?> clazz, String name, Class<?>... params) throws Exception {
-        Method method = clazz.getDeclaredMethod(name, params);
-        if(!Modifier.isPublic(method.getModifiers()))
-            method.setAccessible(true);
-        return method;
     }
     private static Member getLambdaBasedMethod(Class<?> lambdaType) throws Exception {
         Object pool = poolObjGetter.invoke(lambdaType);
