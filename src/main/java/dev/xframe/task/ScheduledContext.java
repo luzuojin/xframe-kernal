@@ -23,8 +23,8 @@ public class ScheduledContext {
 		}
 	}
 	private int threads() {
-		int def = Math.min(1, Runtime.getRuntime().availableProcessors() / 2);
-		return XProperties.getAsInt("xframe.scheduledthreads", def);
+		int def = Math.max(1, Runtime.getRuntime().availableProcessors() / 2);
+		return XProperties.getAsInt("xframe.scheduled.threads", def);
 	}
 	
 	public TaskLoop loop() {
@@ -50,7 +50,9 @@ public class ScheduledContext {
 		period(task, delay, period, TimeUnit.MILLISECONDS);
 	}
 	public void period(Runnable task, int delay, int period, TimeUnit unit) {
-		ScheduledTask.period(loop(), delay, period, task).checkin();
+		int _delay = delay > 0 ? (int) TimeUnit.MILLISECONDS.convert(delay, unit) : delay;
+		int _period = period > 0 ? (int) TimeUnit.MILLISECONDS.convert(period, unit) : period;
+		ScheduledTask.period(loop(), _delay, _period, task).checkin();
 	}
 	
 }

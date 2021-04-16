@@ -16,7 +16,7 @@ public class Meter {
 
     static final Logger logger = LoggerFactory.getLogger(Metric.class);
     
-    final Class<?> ident;
+    final String ident;
     
     final Counter cnt = new Counter();//执行次数
     final Counter sum = new Counter();//执行总时间
@@ -24,7 +24,7 @@ public class Meter {
     final Counter wat = new Counter();//最长等待时间
     final Counter slo = new Counter();//slow count
     
-    public Meter(Class<?> ident) {
+    public Meter(String ident) {
         this.ident = ident;
     }
     
@@ -51,7 +51,7 @@ public class Meter {
     }
     
     public static void logSlow(Gauge g) {
-        logger.warn("Execute slow [" + g.name() + "] used: " + g.used() + ", waited: " + g.waited());
+        logger.warn("Execute slow [" + g.ident() + "] used: " + g.used() + ", waited: " + g.waited());
     }
 
 }

@@ -11,7 +11,7 @@ public class ScheduledTimer {
 	
 	private static final TimeUnit TickUnit = TimeUnit.MILLISECONDS;
 	
-	private static final long TickDuration = XProperties.getAsLong("xframe.tickduration", 100);
+	private static final long TickDuration = XProperties.getAsLong("xframe.scheduled.tickduration", 100);
 	
 	private static final HashedWheelTimer _Timer = new HashedWheelTimer(new XThreadFactory("Timer"), TickDuration, TickUnit);
 	

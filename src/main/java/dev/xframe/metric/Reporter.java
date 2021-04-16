@@ -26,7 +26,7 @@ public class Reporter {
                meter.max.get() + '\t' +
                meter.wat.get() + '\t' +
                meter.slo.get() + '\t' +
-               meter.ident.getName();
+               meter.ident;
     }
 
     private static String header() {

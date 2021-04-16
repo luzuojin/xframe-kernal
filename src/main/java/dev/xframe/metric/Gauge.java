@@ -7,14 +7,14 @@ package dev.xframe.metric;
 public class Gauge {
 	
 	public static final Gauge NIL = new Gauge() {
-		public Gauge creating(long createTime) {return this;}
-		public Gauge creating() {return this;}
-		public Gauge beginning() {return this;}
-		public Gauge ending() {return this;}
+		public Gauge create(long createTime) {return this;}
+		public Gauge create() {return this;}
+		public Gauge begin() {return this;}
+		public Gauge end() {return this;}
         public void apply() {}
 	};
 	
-	Class<?> ident;
+	String ident;
 	
 	long createTime;
 	
@@ -25,30 +25,26 @@ public class Gauge {
 	public Gauge() {
 	}
 	
-	public Gauge(Class<?> ident) {
+	public Gauge(String ident) {
 		this.ident = ident;
 	}
 
-	public static Gauge of(Class<?> ident) {
-		return Metric.watching ? new Gauge(ident) : NIL;
-	}
-	
-	public Gauge creating() {
-		creating(System.currentTimeMillis());
+	public Gauge create() {
+		create(System.currentTimeMillis());
 		return this;
 	}
 	
-	public Gauge creating(long createTime) {
+	public Gauge create(long createTime) {
 		this.createTime = createTime;
 		return this;
 	}
 
-	public Gauge beginning() {
+	public Gauge begin() {
 		this.beginTime = System.currentTimeMillis();
 		return this;
 	}
 	
-	public Gauge ending() {
+	public Gauge end() {
 		this.endTime = System.currentTimeMillis();
 		return this;
 	}
@@ -61,12 +57,16 @@ public class Gauge {
 		return createTime == 0 ? 0 : beginTime - createTime;
 	}
 
-	public String name() {
-		return ident.getName();
+	public String ident() {
+		return ident;
 	}
 	
 	public void apply() {
 		Metric.apply(this);
+	}
+	
+	public static Gauge of(String ident) {
+		return Metric.gauge(ident);
 	}
 
 }

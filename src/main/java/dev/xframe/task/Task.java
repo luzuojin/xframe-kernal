@@ -31,9 +31,9 @@ public abstract class Task implements Runnable {
         try {
         	TaskLoop.setCurrent(loop);
             if(runable()) {
-            	Gauge g = Gauge.of(getClazz()).creating(createTime).beginning();
+            	Gauge g = Gauge.of(getName()).create(createTime).begin();
                 this.exec();
-                g.ending().apply();
+                g.end().apply();
             }
         } catch (Throwable e) {
             logger.error("Execute exception: " + getName(), e);
