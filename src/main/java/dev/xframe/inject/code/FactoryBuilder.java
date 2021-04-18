@@ -34,7 +34,7 @@ public class FactoryBuilder {
 
     private static Object buildFactoryImplements(Class<?> factoryInteface, Factory factory, List<Class<?>> impls) {
         try {
-            ClassPool pool = ClassPool.getDefault();
+            ClassPool pool = CtHelper.getClassPool();
             CtClass ctParent = pool.getCtClass(factoryInteface.getName());
             String factoryName = factoryInteface.getName() + "$Factory";
             

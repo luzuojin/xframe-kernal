@@ -1,6 +1,10 @@
 package dev.xframe.utils;
 
+import java.lang.reflect.Method;
+import java.security.ProtectionDomain;
+
 import javassist.CannotCompileException;
+import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtConstructor;
 import javassist.CtMethod;
@@ -10,6 +14,28 @@ import javassist.Modifier;
 import javassist.NotFoundException;
 
 public class CtHelper {
+	
+	private static class InternalClassPool extends ClassPool {
+		private Method defineCls = XReflection.getMethod(ClassLoader.class, "defineClass", String.class, byte[].class, int.class, int.class, ProtectionDomain.class);
+		public InternalClassPool() {super(true);}
+		@Override
+		public Class<?> toClass(CtClass ct, Class<?> neighbor, ClassLoader loader, ProtectionDomain domain) throws CannotCompileException {
+			try {
+				byte[] bytecode = ct.toBytecode();
+				return (Class<?>) defineCls.invoke(loader, ct.getName(), bytecode, 0, bytecode.length, domain);
+			} catch (Exception e) {
+				return XCaught.throwException(e);
+			}
+		}
+	}
+	private static final ClassPool DefaultClassPool = new InternalClassPool();
+	
+	public static ClassPool getClassPool() {
+		return DefaultClassPool;
+	}
+	public static ClassPool newClassPool() {
+		return new InternalClassPool();
+	}
     
     public static CtMethod copy(CtMethod src, String body, CtClass declaring) throws CannotCompileException, NotFoundException {
         return CtNewMethod.make(src.getModifiers(), src.getReturnType(), src.getName(), src.getParameterTypes(), src.getExceptionTypes(), body, declaring);

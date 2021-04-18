@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import dev.xframe.inject.beans.BeanIndexing;
 import dev.xframe.module.ModularMethods;
+import dev.xframe.utils.CtHelper;
 import dev.xframe.utils.CtParser;
 import dev.xframe.utils.XCaught;
 import dev.xframe.utils.XReflection;
@@ -28,7 +29,7 @@ public class MInvokerBuilder {
 			String moduleName = module.getName();
 			String invokerName = cts.get("invoker_name").replace("${module_name}", moduleName);
 
-			ClassPool pool = ClassPool.getDefault();
+			ClassPool pool = CtHelper.getClassPool();
 			CtClass cc = pool.makeClass(invokerName);
 
 			cc.addInterface(pool.get(ModularInvoker.class.getName()));

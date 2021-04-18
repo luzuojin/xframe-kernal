@@ -35,7 +35,7 @@ public class Patchers {
     }
 
     public static void makePatch(List<String> classNames) {
-        ClassPool pool = ClassPool.getDefault();
+        ClassPool pool = CtHelper.getClassPool();
         Set<CtClass> patched = new LinkedHashSet<CtClass>();//需要顺序, 先patch先load
         
         for (String className : classNames) {

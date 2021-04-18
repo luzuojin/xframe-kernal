@@ -52,7 +52,7 @@ public class SyntheticBuilder {
             } catch(ClassNotFoundException e) {}
 
             if(proxyClass == null) {
-            	ClassPool pool = ClassPool.getDefault();
+            	ClassPool pool = CtHelper.getClassPool();
                 CtClass cc = pool.makeClass(proxyName);
                 
                 CtClass cp = pool.get(basicName);

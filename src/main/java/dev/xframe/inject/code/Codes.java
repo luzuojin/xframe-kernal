@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dev.xframe.utils.CtHelper;
 import dev.xframe.utils.XScanner;
 import dev.xframe.utils.XScanner.ClassEntry;
 import dev.xframe.utils.XScanner.ScanMatcher;
@@ -84,7 +85,7 @@ public class Codes {
             //ignore;
         }
 	    try {
-	        return ClassPool.getDefault().get(name).toClass();//从文件中读取
+	        return CtHelper.getClassPool().get(name).toClass();//从文件中读取
 	    } catch (NotFoundException | CannotCompileException e) {
 	        //ignore
 	    }
@@ -108,7 +109,7 @@ public class Codes {
 	public static Class<?> rebaseClass(Class<?> clazz) {
 	    String clazzName = clazz.getName();
 	    int idx = clazzName.lastIndexOf("_v");
-        return idx == -1 ? clazz : defineClass(ClassPool.getDefault(), clazzName.substring(0, idx));
+        return idx == -1 ? clazz : defineClass(CtHelper.getClassPool(), clazzName.substring(0, idx));
 	}
 	
     private static ClassPool getClassPool(File classFile) {
@@ -152,7 +153,7 @@ public class Codes {
 	}
 
 	public static List<Class<?>> loadClasses(List<String> names) {
-		ClassPool pool = ClassPool.getDefault();
+		ClassPool pool = CtHelper.getClassPool();
 		List<Class<?>> clazzes = new ArrayList<>();
 		for (String name : names) {
 			try {

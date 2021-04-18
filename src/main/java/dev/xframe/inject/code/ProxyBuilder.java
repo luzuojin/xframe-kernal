@@ -48,7 +48,7 @@ public class ProxyBuilder {
     
     private synchronized static <T> T build0(Class<?> basic, Class<?> delegate) {
         try {
-            ClassPool pool = ClassPool.getDefault();
+            ClassPool pool = CtHelper.getClassPool();
             CtClass ctParent = pool.get(basic.getName());
             String proxyName = cts.get("proxy_name").replace("${proxy_basic}", basic.getName());
             

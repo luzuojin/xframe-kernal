@@ -18,6 +18,7 @@ import dev.xframe.inject.Loadable;
 import dev.xframe.inject.Prototype;
 import dev.xframe.inject.Providable;
 import dev.xframe.inject.code.Codes;
+import dev.xframe.utils.CtHelper;
 import dev.xframe.utils.XSorter;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
@@ -172,7 +173,7 @@ public class BeanPretreater implements Iterable<Class<?>> {
     private List<Class<?>> getRefPrototypes(Class<?> clazz) {
         if(!refPrototypes.containsKey(clazz)) {
             try {
-                ClassPool pool = ClassPool.getDefault();
+                ClassPool pool = CtHelper.getClassPool();
 				CtClass ct = pool.get(clazz.getName());
                 
                 List<String> refs = new ArrayList<>();
