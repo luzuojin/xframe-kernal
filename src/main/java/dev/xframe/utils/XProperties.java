@@ -1,5 +1,8 @@
 package dev.xframe.utils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
@@ -39,8 +42,18 @@ public class XProperties {
 		}
 	}
 	public static InputStream getInputStream(String file) {
-		InputStream input = XReflection.getCallerClass().getClassLoader().getResourceAsStream(file);
-		return input == null ? ClassLoader.getSystemResourceAsStream(file) : input;
+	    InputStream input = XReflection.getCallerClass().getClassLoader().getResourceAsStream(file);
+	    if(input == null) {
+	        File f = new File(file);
+	        if(f.exists()) {
+	            try {
+	                input = new FileInputStream(f);
+	            } catch (FileNotFoundException e) {
+	                //ignore
+	            }
+	        }
+	    }
+	    return input;
 	}
 	
 	public static String get(String key) {
