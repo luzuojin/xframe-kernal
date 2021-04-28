@@ -5,10 +5,10 @@ import java.util.function.Predicate;
 
 import dev.xframe.inject.Bean;
 import dev.xframe.inject.Inject;
-import dev.xframe.inject.beans.BeanFetcher;
 import dev.xframe.inject.beans.BeanBinder;
 import dev.xframe.inject.beans.BeanIndexing;
 import dev.xframe.inject.beans.BeanPretreater;
+import dev.xframe.inject.beans.BeanProvider;
 import dev.xframe.inject.beans.BeanRegistrator;
 import dev.xframe.inject.beans.Injector;
 import dev.xframe.inject.code.Codes;
@@ -27,7 +27,7 @@ public class ModularContext {
 	@Inject
 	private BeanIndexing gIndexing;
 	@Inject
-	private BeanFetcher gFetcher;
+	private BeanProvider gProvider;
 	
 	private ModularIndexes indexes;
 	
@@ -46,7 +46,7 @@ public class ModularContext {
 	}
 	
 	public ModuleContainer newContainer(Object assemble) {
-	    ModuleContainer mc = new ModuleContainer(gFetcher, indexes);
+	    ModuleContainer mc = new ModuleContainer(gProvider, indexes);
 		int index = assembleIndex;
 		//为assembleClass赋值 @see initial() 
 		mc.setBean(index, assemble);

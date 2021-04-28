@@ -2,27 +2,34 @@ package dev.xframe.module.beans;
 
 import dev.xframe.inject.beans.BeanBinder;
 import dev.xframe.inject.beans.BeanContainer;
-import dev.xframe.inject.beans.BeanFetcher;
+import dev.xframe.inject.beans.BeanProvider;
 import dev.xframe.module.ModuleType;
 
 public class ModuleContainer extends BeanContainer  {
 	
 	//global beans
-	private BeanFetcher gFetcher;
+	private BeanProvider gProvider;
 	
-	public ModuleContainer(BeanFetcher gFetcher, ModularIndexes indexes) {
-		super(indexes);
-		this.gFetcher = gFetcher;
+	public ModuleContainer(BeanProvider gProvider, ModularIndexes indexes) {
+	    super(indexes);
+	    this.gProvider = gProvider;
 	}
 
 	@Override
 	public synchronized Object fetch(int index) {
-		if(indexes.isValidIndex(index)) {
-			return super.fetch(index);
-		}
-		return gFetcher.fetch(index);
+	    if(indexes.isValidIndex(index)) {
+	        return super.fetch(index);
+	    }
+	    return gProvider.getBean(index);
 	}
 
+	public <T> T getBean(int index) {
+	    if(indexes.isValidIndex(index)) {
+	        return super.getBean(index);
+	    }
+	    return gProvider.getBean(index);
+	}
+	
 	public synchronized void loadModules(ModuleType type) {
 		if(type == ModuleType.RESIDENT) {
 			loadModules(((ModularIndexes)indexes).residents);
