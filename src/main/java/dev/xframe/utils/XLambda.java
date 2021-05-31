@@ -98,6 +98,6 @@ public class XLambda {
 	}
 	
 	private static Lookup createLookup(Class<?> clazz) throws Exception {
-		return XUnsafe.lookup().in(clazz);
+		return XLookup.in(clazz);
 	}
 }

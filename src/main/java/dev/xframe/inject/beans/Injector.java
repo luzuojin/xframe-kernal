@@ -5,8 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dev.xframe.inject.Inject;
-import dev.xframe.utils.XCaught;
-import dev.xframe.utils.XReflection;
+import dev.xframe.utils.XAccessor;
 import dev.xframe.utils.XStrings;
 
 public class Injector {
@@ -59,12 +58,13 @@ public class Injector {
 	}
 
 	public static class Member {
+	    private XAccessor accessor;
 		private Field field;
 		private int index;
 		private BeanIndexing indexing;
 		
 		public Member(Field field, BeanIndexing indexing) {
-		    XReflection.setAccessible(field);
+		    this.accessor = XAccessor.of(field);
 			this.field = field;
 			this.indexing = indexing;
 			this.index = -1;
@@ -77,11 +77,7 @@ public class Injector {
 		    return XStrings.isEmpty(an.value()) ? field.getType() : an.value();
 		}
 		public void set(Object bean, Object val) {
-		    try {
-                field.set(bean, val);
-            } catch (Exception e) {
-                XCaught.throwException(e);
-            }
+		    accessor.set(bean, val);
 		}
 		public int getIndex() {
 			if(index == -1) {//check injectable and cache index

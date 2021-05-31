@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import dev.xframe.inject.Loadable;
-import dev.xframe.utils.XBitSet;
 
 
 /**
@@ -19,13 +18,13 @@ public class BeanContainer implements BeanFetcher {
 	protected BeanIndexes indexes;
 	
 	private Object[] beans;
-	private XBitSet flags;
+	private BitSet flags;
 	
 	public BeanContainer(BeanIndexes indexes) {
 		int cap = indexes.length();
 		this.indexes = indexes;
 		this.beans = new Object[cap];
-		this.flags = new XBitSet(cap);
+		this.flags = new BitSet(cap);
 	}
 	
 	synchronized void ensureCap(int cap) {

@@ -10,7 +10,6 @@ import java.security.ProtectionDomain;
 
 import dev.xframe.inject.Configurator;
 import dev.xframe.inject.Eventual;
-import dev.xframe.utils.CtHelper;
 import javassist.CtClass;
 
 @Configurator
@@ -22,7 +21,7 @@ public class XTransformer implements ClassFileTransformer, Eventual {
                 className = className.replace(File.separator, ".");
                 if(Codes.isMatching(className)) {
                     CtClass ctClass = CtHelper.newClassPool().makeClass(new ByteArrayInputStream(classfileBuffer));
-                    Patchers.makePatch(ctClass);
+                    PatcherSet.makePatch(ctClass);
                     return ctClass.toBytecode();
                 }
             }

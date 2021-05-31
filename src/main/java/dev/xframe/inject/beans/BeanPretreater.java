@@ -4,11 +4,11 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -18,8 +18,7 @@ import dev.xframe.inject.Loadable;
 import dev.xframe.inject.Prototype;
 import dev.xframe.inject.Providable;
 import dev.xframe.inject.code.Codes;
-import dev.xframe.utils.CtHelper;
-import dev.xframe.utils.XSorter;
+import dev.xframe.inject.code.CtHelper;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtBehavior;
@@ -36,36 +35,36 @@ import javassist.expr.NewExpr;
  * @author luzj
  */
 public class BeanPretreater implements Iterable<Class<?>> {
-    
-	private List<Class<?>> classes;
-    
+
+    private List<Class<?>> classes;
+
     private Map<Class<?>, DependenceType> dTypes;
-    
+
     private int index;
-    
+
     private Map<Class<?>, List<Class<?>>> refPrototypes;
-    
+
     public BeanPretreater(List<Class<?>> classes) {
         this.classes = classes;
-        
+
         this.index = 0;
         this.dTypes = new HashMap<>();
         this.refPrototypes = new HashMap<>();
     }
-    
+
     private boolean isProvidable(Class<?> clazz) {
         return clazz.isAnnotationPresent(Providable.class);
     }
-    
+
     public BeanPretreater filter(Predicate<Class<?>> predicate) {
         this.classes = filter0(this.classes, predicate);
         return this;
     }
-    
+
     private List<Class<?>> filter0(List<Class<?>> classes, Predicate<Class<?>> predicate) {
         return classes.stream().filter(predicate).collect(Collectors.toList());
     }
-    
+
     /**
      * 但凡有一个@Providable的接口或者父类已有实现 就表示该类需要被忽略掉
      * @param clazz
@@ -73,31 +72,31 @@ public class BeanPretreater implements Iterable<Class<?>> {
      */
     private boolean isProvided(Class<?> clazz) {
         if(dTypes.containsKey(clazz)) return true;
-        
+
         Class<?>[] interfaces = clazz.getInterfaces();
         for (Class<?> interfaze : interfaces) {
             if(isProvidable(interfaze) && isProvided(interfaze)) return true;
         }
-        
+
         Class<?> superClazz = clazz.getSuperclass();
         if(superClazz != null && superClazz != Object.class) {
             if(isProvidable(superClazz) && isProvided(superClazz)) return true;
         }
         return false;
     }
-    
-    public BeanPretreater pretreat(Comparator<Class<?>> comparator) {
-    	return pretreat(comparator, c->false);
+
+    public BeanPretreater pretreat(Function<Class<?>, Comparable<?>> toComparable) {
+        return pretreat(toComparable, c->false);
     }
-    public BeanPretreater pretreat(Comparator<Class<?>> comparator, Predicate<Class<?>> pretrial) {
+    public BeanPretreater pretreat(Function<Class<?>, Comparable<?>> toComparable, Predicate<Class<?>> pretrial) {
         //首先按字母排序,保证每次处理顺序一样
-        XSorter.bubble(classes, (c1, c2) -> c1.getSimpleName().compareTo(c2.getSimpleName()));
+        makeOrderly(classes, Class::getSimpleName);
         //Annotation排序
-        XSorter.bubble(classes, comparator);
-        
+        makeOrderly(classes, toComparable);
+
         List<Class<?>> provides = new ArrayList<>();
         List<Class<?>> analysed = new ArrayList<>();
-        
+
         //处理@Providable
         for (Class<?> clazz : this.classes) {
             if(isProvidable(clazz)) {
@@ -113,11 +112,11 @@ public class BeanPretreater implements Iterable<Class<?>> {
                 putUpwardIfNotPrototype(dTypes, provide, new DependenceType(provide));
             }
         }
-        
+
         //由于@Providable的处理打乱了Classes的顺序, 重新排序
-        XSorter.bubble(analysed, (c1, c2) -> c1.getSimpleName().compareTo(c2.getSimpleName()));
-        XSorter.bubble(analysed, comparator);
-        
+        makeOrderly(analysed, Class::getSimpleName);
+        makeOrderly(analysed, toComparable);
+
         //过滤掉仅用来帮助分析依赖关系的类
         analysed = filter0(analysed, c->!pretrial.test(c));
 
@@ -126,15 +125,15 @@ public class BeanPretreater implements Iterable<Class<?>> {
         }
 
         //按依赖顺序排序
-        XSorter.bubble(analysed, (c1, c2) -> Integer.compare(dTypes.get(c1).index, dTypes.get(c2).index));
-        
+        makeOrderly(analysed, c->dTypes.get(c).index);
+
         this.classes = analysed;
         return this;
     }
-    
+
     public List<Class<?>> collect() {
-    	return new ArrayList<>(classes);
-	}
+        return new ArrayList<>(classes);
+    }
 
     @Override
     public Iterator<Class<?>> iterator() {
@@ -151,18 +150,18 @@ public class BeanPretreater implements Iterable<Class<?>> {
         getRefPrototypes(dtype.type).forEach(c->analyse0(c, new DependenceLink(parent, c)));;
         dtype.index = ++index;
     }
-    
+
     public <T> void putUpwardIfNotPrototype(Map<Class<?>, T> map, Class<?> key, T val) {
         putUpward(map, key, val, !key.isAnnotationPresent(Prototype.class));//prototype是通过new Instance来依赖. 所以只需要处理可实例化的类
     }
-    
+
     public <T> void putUpward(Map<Class<?>, T> map, Class<?> key, T val, boolean clazzUpWard) {
         map.putIfAbsent(key, val);
-        
+
         for (Class<?> interfaze : key.getInterfaces()) {
-        	putUpward(map, interfaze, val, clazzUpWard);
+            putUpward(map, interfaze, val, clazzUpWard);
         }
-        
+
         if(clazzUpWard) {
             Class<?> superClazz = key.getSuperclass();
             if(superClazz != null && superClazz != Object.class)
@@ -174,11 +173,11 @@ public class BeanPretreater implements Iterable<Class<?>> {
         if(!refPrototypes.containsKey(clazz)) {
             try {
                 ClassPool pool = CtHelper.getClassPool();
-				CtClass ct = pool.get(clazz.getName());
-                
+                CtClass ct = pool.get(clazz.getName());
+
                 List<String> refs = new ArrayList<>();
                 List<CtBehavior> behaviors = getRefMethods(clazz, ct);
-                
+
                 for (CtBehavior behavior : behaviors) {
                     behavior.getDeclaringClass().defrost();
                     behavior.instrument(new ExprEditor(){
@@ -202,35 +201,35 @@ public class BeanPretreater implements Iterable<Class<?>> {
         }
         return behaviors;
     }
-    
+
     static class DependenceType {
         Class<?> type;
         List<DependenceField> fields = new ArrayList<>();
         int index;
         public DependenceType(Class<?> clazz) {
-        	Class<?> t = this.type = clazz;
-        	do {
-        		for (Field field : t.getDeclaredFields()) {
-        			if(field.isAnnotationPresent(Inject.class)) {
-        				this.fields.add(new DependenceField(field));
-        			}
-        		}
-        		t = t.getSuperclass();
-        	} while(t!=null&&!t.isAnnotationPresent(Prototype.class) && !Object.class.equals(t));
+            Class<?> t = this.type = clazz;
+            do {
+                for (Field field : t.getDeclaredFields()) {
+                    if(field.isAnnotationPresent(Inject.class)) {
+                        this.fields.add(new DependenceField(field));
+                    }
+                }
+                t = t.getSuperclass();
+            } while(t!=null&&!t.isAnnotationPresent(Prototype.class) && !Object.class.equals(t));
         }
         @Override
         public String toString() {
             return "DependenceType [type=" + type + ", index=" + index + "]";
         }
     }
-    
+
     static class DependenceField {
-    	Class<?> type;
-    	boolean isLazy;
-		public DependenceField(Field field) {
-			this.type = field.getType();
-			this.isLazy = field.getAnnotation(Inject.class).lazy();
-		}
+        Class<?> type;
+        boolean isLazy;
+        public DependenceField(Field field) {
+            this.type = field.getType();
+            this.isLazy = field.getAnnotation(Inject.class).lazy();
+        }
     }
 
     static class DependenceLink {
@@ -247,14 +246,14 @@ public class BeanPretreater implements Iterable<Class<?>> {
                 while(link.parent != null && link.parent.self != null) {
                     linkStr.append(link.self.getName()).append(" ");
                     if(this.self.equals(link.parent.self)) {
-                    	throw new IllegalArgumentException(String.format("Circular dependence: %s", linkStr.append(this.self.getName())));
+                        throw new IllegalArgumentException(String.format("Circular dependence: %s", linkStr.append(this.self.getName())));
                     }
                     link = link.parent;
                 }
             }
         }
     }
-    
+
     public static class Annotated {
         final Class<? extends Annotation>[] annos;
         public Annotated(Class<? extends Annotation>[] annos) {
@@ -263,18 +262,32 @@ public class BeanPretreater implements Iterable<Class<?>> {
         int annoOrder(Class<?> c) {
             for (int i = 0; i < annos.length; i++) {
                 if(c.isAnnotationPresent(annos[i])) {
-                    return annos.length - i;
+                    return i;
                 }
             }
-            return 0;
+            return annos.length;
         }
         /**按照给定的顺序从小到大排列*/
-        public Comparator<Class<?>> comparator() {
-            return (c1, c2) -> Integer.compare(annoOrder(c2), annoOrder(c1));
+        public Function<Class<?>, Comparable<?>> comparator() {
+            return this::annoOrder;
         }
         public boolean isPresient(Class<?> c) {
             return Arrays.stream(annos).filter(a->c.isAnnotationPresent(a)).findAny().isPresent();
         }
+    }
+
+    public static <T> List<T> makeOrderly(List<T> list, Function<T, Comparable<?>> toComparable) {
+        @SuppressWarnings({"rawtypes", "unchecked"})
+        Function<T, Comparable<Object>> toC = (Function<T, Comparable<Object>>) (Function) toComparable;
+        int len = list.size();
+        for (int i = 0; i < len - 1; i++) {// 控制趟数
+            for (int j = 0; j < len - i - 1; j++) {
+                if (toC.apply(list.get(j)).compareTo(toC.apply(list.get(j + 1))) > 0) {
+                    list.set(j, list.set(j + 1, list.get(j)));
+                }
+            }
+        }
+        return list;
     }
 
 }

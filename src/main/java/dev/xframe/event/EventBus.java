@@ -3,8 +3,6 @@ package dev.xframe.event;
 import java.util.Iterator;
 import java.util.List;
 
-import dev.xframe.utils.SyncCOWList;
-
 public class EventBus extends SubscriberMap implements Registrator {
     
     public static int getEventType(Object evt) {
@@ -44,7 +42,7 @@ public class EventBus extends SubscriberMap implements Registrator {
 }
 
 class SubscriberMap {//减少内存占用(相关Ref/Wrapper都去掉)
-    static class Entry extends SyncCOWList<Subscriber> {
+    static class Entry extends SubscriberList<Subscriber> {
         int type;
         Entry next;
         public Entry(int type) {

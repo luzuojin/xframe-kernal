@@ -1,55 +1,46 @@
 package dev.xframe.utils;
 
-import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Field;
 
 @SuppressWarnings("restriction")
 public class XUnsafe {
 
     static sun.misc.Unsafe unsafe;
-    static Lookup Trusted;
     static {
         try {
             Field unsafeField = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
             unsafeField.setAccessible(true);
             unsafe = (sun.misc.Unsafe) unsafeField.get(null);
-            
-            Field lookupField = Lookup.class.getDeclaredField("IMPL_LOOKUP");
-            Trusted = (Lookup) getObject(staticFieldBase(lookupField), staticFieldOffset(lookupField));
         } catch (Exception e) {
             e.printStackTrace(); //ignore
         }
     }
     
-    public static Lookup lookup() {
-    	return Trusted;
-    }
-    
-    public static void setBoolean(Object obj, long fieldOffset, boolean val) {
+    public static void putBoolean(Object obj, long fieldOffset, boolean val) {
         unsafe.putBoolean(obj, fieldOffset, val);
     }
-    public static void setInt(Object obj, long fieldOffset, int val) {
+    public static void putInt(Object obj, long fieldOffset, int val) {
         unsafe.putInt(obj, fieldOffset, val);
     }
-    public static void setLong(Object obj, long fieldOffset, long val) {
+    public static void putLong(Object obj, long fieldOffset, long val) {
         unsafe.putLong(obj, fieldOffset, val);
     }
-    public static void setShort(Object obj, long fieldOffset, short val) {
+    public static void putShort(Object obj, long fieldOffset, short val) {
         unsafe.putShort(obj, fieldOffset, val);
     }
-    public static void setByte(Object obj, long fieldOffset, byte val) {
+    public static void putByte(Object obj, long fieldOffset, byte val) {
         unsafe.putByte(obj, fieldOffset, val);
     }
-    public static void setChar(Object obj, long fieldOffset, char val) {
+    public static void putChar(Object obj, long fieldOffset, char val) {
         unsafe.putChar(obj, fieldOffset, val);
     }
-    public static void setFloat(Object obj, long fieldOffset, float val) {
+    public static void putFloat(Object obj, long fieldOffset, float val) {
         unsafe.putFloat(obj, fieldOffset, val);
     }
-    public static void setDouble(Object obj, long fieldOffset, double val) {
+    public static void putDouble(Object obj, long fieldOffset, double val) {
         unsafe.putDouble(obj, fieldOffset, val);
     }
-    public static void setObject(Object obj, long fieldOffset, Object val) {
+    public static void putObject(Object obj, long fieldOffset, Object val) {
         unsafe.putObject(obj, fieldOffset, val);
     }
     
@@ -81,14 +72,21 @@ public class XUnsafe {
         return unsafe.getObject(obj, fieldOffset);
     }
     
-    public static long getFieldOffset(Field field) {
+    public static long objectFieldOffset(Field field) {
         return unsafe.objectFieldOffset(field);
     }
     
     public static long staticFieldOffset(Field field) {
-    	return unsafe.staticFieldOffset(field);
+        return unsafe.staticFieldOffset(field);
     }
     public static Object staticFieldBase(Field field) {
-    	return unsafe.staticFieldBase(field);
+        return unsafe.staticFieldBase(field);
+    }
+    public static Object allocateInstance(Class<?> cls) {
+        try {
+            return unsafe.allocateInstance(cls);
+        } catch (InstantiationException e) {
+            return XCaught.throwException(e);
+        }
     }
 }

@@ -4,11 +4,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Supplier;
 
 import dev.xframe.inject.Primary;
 import dev.xframe.inject.code.ProxyBuilder;
-import dev.xframe.utils.XLambda;
+import dev.xframe.utils.XFactory;
 import dev.xframe.utils.XReflection;
 
 /**
@@ -59,11 +58,11 @@ public abstract class BeanBinder {
     public static class Classic extends BeanBinder {
         protected final Class<?> master;
         protected final Injector injector;
-        protected final Supplier<?> factory;
+        protected final XFactory<?> factory;
         public Classic(Class<?> master, Injector injector) {
-            this(master, injector, XLambda.createByConstructor(master));
+            this(master, injector, XFactory.of(master));
         }
-        protected Classic(Class<?> master, Injector injector, Supplier<?> factory) {
+        protected Classic(Class<?> master, Injector injector, XFactory<?> factory) {
             this.master = master;
             this.injector = injector;
             this.factory = factory;

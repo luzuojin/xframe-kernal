@@ -5,11 +5,11 @@ import dev.xframe.inject.beans.BeanFetcher;
 import dev.xframe.inject.beans.Injector;
 import dev.xframe.inject.code.SyntheticBuilder;
 import dev.xframe.module.ModularAgent;
-import dev.xframe.utils.XLambda;
+import dev.xframe.utils.XFactory;
 
 public class AgentBinder extends ModularBinder implements ModularListener {
     public AgentBinder(Class<?> master) {
-        super(master, Injector.NIL, XLambda.createByConstructor(buildAgentClass(master)));
+        super(master, Injector.NIL, XFactory.of(buildAgentClass(master)));
     }
     //append impl留给ModularListener来处理
     protected void integrate(Object bean, BeanFetcher fetcher) {

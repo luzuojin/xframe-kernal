@@ -10,26 +10,25 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.xframe.utils.CtHelper;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.Modifier;
 import javassist.NotFoundException;
 
-public class Patchers {
-    
-    static final Logger logger = LoggerFactory.getLogger(Patchers.class);
-    
+public class PatcherSet {
+
+    static final Logger logger = LoggerFactory.getLogger(PatcherSet.class);
+
     static final List<Patcher> patchers = new ArrayList<Patcher>(
             Arrays.asList(
                     new JavaBeanPatcher(),
                     new PrototypePatcher()
                     ));
     static {
-    	ServiceLoader<Patcher> provided = ServiceLoader.load(Patcher.class);
-    	for (Patcher patcher : provided) addPatcher(patcher);
+        ServiceLoader<Patcher> provided = ServiceLoader.load(Patcher.class);
+        for (Patcher patcher : provided) addPatcher(patcher);
     }
-    
+
     public static void addPatcher(Patcher patcher) {
         patchers.add(patcher);
     }
@@ -37,7 +36,7 @@ public class Patchers {
     public static void makePatch(List<String> classNames) {
         ClassPool pool = CtHelper.getClassPool();
         Set<CtClass> patched = new LinkedHashSet<CtClass>();//需要顺序, 先patch先load
-        
+
         for (String className : classNames) {
             try {
                 makePatch(patched, pool.get(className));
@@ -45,7 +44,7 @@ public class Patchers {
                 logger.error("Patch code: ", e);
             }
         }
-        
+
         for (CtClass clazz : patched) {
             try {
                 clazz.toClass();
@@ -57,9 +56,9 @@ public class Patchers {
 
     private static void makePatch(Set<CtClass> patched, CtClass clazz) throws Exception {
         if(patched.contains(clazz) || dispensablePatch(clazz)) return;
-        
+
         makePatch(patched, clazz.getSuperclass());//先处理父类
-        
+
         if(makePatch(clazz)) patched.add(clazz);
     }
 

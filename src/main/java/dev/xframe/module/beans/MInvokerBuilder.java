@@ -9,12 +9,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import dev.xframe.inject.beans.BeanIndexing;
+import dev.xframe.inject.beans.BeanPretreater;
+import dev.xframe.inject.code.CtHelper;
+import dev.xframe.inject.code.CtParser;
 import dev.xframe.module.ModularMethods;
-import dev.xframe.utils.CtHelper;
-import dev.xframe.utils.CtParser;
 import dev.xframe.utils.XCaught;
 import dev.xframe.utils.XReflection;
-import dev.xframe.utils.XSorter;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtField;
@@ -70,7 +70,7 @@ public class MInvokerBuilder {
 	}
 
 	private static List<Method> findMethodsByAnno(Class<?> clazz, Class<? extends Annotation> anno) {
-        return XSorter.bubble(findMethodsByAnno0(clazz, anno, new ArrayList<>()), (m1, m2)->m1.getName().compareTo(m2.getName()));
+        return BeanPretreater.makeOrderly(findMethodsByAnno0(clazz, anno, new ArrayList<>()), Method::getName);
     }
 	
     private static List<Method> findMethodsByAnno0(Class<?> clazz, Class<? extends Annotation> anno, List<Method> mets) {

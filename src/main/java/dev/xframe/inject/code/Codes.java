@@ -15,10 +15,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.xframe.utils.CtHelper;
-import dev.xframe.utils.XScanner;
-import dev.xframe.utils.XScanner.ClassEntry;
-import dev.xframe.utils.XScanner.ScanMatcher;
+import dev.xframe.inject.code.Scanner.ClassEntry;
+import dev.xframe.inject.code.Scanner.ScanMatcher;
 import javassist.CannotCompileException;
 import javassist.ClassMap;
 import javassist.ClassPath;
@@ -53,14 +51,14 @@ public class Codes {
 
 	synchronized static List<Class<?>> getClasses0() {
 	    if(declares == null) {
-	        List<ClassEntry> entries = XScanner.scan(matcher);
+	        List<ClassEntry> entries = Scanner.scan(matcher);
 	        List<String> names = new ArrayList<>();
 	        for (ClassEntry entry : entries) {
 	            addEntry(entry);
 	            names.add(entry.name);
 	        }
 	        
-	        Patchers.makePatch(names);
+	        PatcherSet.makePatch(names);
 	        declares = loadClasses(names);
 	    }
 		return declares;
@@ -95,7 +93,7 @@ public class Codes {
 	public static boolean redefineClass(File classFile) throws Exception {
 	    ClassPool pool = getClassPool(classFile);
         CtClass ctClass = pool.makeClass(new FileInputStream(classFile));
-        Patchers.makePatch(ctClass);
+        PatcherSet.makePatch(ctClass);
         Class<?> theClass = defineClass(pool, ctClass.getName());
         return XInstrument.redefine(new ClassDefinition(theClass, ctClass.toBytecode()));
     }

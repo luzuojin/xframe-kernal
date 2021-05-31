@@ -1,4 +1,4 @@
-package dev.xframe.utils;
+package dev.xframe.inject.code;
 
 import java.io.File;
 import java.io.InputStream;
@@ -18,15 +18,19 @@ import java.util.jar.JarInputStream;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import dev.xframe.utils.XPaths;
+import dev.xframe.utils.XStrings;
+import dev.xframe.utils.XUnsafe;
+
 /**
  * class文件扫描
  * 
  * @author luzj
  */
-public class XScanner {
-	
+public class Scanner {
+
     private static final String MANFEST_CLASS_PATH = "Class-Path";
-    
+
     private static final String WIN_FILE_SEPARATOR = "\\";
     // 文件分隔符"\"
     private static final String FILE_SEPARATOR = "/";
@@ -38,24 +42,24 @@ public class XScanner {
     private static final String JAR_FILE_EXT = ".jar";
     // jar包内路径分隔符
     private static final String INSIDE_SEPARATOR = "!/";
-    
+
     @SuppressWarnings("unchecked")
-	private static Set<String> getClassPathes0(ClassLoader loader) throws Exception {
-    	Field ucpField = getUcpField(loader.getClass());
-    	Object ucpObj = XUnsafe.getObject(loader, XUnsafe.getFieldOffset(ucpField));
-    	//URLClassPath.path:List<URL>
-    	Field pathField = ucpObj.getClass().getDeclaredField("path");
-    	List<URL> urls = (List<URL>) XUnsafe.getObject(ucpObj, XUnsafe.getFieldOffset(pathField));
+    private static Set<String> getClassPathes0(ClassLoader loader) throws Exception {
+        Field ucpField = getUcpField(loader.getClass());
+        Object ucpObj = XUnsafe.getObject(loader, XUnsafe.objectFieldOffset(ucpField));
+        //URLClassPath.path:List<URL>
+        Field pathField = ucpObj.getClass().getDeclaredField("path");
+        List<URL> urls = (List<URL>) XUnsafe.getObject(ucpObj, XUnsafe.objectFieldOffset(pathField));
         return urls.stream().map(XPaths::toPath).collect(Collectors.toSet());
     }
     //URLClassLoader/BuiltinClassLoader.ucp:URLClassPath
-	private static Field getUcpField(Class<?> loaderCls) {
-		try {
-			return loaderCls.getDeclaredField("ucp");
-		} catch (NoSuchFieldException | SecurityException e) {
-			return ClassLoader.class.isAssignableFrom(loaderCls) ? getUcpField(loaderCls.getSuperclass()) : null;
-		}
-	}
+    private static Field getUcpField(Class<?> loaderCls) {
+        try {
+            return loaderCls.getDeclaredField("ucp");
+        } catch (NoSuchFieldException | SecurityException e) {
+            return ClassLoader.class.isAssignableFrom(loaderCls) ? getUcpField(loaderCls.getSuperclass()) : null;
+        }
+    }
     /**
      * 获取项目的所有classpath ，包括 APP_CLASS_PATH 和所有的jar文件
      */
@@ -67,27 +71,27 @@ public class XScanner {
             if(!XStrings.isEmpty(manfest)) {
                 for (String c : manfest.split("\\s+")) {
                     if(c.contains(":"))
-                    	set.add(XPaths.toPath(new URL(c)));
+                        set.add(XPaths.toPath(new URL(c)));
                     else
-                    	set.add(XPaths.toFile(c).getAbsolutePath());
+                        set.add(XPaths.toFile(c).getAbsolutePath());
                 }
             }
             jarFile.close();
         }
         return set;
     }
-    
 
-	private static boolean isClassFile(String name) {
+
+    private static boolean isClassFile(String name) {
         return name.endsWith(CLASS_FILE_EXT);
     }
-    
+
     private static boolean isJarFile(String path) {
         return path.endsWith(JAR_FILE_EXT);
     }
-    
+
     private static boolean isInsidePath(String path) {
-    	return path.contains(INSIDE_SEPARATOR); //@see JarURLConnection
+        return path.contains(INSIDE_SEPARATOR); //@see JarURLConnection
     }
 
     /**
@@ -121,44 +125,44 @@ public class XScanner {
         }
         return classes;
     }
-    
+
     //jar:file:{jarpath}!/{jarentry}!/
-  	private static Set<ClassEntry> getFromJarInsidePath(String path) throws Exception {
-      	String[] _path = path.split(INSIDE_SEPARATOR);
-      	if(_path.length > 1) {
-      		try(JarFile jarFile = new JarFile(Paths.get(new URI(_path[0])).toFile())) {
-      			if(isJarFile(_path[1])) {//jar
-      				JarEntry entry = jarFile.getJarEntry(_path[1]);
-      				return getFromJarStream(jarFile.getInputStream(entry));
-      			} else {//folder
-      				Enumeration<JarEntry> entries = jarFile.entries();
-      				Set<ClassEntry> classes = new LinkedHashSet<ClassEntry>();
-      				while (entries.hasMoreElements()) {
-      					JarEntry entry = (JarEntry) entries.nextElement();
-      					String name = entry.getName();
-      					if (name.startsWith(_path[1]) && isClassFile(name)) {
-      						String className = name.substring(_path[1].length(), entry.getName().indexOf(CLASS_FILE_EXT)).replace(FILE_SEPARATOR, PACKAGE_SEPARATOR);
-      						classes.add(new ClassEntry(className, entry.getSize(), entry.getTime()));
-      					}
-      				}
-      			}
-      		}
-      	}
-      	return new LinkedHashSet<ClassEntry>();
-  	}
-  	
-  	private static Set<ClassEntry> getFromJarStream(InputStream input) throws Exception {
-      	Set<ClassEntry> classes = new LinkedHashSet<ClassEntry>();
-  		try(JarInputStream jarInput = new JarInputStream(input);) {
-  			JarEntry next;
-  			while((next = jarInput.getNextJarEntry()) != null) {
-  				if(isClassFile(next.getName())) {
-  					classes.add(new ClassEntry(next));
-  				}
-  			}
-  		}
-  		return classes;
-  	}
+    private static Set<ClassEntry> getFromJarInsidePath(String path) throws Exception {
+        String[] _path = path.split(INSIDE_SEPARATOR);
+        if(_path.length > 1) {
+            try(JarFile jarFile = new JarFile(Paths.get(new URI(_path[0])).toFile())) {
+                if(isJarFile(_path[1])) {//jar
+                    JarEntry entry = jarFile.getJarEntry(_path[1]);
+                    return getFromJarStream(jarFile.getInputStream(entry));
+                } else {//folder
+                    Enumeration<JarEntry> entries = jarFile.entries();
+                    Set<ClassEntry> classes = new LinkedHashSet<ClassEntry>();
+                    while (entries.hasMoreElements()) {
+                        JarEntry entry = (JarEntry) entries.nextElement();
+                        String name = entry.getName();
+                        if (name.startsWith(_path[1]) && isClassFile(name)) {
+                            String className = name.substring(_path[1].length(), entry.getName().indexOf(CLASS_FILE_EXT)).replace(FILE_SEPARATOR, PACKAGE_SEPARATOR);
+                            classes.add(new ClassEntry(className, entry.getSize(), entry.getTime()));
+                        }
+                    }
+                }
+            }
+        }
+        return new LinkedHashSet<ClassEntry>();
+    }
+
+    private static Set<ClassEntry> getFromJarStream(InputStream input) throws Exception {
+        Set<ClassEntry> classes = new LinkedHashSet<ClassEntry>();
+        try(JarInputStream jarInput = new JarInputStream(input);) {
+            JarEntry next;
+            while((next = jarInput.getNextJarEntry()) != null) {
+                if(isClassFile(next.getName())) {
+                    classes.add(new ClassEntry(next));
+                }
+            }
+        }
+        return classes;
+    }
 
     /**
      * 得到文件夹下所有class的全包名
@@ -167,7 +171,7 @@ public class XScanner {
         Set<File> files = getClassFiles(file);
         Set<ClassEntry> classes = new LinkedHashSet<ClassEntry>();
         for (File f : files) {
-        	classes.add(new ClassEntry(file, f));
+            classes.add(new ClassEntry(file, f));
         }
         return classes;
     }
@@ -177,42 +181,42 @@ public class XScanner {
      */
     private static Set<ClassEntry> getFromJar(File file) throws Exception {
         try (JarFile jarFile = new JarFile(file);) {
-        	Enumeration<JarEntry> entries = jarFile.entries();
-        	Set<ClassEntry> classes = new LinkedHashSet<ClassEntry>();
-        	while (entries.hasMoreElements()) {
-        		JarEntry entry = (JarEntry) entries.nextElement();
-        		if (isClassFile(entry.getName())) {
-        			classes.add(new ClassEntry(entry));
-        		}
-        	}
-        	return classes;
+            Enumeration<JarEntry> entries = jarFile.entries();
+            Set<ClassEntry> classes = new LinkedHashSet<ClassEntry>();
+            while (entries.hasMoreElements()) {
+                JarEntry entry = (JarEntry) entries.nextElement();
+                if (isClassFile(entry.getName())) {
+                    classes.add(new ClassEntry(entry));
+                }
+            }
+            return classes;
         }
     }
-    
+
     public static List<String> getClassPathes(String includes, String excludes) {
         return getClassPathes(new ScanMatcher(includes, excludes));
     }
 
-	public static List<String> getClassPathes(ScanMatcher matcher) {
-		List<String> ret = new ArrayList<>();
+    public static List<String> getClassPathes(ScanMatcher matcher) {
+        List<String> ret = new ArrayList<>();
         try {
             Set<String> classPathes = getClassPathes();
             for (String path : classPathes) {
                 if (!isJarFile(path) || matcher.match(path))
-                	ret.add(path);
+                    ret.add(path);
             }
         } catch (Exception ex) {
             // ignore
         }
         return ret;
-	}
+    }
 
     public static List<ClassEntry> scan(String includes, String excludes) {
         return scan(new ScanMatcher(includes, excludes));
     }
 
-	public static List<ClassEntry> scan(ScanMatcher matcher) {
-		List<ClassEntry> ret = new ArrayList<ClassEntry>();
+    public static List<ClassEntry> scan(ScanMatcher matcher) {
+        List<ClassEntry> ret = new ArrayList<ClassEntry>();
         try {
             for (String path : getClassPathes(matcher)) {
                 for (ClassEntry clazz : getFromPath(path)) {
@@ -226,69 +230,69 @@ public class XScanner {
             // ignore
         }
         return ret;
-	}
-    
+    }
+
     private static Set<ClassEntry> getFromPath(String path) throws Exception {
-    	if(isInsidePath(path)) {//@see JarURLConnection
-    		return getFromJarInsidePath(path);
-    	}
-    	if(isJarFile(path)) {
-    		return getFromJar(new File(path));
-    	}
+        if(isInsidePath(path)) {//@see JarURLConnection
+            return getFromJarInsidePath(path);
+        }
+        if(isJarFile(path)) {
+            return getFromJar(new File(path));
+        }
         return getFromDir(new File(path));
     }
 
-	public static class ClassEntry {
-    	public final String name;
-    	public final long size;
-    	public final long modifyTime;
-    	public ClassEntry(File root, File file) {
-    		String fileName = root.toPath().relativize(file.toPath()).toString().replace(WIN_FILE_SEPARATOR, FILE_SEPARATOR);
+    public static class ClassEntry {
+        public final String name;
+        public final long size;
+        public final long modifyTime;
+        public ClassEntry(File root, File file) {
+            String fileName = root.toPath().relativize(file.toPath()).toString().replace(WIN_FILE_SEPARATOR, FILE_SEPARATOR);
             this.name = fileName.substring(0, fileName.indexOf(CLASS_FILE_EXT)).replace(FILE_SEPARATOR, PACKAGE_SEPARATOR);
             this.size = file.length();
             this.modifyTime = file.lastModified();
-		}
-    	public ClassEntry(JarEntry entry) {
-    		this.name = entry.getName().substring(0, entry.getName().indexOf(CLASS_FILE_EXT)).replace(FILE_SEPARATOR, PACKAGE_SEPARATOR);
+        }
+        public ClassEntry(JarEntry entry) {
+            this.name = entry.getName().substring(0, entry.getName().indexOf(CLASS_FILE_EXT)).replace(FILE_SEPARATOR, PACKAGE_SEPARATOR);
             this.size = entry.getSize();
             this.modifyTime = entry.getTime();
-    	}
-    	public ClassEntry(String name, long size, long modifyTime) {
-    		this.name = name;
-    		this.size = size;
-    		this.modifyTime = modifyTime;
-    	}
+        }
+        public ClassEntry(String name, long size, long modifyTime) {
+            this.name = name;
+            this.size = size;
+            this.modifyTime = modifyTime;
+        }
         @Override
         public String toString() {
             return name;
         }
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((name == null) ? 0 : name.hashCode());
-			return result;
-		}
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			ClassEntry other = (ClassEntry) obj;
-			if (name == null) {
-				if (other.name != null)
-					return false;
-			} else if (!name.equals(other.name))
-				return false;
-			return true;
-		}
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((name == null) ? 0 : name.hashCode());
+            return result;
+        }
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            ClassEntry other = (ClassEntry) obj;
+            if (name == null) {
+                if (other.name != null)
+                    return false;
+            } else if (!name.equals(other.name))
+                return false;
+            return true;
+        }
     }
-	
-	public static class ScanMatcher {
-	    private final SingleMatcher includes;
+
+    public static class ScanMatcher {
+        private final SingleMatcher includes;
         private final SingleMatcher excludes;
         public ScanMatcher(String includes, String excludes) {
             this.includes = new SingleMatcher(includes, true);
@@ -302,8 +306,8 @@ public class XScanner {
             excludes.merge(matcher.excludes);
             return this;
         }
-	}
-    
+    }
+
     private static class SingleMatcher {
         SimpleMatcher jarMatcher;
         SimpleMatcher clsMatcher;
@@ -311,12 +315,12 @@ public class XScanner {
             List<Pattern> jarPatterns = new ArrayList<>(3);
             List<Pattern> clsPatterns = new ArrayList<>(3);
             if(res != null && res.length() > 0) {
-            	String[] regs = res.split(";");
-            	for (int i = 0; i < regs.length; i++) {
-            	    String reg = regs[i];
-            	    List<Pattern> list = reg.endsWith(".jar") ? jarPatterns : clsPatterns;
-            		list.add(Pattern.compile(quote(reg)));
-            	}
+                String[] regs = res.split(";");
+                for (int i = 0; i < regs.length; i++) {
+                    String reg = regs[i];
+                    List<Pattern> list = reg.endsWith(".jar") ? jarPatterns : clsPatterns;
+                    list.add(Pattern.compile(quote(reg)));
+                }
             }
             if(matchJarWhenEmpty && jarPatterns.isEmpty()) {
                 jarPatterns.add(Pattern.compile(quote("*.jar")));
@@ -331,38 +335,38 @@ public class XScanner {
             return reg;
         }
         public boolean strict(String path) {
-        	return (isJarFile(path) ? jarMatcher : clsMatcher).match(path, false);
+            return (isJarFile(path) ? jarMatcher : clsMatcher).match(path, false);
         }
         public boolean slack(String path) {
-        	return (isJarFile(path) ? jarMatcher : clsMatcher).match(path, true);
+            return (isJarFile(path) ? jarMatcher : clsMatcher).match(path, true);
         }
         public void merge(SingleMatcher matcher) {
             jarMatcher.merge(matcher.jarMatcher);
             clsMatcher.merge(matcher.clsMatcher);
         }
     }
-    
+
     private static class SimpleMatcher {
-    	private Pattern[] patterns;
-    	public SimpleMatcher(Pattern[] patterns) {
-    		this.patterns = patterns == null ? new Pattern[0] : patterns;
-		}
-    	public boolean match(String val, boolean nilMatch) {
-    		return (nilMatch && patterns.length == 0) || match(val);
-    	}
-    	private boolean match(String val) {
+        private Pattern[] patterns;
+        public SimpleMatcher(Pattern[] patterns) {
+            this.patterns = patterns == null ? new Pattern[0] : patterns;
+        }
+        public boolean match(String val, boolean nilMatch) {
+            return (nilMatch && patterns.length == 0) || match(val);
+        }
+        private boolean match(String val) {
             for (Pattern p : patterns) {
                 if(p.matcher(val).find()) return true;
             }
             return false;
         }
-    	public void merge(SimpleMatcher n) {
-    	    int oLen = patterns.length;
-    	    int cLen = n.patterns.length;
-    	    Pattern[] t = Arrays.copyOf(patterns, oLen + cLen);
-    	    System.arraycopy(n.patterns, 0, t, oLen, cLen);
-    	    patterns = t;
-    	}
+        public void merge(SimpleMatcher n) {
+            int oLen = patterns.length;
+            int cLen = n.patterns.length;
+            Pattern[] t = Arrays.copyOf(patterns, oLen + cLen);
+            System.arraycopy(n.patterns, 0, t, oLen, cLen);
+            patterns = t;
+        }
     }
 
 }
