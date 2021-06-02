@@ -65,7 +65,7 @@ public class ProxyBuilder {
             }
             return XReflection.newInstance(proxyClass);
         } catch (Throwable e) {
-            return XCaught.throwException(e);
+            throw XCaught.throwException(e);
         }
     }
     

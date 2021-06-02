@@ -55,9 +55,9 @@ public class XReflection extends SecurityManager {
         try {
             return (T) method.invoke(obj, args);
         } catch (InvocationTargetException e) {
-            return XCaught.throwException(e.getCause());
+            throw XCaught.throwException(e.getCause());
         } catch (Exception e) {
-            return XCaught.throwException(e);
+            throw XCaught.throwException(e);
         }
     }
 
@@ -86,7 +86,7 @@ public class XReflection extends SecurityManager {
         try {
             return (T) field.get(obj);
         } catch (Exception e) {
-            return XCaught.throwException(e);
+            throw XCaught.throwException(e);
         }
     }
 
@@ -109,9 +109,9 @@ public class XReflection extends SecurityManager {
         try {
             return (T) constructor.newInstance(args);
         } catch (InvocationTargetException e) {
-            return XCaught.throwException(e.getCause());
+            throw XCaught.throwException(e.getCause());
         } catch (Exception e) {
-            return XCaught.throwException(e);
+            throw XCaught.throwException(e);
         }
     }
     public static <T> T newInstance(Class<?> clazz) {

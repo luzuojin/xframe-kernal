@@ -31,7 +31,7 @@ public class XLambda {
             MethodHandle methodHandle = lookup.unreflectConstructor(constructor);
             return _create(lambdaInterface, lookup, methodHandle);
         } catch (Throwable e) {
-            return XCaught.throwException(e);
+            throw XCaught.throwException(e);
         }
 	}
 	
@@ -55,7 +55,7 @@ public class XLambda {
             MethodHandle methodHandle = invokeSpecial? lookup.unreflectSpecial(method, method.getDeclaringClass()) : lookup.unreflect(method);
             return _create(lambdaInterface, lookup, methodHandle);
         } catch (Throwable e) {
-            return XCaught.throwException(e);//can`t return
+            throw XCaught.throwException(e);//can`t return
         }
 	}
 	

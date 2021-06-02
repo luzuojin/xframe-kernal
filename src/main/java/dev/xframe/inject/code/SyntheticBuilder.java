@@ -100,7 +100,7 @@ public class SyntheticBuilder {
             }
             return proxyClass;
         } catch (Exception e) {
-            return XCaught.throwException(e);
+            throw XCaught.throwException(e);
         }
     }
     

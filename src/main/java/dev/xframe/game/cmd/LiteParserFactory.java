@@ -24,7 +24,7 @@ public class LiteParserFactory {
             //basically use protobuf parse body by MessageLite.parseFrom
             return XLambda.create(Function.class, claz, "parseFrom", byte[].class);
         } catch (Throwable e) {
-            return XCaught.throwException(e);
+            throw XCaught.throwException(e);
         }
     }
 

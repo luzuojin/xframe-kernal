@@ -42,7 +42,7 @@ public class MInvokerBuilder {
 
 			return XReflection.newInstance(cc.toClass());
 		} catch (Exception e) {
-			return XCaught.throwException(e);
+		    throw XCaught.throwException(e);
 		}
 	}
 	

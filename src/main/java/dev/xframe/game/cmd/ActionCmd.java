@@ -32,7 +32,7 @@ public final class ActionCmd<T extends Player> extends LoopedCmd<T>  {
             this.injector = adapter.newInjector(clazz);
             this.liteParser = LiteAction.class.isAssignableFrom(clazz) ? new LiteParser(clazz, LiteAction.class, "L") : null;
         } catch (Throwable e) {
-            throw XCaught.wrapException(clazz.getName(), e);
+            throw XCaught.throwException(e);
         }
     }
 

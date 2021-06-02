@@ -26,7 +26,7 @@ public class CtHelper {
                 byte[] bytecode = ct.toBytecode();
                 return (Class<?>) defineCls.invoke(loader, ct.getName(), bytecode, 0, bytecode.length, domain);
             } catch (Exception e) {
-                return XCaught.throwException(e);
+                throw XCaught.throwException(e);
             }
         }
     }

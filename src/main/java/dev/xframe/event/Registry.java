@@ -40,7 +40,7 @@ public final class Registry {
 				this.type = checkAndGetEventType(m);
 				this.invoker = XLambda.create(BiConsumer.class, m);
 			} catch (Throwable e) {
-				throw XCaught.wrapException(e);
+				throw XCaught.throwException(e);
 			}
 	    }
 		private int checkAndGetEventType(Method m) {
