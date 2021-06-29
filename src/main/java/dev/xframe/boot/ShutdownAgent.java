@@ -1,8 +1,8 @@
 package dev.xframe.boot;
 
-import dev.xframe.inject.Synthetic;
+import dev.xframe.inject.Composite;
 
-@Synthetic
+@Composite
 public interface ShutdownAgent {
 	
 	public void shutdown();

@@ -99,6 +99,9 @@ public class BeanPretreater implements Iterable<Class<?>> {
 
         //处理@Providable
         for (Class<?> clazz : this.classes) {
+            if(clazz.isAnnotation()) {
+                continue;//annotaion 不处理
+            }
             if(isProvidable(clazz)) {
                 provides.add(clazz);
             } else {
@@ -280,7 +283,7 @@ public class BeanPretreater implements Iterable<Class<?>> {
         @SuppressWarnings({"rawtypes", "unchecked"})
         Function<T, Comparable<Object>> toC = (Function<T, Comparable<Object>>) (Function) toComparable;
         int len = list.size();
-        for (int i = 0; i < len - 1; i++) {// 控制趟数
+        for (int i = 0; i < len - 1; i++) {
             for (int j = 0; j < len - i - 1; j++) {
                 if (toC.apply(list.get(j)).compareTo(toC.apply(list.get(j + 1))) > 0) {
                     list.set(j, list.set(j + 1, list.get(j)));

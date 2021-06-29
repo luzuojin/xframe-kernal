@@ -3,7 +3,7 @@ package dev.xframe.module.beans;
 import dev.xframe.inject.beans.BeanBinder;
 import dev.xframe.inject.beans.BeanFetcher;
 import dev.xframe.inject.beans.Injector;
-import dev.xframe.inject.code.SyntheticBuilder;
+import dev.xframe.inject.code.CompositeBuilder;
 import dev.xframe.module.ModularAgent;
 import dev.xframe.utils.XFactory;
 
@@ -23,14 +23,14 @@ public class AgentBinder extends ModularBinder implements ModularListener {
     }
     private static Class<?> buildAgentClass(Class<?> c) {
         ModularAgent an = c.getAnnotation(ModularAgent.class);
-        return SyntheticBuilder.buildClass(c, an.invokable(), an.ignoreError(), an.boolByTrue());
+        return CompositeBuilder.buildClass(c, an.invokable(), an.ignoreError(), an.boolByTrue());
     }
 	@Override
 	public void onModuleLoaded(ModuleContainer mc, ModularBinder binder, Object module) {
-		SyntheticBuilder.append(mc.getBean(getIndex()), module);
+		CompositeBuilder.append(mc.getBean(getIndex()), module);
 	}
 	@Override
 	public void onModuleUnloaded(ModuleContainer mc, ModularBinder binder, Object module) {
-		SyntheticBuilder.remove(mc.getBean(getIndex()), module);
+		CompositeBuilder.remove(mc.getBean(getIndex()), module);
 	}
 }

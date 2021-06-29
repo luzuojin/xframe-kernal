@@ -5,7 +5,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import dev.xframe.inject.Configurator;
 import dev.xframe.inject.Eventual;
 import dev.xframe.inject.Inject;
-import dev.xframe.inject.code.SyntheticBuilder;
+import dev.xframe.inject.beans.BeanHelper;
+import dev.xframe.inject.code.CompositeBuilder;
 import dev.xframe.utils.XLogger;
 
 @Configurator
@@ -19,7 +20,7 @@ public class ShutdownHook implements Eventual {
 	private AtomicBoolean shuttedDown = new AtomicBoolean(false);
 	
 	public void append(ShutdownAgent agent) {
-	    SyntheticBuilder.append(agents, agent);
+	    BeanHelper.appendComposite(agents, agent);
 	}
 	
 	public void shutdown() {
@@ -34,7 +35,7 @@ public class ShutdownHook implements Eventual {
 				XLogger.info("Shutting down server immediately");
 			}
 			
-			SyntheticBuilder.forEach(agents, (ShutdownAgent agent)->{
+			CompositeBuilder.forEach(agents, (ShutdownAgent agent)->{
 				try {
 					agent.shutdown();
 					XLogger.info("Shutting down agent [" + agent.getClass().getSimpleName() + "]");

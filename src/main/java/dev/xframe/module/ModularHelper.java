@@ -2,20 +2,20 @@ package dev.xframe.module;
 
 import java.util.function.Consumer;
 
-import dev.xframe.inject.code.SyntheticBuilder;
+import dev.xframe.inject.code.CompositeBuilder;
 
 public class ModularHelper {
     
     public static <T> void removeAgent(T agent, T delegate) {
-        SyntheticBuilder.remove(agent, delegate);
+        CompositeBuilder.remove(agent, delegate);
     }
     
     public static <T> void appendAgent(T agent, T delegate) {
-        SyntheticBuilder.append(agent, delegate);
+        CompositeBuilder.append(agent, delegate);
     }
     
     public static <T> void forEachAgent(T agent, Consumer<T> consumer) {
-        SyntheticBuilder.forEach(agent, consumer);
+        CompositeBuilder.forEach(agent, consumer);
     }
     
     public static boolean isModularClass(Class<?> c) {

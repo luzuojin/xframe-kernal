@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
-import dev.xframe.inject.Synthetic;
+import dev.xframe.inject.Composite;
 import dev.xframe.utils.XCaught;
 import dev.xframe.utils.XReflection;
 import javassist.ClassPool;
@@ -14,35 +14,35 @@ import javassist.CtField;
 import javassist.CtMethod;
 import javassist.CtNewMethod;
 
-public class SyntheticBuilder {
+public class CompositeBuilder {
     
-    static final Map<String, String> cts = CtParser.parse("synthetic.ct");
+    static final Map<String, String> cts = CtParser.parse("composite.ct");
     
-    public static void remove(Object synthetic, Object delegate) {
-        ((ISynthetic) synthetic)._removeDelegate(delegate);
+    public static void remove(Object composite, Object delegate) {
+        ((IComposite) composite)._removeDelegate(delegate);
     }
-    public static void append(Object synthetic, Object delegate) {
-        ((ISynthetic) synthetic)._appendDelegate(delegate);
+    public static void append(Object composite, Object delegate) {
+        ((IComposite) composite)._appendDelegate(delegate);
     }
-    public static void forEach(Object synthetic, Consumer<?> consumer) {
-        ((ISynthetic) synthetic)._forEachDeletage(consumer);
+    public static void forEach(Object composite, Consumer<?> consumer) {
+        ((IComposite) composite)._forEachDeletage(consumer);
     }
 
-    public static Object buildBean(Class<?> syntheticClazz) {
+    public static Object buildBean(Class<?> compositeCls) {
         try {
-            return XReflection.newInstance(buildClass(syntheticClazz));
+            return XReflection.newInstance(buildClass(compositeCls));
         } catch (Exception e) {
             return XCaught.throwException(e);
         }
     }
     
     public synchronized static Class<?> buildClass(Class<?> clazz) {
-        return buildClass(clazz, true, clazz.getAnnotation(Synthetic.class).ignoreError(), clazz.getAnnotation(Synthetic.class).boolByTrue());
+        return buildClass(clazz, true, clazz.getAnnotation(Composite.class).ignoreError(), clazz.getAnnotation(Composite.class).boolByTrue());
     }
     public synchronized static Class<?> buildClass(Class<?> cclazz, boolean invokable, boolean ignoreError, boolean boolByTrue) {
         try {
             String basicName = cclazz.getName();
-			String proxyName = cts.get("synthetic_name").replace("${synthetic_basic}", basicName);
+			String proxyName = cts.get("composite_name").replace("${composite_basic}", basicName);
 
             Class<?> proxyClass = null;
             try {
@@ -60,16 +60,16 @@ public class SyntheticBuilder {
                     cc.setSuperclass(cp);
                 }
                 
-                cc.addInterface(pool.get(ISynthetic.class.getName()));
+                cc.addInterface(pool.get(IComposite.class.getName()));
 
-                cc.addField(CtField.make(cts.get("logger_field").replace("${synthetic_basic}", basicName), cc));
+                cc.addField(CtField.make(cts.get("logger_field").replace("${composite_basic}", basicName), cc));
                 cc.addField(CtField.make(cts.get("delegates_field"), cc));
 
                 cc.addMethod(CtNewMethod.make(cts.get("append_delegate_method"), cc));
                 cc.addMethod(CtNewMethod.make(cts.get("remove_delegate_method"), cc));
                 
                 String feIvk = ignoreError ? cts.get("fe_invoke_ex_part").replace("${fe_invoke_ex_part}", cts.get("fe_invoke_part")) : cts.get("fe_invoke_part");
-                cc.addMethod(CtNewMethod.make(cts.get("foreach_delegate_method").replace("${synthetic_basic}", basicName).replace("${fe_invoke_part}", feIvk), cc));
+                cc.addMethod(CtNewMethod.make(cts.get("foreach_delegate_method").replace("${composite_basic}", basicName).replace("${fe_invoke_part}", feIvk), cc));
                 
                 for (CtMethod ctMethod : cp.getMethods()) {
                     if(CtHelper.isObjectType(ctMethod.getDeclaringClass())) continue;
@@ -85,7 +85,7 @@ public class SyntheticBuilder {
                         
                         String body = cts.get("simple_method_body")
                                 .replace("${obj_invoke_part}", ignoreError ? cts.get("obj_invoke_ex_part").replace("${obj_invoke_ex_part}", invk) : invk)
-                                .replace("${synthetic_basic}", basicName)
+                                .replace("${composite_basic}", basicName)
                                 .replace("${method_name}", ctMethod.getName())
                                 .replace("${method_params}", args)
                                 .replace("${return_class}", rtype.getName())
@@ -104,7 +104,7 @@ public class SyntheticBuilder {
         }
     }
     
-    public static interface ISynthetic {
+    public static interface IComposite {
         public void _appendDelegate(Object delegate);
         public void _removeDelegate(Object delegate);
         public void _forEachDeletage(Consumer<?> consumer);

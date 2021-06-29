@@ -39,7 +39,7 @@ public class CommandContext implements Eventual {
     
     @Override
     public void eventuate() {
-        defineCmds(Codes.getDeclaredClasses());        
+        defineCmds(Codes.getScannedClasses());        
     }
 
 	public void defineCmds(List<Class<?>> clazzes) {

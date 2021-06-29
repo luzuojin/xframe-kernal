@@ -6,18 +6,18 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import dev.xframe.inject.Composite;
 import dev.xframe.inject.Bean;
+import dev.xframe.inject.Templates;
 import dev.xframe.inject.Configurator;
 import dev.xframe.inject.Eventual;
 import dev.xframe.inject.Prototype;
 import dev.xframe.inject.Reloadable;
 import dev.xframe.inject.Repository;
-import dev.xframe.inject.Synthetic;
-import dev.xframe.inject.Templates;
+import dev.xframe.inject.code.CompositeBuilder;
 import dev.xframe.inject.code.Factory;
 import dev.xframe.inject.code.FactoryBuilder;
 import dev.xframe.inject.code.ProxyBuilder;
-import dev.xframe.inject.code.SyntheticBuilder;
 import dev.xframe.utils.XReflection;
 
 /**
@@ -57,7 +57,7 @@ public class GlobalContainer extends BeanContainer implements BeanProvider, Bean
         @SuppressWarnings("unchecked")
         BeanPretreater.Annotated anns = new BeanPretreater.Annotated(new Class[]{
                 Prototype.class,
-                Synthetic.class,
+                Composite.class,
                 Configurator.class,
                 Repository.class,
                 Templates.class,
@@ -75,8 +75,8 @@ public class GlobalContainer extends BeanContainer implements BeanProvider, Bean
     }
     
     private BeanBinder newBinder(Class<?> c) {
-        if(c.isAnnotationPresent(Synthetic.class)) {
-            return new SyntheticBinder(SyntheticBuilder.buildBean(c), c);
+        if(c.isAnnotationPresent(Composite.class)) {
+            return new SyntheticBinder(CompositeBuilder.buildBean(c), c);
         }
         if(c.isAnnotationPresent(Templates.class) || c.isAnnotationPresent(Reloadable.class)) {
             return new ReloadableBinder(c, Injector.of(c, this));
@@ -90,7 +90,7 @@ public class GlobalContainer extends BeanContainer implements BeanProvider, Bean
         }
         List<BeanBinder> impls = new ArrayList<>(); 
         protected void integrate(Object bean, BeanFetcher fetcher) {//append all implements
-            impls.forEach(impl->SyntheticBuilder.append(bean, fetcher.fetch(impl.getIndex())));
+            impls.forEach(impl->CompositeBuilder.append(bean, fetcher.fetch(impl.getIndex())));
         }
         protected BeanBinder conflict(Object keyword, BeanBinder binder) {
             impls.add(binder);

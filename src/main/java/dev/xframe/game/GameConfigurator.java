@@ -30,7 +30,7 @@ public final class GameConfigurator implements Loadable {
 
 	@Override
 	public void load() {
-		Class<?> assemble = Codes.getDeclaredClasses().stream().filter(c->c.isAnnotationPresent(Assemble.class)).findAny().orElse(null);
+		Class<?> assemble = Codes.getScannedClasses().stream().filter(c->c.isAnnotationPresent(Assemble.class)).findAny().orElse(null);
 		if (assemble != null) {
 			configure(assemble);
 		}

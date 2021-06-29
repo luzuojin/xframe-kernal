@@ -5,8 +5,8 @@ import java.util.function.Consumer;
 import dev.xframe.inject.ApplicationContext;
 import dev.xframe.inject.Loadable;
 import dev.xframe.inject.Prototype;
+import dev.xframe.inject.code.CompositeBuilder.IComposite;
 import dev.xframe.inject.code.ProxyBuilder.IProxy;
-import dev.xframe.inject.code.SyntheticBuilder.ISynthetic;
 import dev.xframe.utils.XReflection;
 
 /**
@@ -18,14 +18,14 @@ import dev.xframe.utils.XReflection;
 public class BeanHelper {
 	
 	//for generated Synthetic
-    public static void removeSynthetic(Object synthetic, Object delegate) {
-        ((ISynthetic) synthetic)._removeDelegate(delegate);
+    public static void removeComposite(Object composite, Object delegate) {
+        ((IComposite) composite)._removeDelegate(delegate);
     }
-    public static void appendSynthetic(Object synthetic, Object delegate) {
-        ((ISynthetic) synthetic)._appendDelegate(delegate);
+    public static void appendComposite(Object composite, Object delegate) {
+        ((IComposite) composite)._appendDelegate(delegate);
     }
-    public static void forEachSynthetic(Object synthetic, Consumer<?> consumer) {
-        ((ISynthetic) synthetic)._forEachDeletage(consumer);
+    public static void forEachComposite(Object composite, Consumer<?> consumer) {
+        ((IComposite) composite)._forEachDeletage(consumer);
     }
     //for generated Proxy
     public static void setProxyDelegate(Object bean, Object delegate) {

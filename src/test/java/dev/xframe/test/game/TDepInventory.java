@@ -19,7 +19,7 @@ public class TDepInventory implements TInventory, TSharableDep, Loadable, TAgent
     @Inject
     private TSharablePlayer sharablePlayer;
     @Inject
-    private TSynthetic tSynthetic;
+    private TComposite tComposite;
     
     public void load(TPlayer player) {
         //do nothing

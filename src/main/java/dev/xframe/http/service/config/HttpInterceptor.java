@@ -2,9 +2,9 @@ package dev.xframe.http.service.config;
 
 import dev.xframe.http.Request;
 import dev.xframe.http.Response;
-import dev.xframe.inject.Synthetic;
+import dev.xframe.inject.Composite;
 
-@Synthetic
+@Composite
 public interface HttpInterceptor {
     
     Response intercept(Request req);

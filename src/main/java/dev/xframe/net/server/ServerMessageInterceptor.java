@@ -1,9 +1,9 @@
 package dev.xframe.net.server;
 
-import dev.xframe.inject.Synthetic;
+import dev.xframe.inject.Composite;
 import dev.xframe.net.MessageInterceptor;
 
-@Synthetic
+@Composite
 public interface ServerMessageInterceptor extends MessageInterceptor {
 
 }

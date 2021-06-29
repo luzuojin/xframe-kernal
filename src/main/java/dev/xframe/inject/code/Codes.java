@@ -33,7 +33,7 @@ public class Codes {
 	
 	private static ScanMatcher matcher = new ScanMatcher("*xframe-*.jar;dev.xframe.*", "dev.xframe.inject.junit.*");
 	
-	private static List<Class<?>> declares;
+	private static List<Class<?>> scanned;
 	
 	private static int addEntry(ClassEntry entry) {
 	    classEntryMap.put(entry.name, entry);
@@ -44,13 +44,13 @@ public class Codes {
 	    return classVersionMap.get(entry.name).getAndIncrement();
 	}
 	
-	public static List<Class<?>> getClasses(String includes, String excludes) {
+	public static List<Class<?>> scanClasses(String includes, String excludes) {
 	    matcher.merge(new ScanMatcher(includes, excludes));
-		return getClasses0();
+		return scanClasses0();
 	}
 
-	synchronized static List<Class<?>> getClasses0() {
-	    if(declares == null) {
+	private synchronized static List<Class<?>> scanClasses0() {
+	    if(scanned == null) {
 	        List<ClassEntry> entries = Scanner.scan(matcher);
 	        List<String> names = new ArrayList<>();
 	        for (ClassEntry entry : entries) {
@@ -59,12 +59,12 @@ public class Codes {
 	        }
 	        
 	        PatcherSet.makePatch(names);
-	        declares = loadClasses(names);
+	        scanned = loadClasses(names);
 	    }
-		return declares;
+		return scanned;
 	}
 	
-	public static boolean isDeclared(String className) {
+	public static boolean isScanned(String className) {
 	    return classEntryMap.containsKey(className);
 	}
 	
@@ -72,8 +72,8 @@ public class Codes {
 	    return matcher.match(className);
 	}
 	
-	public static List<Class<?>> getDeclaredClasses() {
-		return declares == null ? Collections.emptyList() : declares;
+	public static List<Class<?>> getScannedClasses() {
+		return scanned == null ? Collections.emptyList() : scanned;
 	}
 	
 	private static Class<?> defineClass(ClassPool pool, String name) {

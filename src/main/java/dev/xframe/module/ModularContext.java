@@ -39,7 +39,7 @@ public class ModularContext {
 			//assembleClass作为第一个Bean记录
 			assembleIndex = indexes.regist(new DeclaredBinder(assembleClz, Injector.of(assembleClz, indexes)));
 			registrator.regist(indexes);
-			List<Class<?>> scanned = Codes.getDeclaredClasses();
+			List<Class<?>> scanned = Codes.getScannedClasses();
 			pretreatModules(scanned).forEach(c->indexes.regist(buildBinder(c, indexes)));
 			indexes.integrate();
 		}

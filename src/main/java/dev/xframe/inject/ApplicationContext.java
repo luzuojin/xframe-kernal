@@ -17,7 +17,7 @@ public class ApplicationContext {
 	final static GlobalContainer gContainer = new GlobalContainer();
 	
 	public static void initialize(String includes, String excludes) {
-		gContainer.initial(Codes.getClasses(includes, excludes));
+		gContainer.initial(Codes.scanClasses(includes, excludes));
 	}
 	
 	public static void reload(Predicate<Class<?>> preficate) {

@@ -2,7 +2,7 @@ package dev.xframe.inject.beans;
 
 import java.util.List;
 
-import dev.xframe.inject.Synthetic;
+import dev.xframe.inject.Composite;
 
 /**
  * 发现Bean, 向特定的BeanIndexes中regist对应的Binder
@@ -15,7 +15,7 @@ import dev.xframe.inject.Synthetic;
  * BeanRegistrator在对应的Bean执行相关逻辑时调用
  * @author luzj
  */
-@Synthetic
+@Composite
 public interface BeanDiscovery {
     /**
      * 调用时, 该实现类还没有执行integrate. 所以不能有对其他Bean的依赖调用

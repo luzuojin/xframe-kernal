@@ -82,7 +82,7 @@ public class ServiceContext implements Eventual {
     
     @Override
     public void eventuate() {
-        defineServices(Codes.getDeclaredClasses());
+        defineServices(Codes.getScannedClasses());
     }
     
     public void defineServices(List<Class<?>> clazzes) {
