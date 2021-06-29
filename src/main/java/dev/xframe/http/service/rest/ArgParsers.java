@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import dev.xframe.http.Request;
-import dev.xframe.http.service.config.BodyDecoder;
+import dev.xframe.http.config.BodyDecoder;
 import dev.xframe.http.service.path.PathMatcher;
 import dev.xframe.utils.XStrings;
 

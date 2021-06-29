@@ -7,11 +7,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import dev.xframe.http.config.HttpConfig;
 import dev.xframe.http.service.Rest;
 import dev.xframe.http.service.Service;
 import dev.xframe.http.service.ServiceBuilder;
 import dev.xframe.http.service.ServiceContext;
-import dev.xframe.http.service.config.ServiceConfig;
 import dev.xframe.inject.Bean;
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.Loadable;
@@ -22,7 +22,7 @@ import dev.xframe.utils.XStrings;
 public class RestServiceBuilder implements Loadable {
 	
 	@Inject
-	private ServiceConfig config;
+	private HttpConfig config;
 	@Inject
 	private ServiceBuilder sbuilder;
 	@Inject(lazy=true)

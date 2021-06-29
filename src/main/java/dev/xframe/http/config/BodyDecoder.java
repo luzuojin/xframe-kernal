@@ -1,4 +1,4 @@
-package dev.xframe.http.service.config;
+package dev.xframe.http.config;
 
 import dev.xframe.http.request.HttpBody;
 import dev.xframe.http.request.MultiPart;
@@ -7,7 +7,7 @@ import dev.xframe.utils.XStrings;
 
 @FunctionalInterface
 public interface BodyDecoder {
-	
+
     default Object decode(Class<?> type, HttpBody body) {
         if(type.equals(MultiPart.class)) {
             return body.toMultiPart();
@@ -22,7 +22,7 @@ public interface BodyDecoder {
         }
         return decode(type, body.toBytes());
     }
-    
-	public Object decode(Class<?> type, byte[] body);
+
+    public Object decode(Class<?> type, byte[] body);
 
 }

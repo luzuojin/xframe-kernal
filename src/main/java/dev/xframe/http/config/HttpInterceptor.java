@@ -1,4 +1,4 @@
-package dev.xframe.http.service.config;
+package dev.xframe.http.config;
 
 import dev.xframe.http.Request;
 import dev.xframe.http.Response;
@@ -8,7 +8,5 @@ import dev.xframe.inject.Composite;
 public interface HttpInterceptor {
     
     Response intercept(Request req);
-    
-    default void afterHandle(Request req, Response resp) {}
     
 }

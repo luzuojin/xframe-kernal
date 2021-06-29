@@ -1,4 +1,4 @@
-package dev.xframe.http.service.config;
+package dev.xframe.http.config;
 
 import dev.xframe.http.Request;
 import dev.xframe.http.Response;

@@ -14,13 +14,13 @@ import io.netty.handler.codec.http.FullHttpRequest;
  *
  */
 public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
-    
+
     private final ServiceHandler handler;
-    
+
     public HttpMessageHandler(ServiceHandler handler) {
-    	this.handler = handler;
+        this.handler = handler;
     }
-    
+
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
         ctx.flush();
@@ -35,8 +35,8 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
         } finally {
             req.destroy();
         }
-           
-   }
+
+    }
 
     protected void doRequest(ChannelHandlerContext ctx, Request req) {
         if(req.isSucc()) {
@@ -46,17 +46,9 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
-   protected void sendNotFoudResponse(ChannelHandlerContext ctx) {
-	   Response.NOT_FOUND.getWriter().writeTo(ctx, null);
-   }
-
-   protected void sendBadRequestResponse(ChannelHandlerContext ctx) {
-       Response.BAD_REQUEST.getWriter().writeTo(ctx, null);
-   }
-
-   @Override
-   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-       ctx.close();
-   }
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        ctx.close();
+    }
 
 }
