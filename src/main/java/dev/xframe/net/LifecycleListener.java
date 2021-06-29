@@ -5,16 +5,16 @@ import dev.xframe.net.session.Session;
 
 public interface LifecycleListener {
     
-    public void onSessionRegister(Session session);
+    default void onSessionRegister(Session session) {}
     
-    public void onMessageRecieve(Session session, IMessage message);
+    default void onMessageRecieve(Session session, IMessage message) {}
     
-    public void onMessageSending(Session session, IMessage message);
+    default void onMessageSending(Session session, IMessage message) {}
     
-    public void onSessionUnRegister(Session session);
+    default void onSessionUnRegister(Session session) {}
     
-    public void onExceptionCaught(Session session, IMessage message, Throwable ex);
+    default void onExceptionCaught(Session session, IMessage message, Throwable ex) {}
 
-    public void onMessageFlushSlow(Session session);
+    default void onMessageFlushSlow(Session session) {}
 
 }

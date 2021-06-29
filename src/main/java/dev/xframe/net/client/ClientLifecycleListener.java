@@ -7,6 +7,6 @@ import dev.xframe.net.session.Session;
 @Composite
 public interface ClientLifecycleListener extends LifecycleListener {
 	
-	public void onSessionIdle(Session session);
+	default void onSessionIdle(Session session) {}
 
 }
