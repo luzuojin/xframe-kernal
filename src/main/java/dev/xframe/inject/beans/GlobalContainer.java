@@ -76,7 +76,7 @@ public class GlobalContainer extends BeanContainer implements BeanProvider, Bean
     
     private BeanBinder newBinder(Class<?> c) {
         if(c.isAnnotationPresent(Composite.class)) {
-            return new SyntheticBinder(CompositeBuilder.buildBean(c), c);
+            return new CompositeBinder(CompositeBuilder.buildBean(c), c);
         }
         if(c.isAnnotationPresent(Templates.class) || c.isAnnotationPresent(Reloadable.class)) {
             return new ReloadableBinder(c, Injector.of(c, this));
@@ -84,8 +84,8 @@ public class GlobalContainer extends BeanContainer implements BeanProvider, Bean
         return BeanBinder.classic(c, Injector.of(c, this));
     }
     
-    public static class SyntheticBinder extends BeanBinder.Instanced {
-        public SyntheticBinder(Object val, Class<?>... keys) {
+    public static class CompositeBinder extends BeanBinder.Instanced {
+        public CompositeBinder(Object val, Class<?>... keys) {
             super(val, keys);
         }
         List<BeanBinder> impls = new ArrayList<>(); 

@@ -17,7 +17,7 @@ import dev.xframe.utils.XReflection;
  */
 public class BeanHelper {
 	
-	//for generated Synthetic
+	//for generated composite bean
     public static void removeComposite(Object composite, Object delegate) {
         ((IComposite) composite)._removeDelegate(delegate);
     }
