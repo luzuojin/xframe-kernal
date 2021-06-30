@@ -34,7 +34,7 @@ public class TBootstrap {
     @Test
     @SuppressWarnings("unchecked")
 	public void test() throws Exception {
-        testExecution.assertExecuted(TTemplates.class);
+        testExecution.assertExecuted(TComp.class);
         
 		long playerId = 10086;
         TPlayer player = playerCtx.getPlayerImmediately(playerId);

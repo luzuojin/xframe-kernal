@@ -4,10 +4,10 @@ import org.junit.Assert;
 
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.Loadable;
-import dev.xframe.inject.Templates;
+import dev.xframe.inject.Component;
 
-@Templates
-public class TTemplates implements Loadable {
+@Component
+public class TComp implements Loadable {
     
     @Inject
     private TRepository repository;
@@ -17,7 +17,7 @@ public class TTemplates implements Loadable {
     @Override
     public void load() {
         Assert.assertNotNull(repository);
-        testExecution.executing(TTemplates.class);
+        testExecution.executing(TComp.class);
     }
 
 }

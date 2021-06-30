@@ -1,16 +1,18 @@
 package dev.xframe.inject.beans;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import dev.xframe.inject.Component;
 import dev.xframe.inject.Composite;
-import dev.xframe.inject.Bean;
-import dev.xframe.inject.Templates;
 import dev.xframe.inject.Configurator;
 import dev.xframe.inject.Eventual;
+import dev.xframe.inject.Ordered;
+import dev.xframe.inject.Ordered.Collection;
 import dev.xframe.inject.Prototype;
 import dev.xframe.inject.Reloadable;
 import dev.xframe.inject.Repository;
@@ -53,16 +55,11 @@ public class GlobalContainer extends BeanContainer implements BeanProvider, Bean
         Predicate<Class<?>> isFactory = c->c.isInterface()&&c.isAnnotationPresent(Factory.class);
         scanned.stream().filter(isFactory).forEach(c->reg.regist(BeanBinder.instanced(FactoryBuilder.build(c, scanned), c)));
     }
+    @SuppressWarnings("unchecked")
     private void registAnnotated(List<Class<?>> scanned, BeanIndexes reg) {
-        @SuppressWarnings("unchecked")
-        BeanPretreater.Annotated anns = new BeanPretreater.Annotated(new Class[]{
-                Prototype.class,
-                Composite.class,
-                Configurator.class,
-                Repository.class,
-                Templates.class,
-                Bean.class
-        });
+        Collection<Class<?>> components = scanned.stream().filter(c->c.isAnnotation()&&c.isAnnotationPresent(Component.class)).collect(Ordered.Collection::new, (Ordered.Collection<Class<?>> c, Class<?> e)->c.add(e), (r1, r2)->{});
+        Class<? extends Annotation>[] annCls = Stream.concat(Arrays.asList(Prototype.class, Composite.class, Configurator.class, Repository.class).stream(), components.stream()).toArray(Class[]::new);
+        BeanPretreater.Annotated anns = new BeanPretreater.Annotated(annCls);
         //@Repository可继承,只处理实现类(接口/父类不处理)
         Predicate<Class<?>> isBeanClass = c->anns.isPresient(c) && (!c.isAnnotationPresent(Repository.class) || XReflection.isImplementation(c));
         Predicate<Class<?>> isPrototype = c->c.isAnnotationPresent(Prototype.class);
@@ -78,7 +75,9 @@ public class GlobalContainer extends BeanContainer implements BeanProvider, Bean
         if(c.isAnnotationPresent(Composite.class)) {
             return new CompositeBinder(CompositeBuilder.buildBean(c), c);
         }
-        if(c.isAnnotationPresent(Templates.class) || c.isAnnotationPresent(Reloadable.class)) {
+        //自身有@Reloadable标识或者有对应的annotation有标识
+        if(c.isAnnotationPresent(Reloadable.class) ||
+                Arrays.stream(c.getAnnotations()).map(Annotation::annotationType).filter(cls->cls.isAnnotationPresent(Reloadable.class)).findAny().isPresent()) {
             return new ReloadableBinder(c, Injector.of(c, this));
         }
         return BeanBinder.classic(c, Injector.of(c, this));

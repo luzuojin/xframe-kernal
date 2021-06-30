@@ -1,6 +1,7 @@
 package dev.xframe.dev;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
 
 import dev.xframe.http.Response;
@@ -12,7 +13,6 @@ import dev.xframe.http.service.rest.HttpMethods;
 import dev.xframe.inject.ApplicationContext;
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.Reloadable;
-import dev.xframe.inject.Templates;
 import dev.xframe.inject.code.Codes;
 import dev.xframe.net.cmd.Cmd;
 import dev.xframe.net.cmd.CommandContext;
@@ -89,22 +89,26 @@ public class HotfixService {
         return Response.of("nil");
     }
 
+    @SuppressWarnings("unchecked")
     @HttpMethods.GET("reload")
     public Object reload(@HttpArgs.Param String c) {
-        String[] clses = XStrings.isEmpty(c) ? null : c.split(",");
-        if(clses == null || clses.length == 0) {
+        String[] clsNames = XStrings.isEmpty(c) ? null : c.split(",");
+        if(clsNames == null || clsNames.length == 0) {
             try {
-                for (String cls : clses)
-                    ApplicationContext.reload(Class.forName(cls));
-                return Response.of(String.format("Load %s Finisned", Arrays.toString(clses)));
+                for (String clsName : clsNames) {
+                    Class<?> cls = Class.forName(clsName);
+                    if(cls.isAnnotation()) {
+                        ApplicationContext.reload(clz->clz.isAnnotationPresent((Class<? extends Annotation>) cls));
+                    } else {
+                        ApplicationContext.reload(cls);
+                    }
+                }
+                return Response.of(String.format("Load %s Finisned", Arrays.toString(clsNames)));
             } catch (ClassNotFoundException e) {
                 //ignore
             }
-            return Response.of(String.format("%s not found", Arrays.toString(clses)));
-        } else {
-            ApplicationContext.reload(cls -> cls.isAnnotationPresent(Templates.class));
-            return Response.of("Load Templates Finished");
         }
+        return Response.of(String.format("Class %s not found", Arrays.toString(clsNames)));
     }
 
 }

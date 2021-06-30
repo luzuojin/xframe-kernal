@@ -7,13 +7,13 @@ import dev.xframe.inject.Inject;
 public class TPrototype extends TPrototypeAbst {
     
     @Inject
-    private TTemplates templates;
+    private TComp tComp;
     @Inject
     private TestExecution testExecution;
     
     public void dosomething() {
         super.dosomething();
-        Assert.assertNotNull(templates);
+        Assert.assertNotNull(tComp);
     }
     
 }

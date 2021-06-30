@@ -22,8 +22,8 @@ public @interface Ordered {
 	/**
 	 * 从大到小
 	 */
-	class Collection<E> extends PriorityQueue<E>{
-		static final long serialVersionUID = 1L;
+	@SuppressWarnings("serial")
+    class Collection<E> extends PriorityQueue<E>{
 		public Collection() {
 			super(orderedComparator());
 		}
@@ -31,7 +31,8 @@ public @interface Ordered {
 			return (o1, o2) -> Integer.compare(getOrderedValue(o2), getOrderedValue(o1));
 		}
 		static int getOrderedValue(Object o) {
-			Ordered v = o.getClass().getAnnotation(Ordered.class);
+			Class<?> cls = (o instanceof Class) ? ((Class<?>) o) : o.getClass();
+            Ordered v = cls.getAnnotation(Ordered.class);
 			return v == null ? 0 : v.value();
 		}
 	}

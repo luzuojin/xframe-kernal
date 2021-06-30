@@ -11,7 +11,7 @@ import dev.xframe.test.game.GameProto.ValueMsg;
 public class TAction extends LiteAction<TPlayer, TPlayerInventory, ValueMsg>{
     
     @Inject
-    private TTemplates templates;
+    private TComp tComp;
     @Inject
     private TestExecution execution;
     @Inject
@@ -21,7 +21,7 @@ public class TAction extends LiteAction<TPlayer, TPlayerInventory, ValueMsg>{
 
     @Override
     public void exec(TPlayer player, TPlayerInventory module, ValueMsg value) throws Exception {
-        Assert.assertNotNull(templates);
+        Assert.assertNotNull(tComp);
         Assert.assertNotNull(player);
         Assert.assertNotNull(module);
         Assert.assertNotNull(value);
