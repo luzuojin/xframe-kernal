@@ -3,7 +3,6 @@ package dev.xframe.inject.beans;
 import java.util.function.Consumer;
 
 import dev.xframe.inject.ApplicationContext;
-import dev.xframe.inject.Loadable;
 import dev.xframe.inject.Prototype;
 import dev.xframe.inject.code.CompositeBuilder.IComposite;
 import dev.xframe.inject.code.ProxyBuilder.IProxy;
@@ -46,7 +45,7 @@ public class BeanHelper {
 	}
 	public static Object inject(Object bean, Injector injector) {
 		injector.inject(bean, ApplicationContext.Internal.fetcher());
-		Loadable.doLoad(bean);
+		BeanLoader.doLoad(bean);
 		return bean;
 	}
 

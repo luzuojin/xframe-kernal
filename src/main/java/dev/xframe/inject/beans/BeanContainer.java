@@ -4,8 +4,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import dev.xframe.inject.Loadable;
-
 
 /**
  * 数据结构为Array,为了访问时比Map性能更好/占用内存更小 (所以需要Index结构)
@@ -78,7 +76,7 @@ public class BeanContainer implements BeanFetcher {
 	//完成Bean初始化过程
 	protected void loadBeanExec(BeanBinder binder, Object bean) {
 		binder.integrate(bean, this);
-		Loadable.doLoad(bean);
+		BeanLoader.doLoad(bean);
 	}
 
 	public void integrate() {
