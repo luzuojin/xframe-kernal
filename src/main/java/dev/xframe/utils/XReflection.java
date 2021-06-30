@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import javassist.Modifier;
 
@@ -34,24 +35,53 @@ public class XReflection extends SecurityManager {
         int len = classes.length;
         return len > index ? classes[index] : classes[len - 1];
     }
-
+    
+    
     /**
-     * @param clazz
+     * @param cls
      * @param name
      * @param parameterTypes
-     * @return declared method
+     * @return method
      */
-    public static Method getMethod(Class<?> clazz, String name, Class<?>... parameterTypes) {
+    public static List<Method> getMethods(Class<?> cls, Predicate<Method> predicate) {
+        return getMethods0(cls, predicate, new ArrayList<>());
+    }
+    private static List<Method> getMethods0(Class<?> cls, Predicate<Method> predicate, List<Method> dest) {
+        if(cls == null) {
+            return dest;
+        }
         Method res = null;
-        for (Method m : clazz.getDeclaredMethods()) {
+        for (Method m : cls.getDeclaredMethods()) {
+            if (predicate.test(m)) {
+                XReflection.setAccessible(res);
+                dest.add(m);
+            }
+        }
+        return getMethods0(cls.getSuperclass(), predicate, dest);
+    }
+
+    /**
+     * @param cls
+     * @param name
+     * @param parameterTypes
+     * @return method
+     */
+    public static Method getMethod(Class<?> cls, String name, Class<?>... parameterTypes) {
+        if(cls == null) {
+            return null;
+        }
+        Method res = null;
+        for (Method m : cls.getDeclaredMethods()) {
             if (m.getName().equals(name) && Arrays.equals(parameterTypes, m.getParameterTypes()) && (res == null || res.getReturnType().isAssignableFrom(m.getReturnType())))
                 res = m;
         }
-        if(res != null)
+        if(res != null) {
             XReflection.setAccessible(res);
-        return res;
+            return res;
+        }
+        return getMethod(cls.getSuperclass(), name, parameterTypes);
     }
-    public static <T> T invoke(Method method, Object obj, Object... args) {
+    public static <T> T invokeMethod(Method method, Object obj, Object... args) {
         try {
             return (T) method.invoke(obj, args);
         } catch (InvocationTargetException e) {
@@ -60,34 +90,67 @@ public class XReflection extends SecurityManager {
             throw XCaught.throwException(e);
         }
     }
+    public static <T> T invokeStaticMethod(Method method, Object... args) {
+        return invokeMethod(method, null, args);
+    }
 
     /**
-     * @param clazz
+     * @param cls
+     * @param predicate
+     * @return fields
+     */
+    public static List<Field> getFields(Class<?> cls, Predicate<Field> predicate) {
+        return getFields0(cls, predicate, new ArrayList<>());
+    }
+    private static List<Field> getFields0(Class<?> cls, Predicate<Field> predicate, List<Field> dest) {
+        if(cls == null) {
+            return dest;
+        }
+        for (Field field : cls.getDeclaredFields()) {
+            if (predicate.test(field)) {
+                XReflection.setAccessible(field);
+                dest.add(field);
+            }
+        }
+        return getFields0(cls.getSuperclass(), predicate, dest);
+    }
+    
+    /**
+     * @param cls
      * @param name
      * @return declared field
      */
-    public static Field getField(Class<?> clazz, String name) {
-        for (Field field : clazz.getDeclaredFields()) {
+    public static Field getField(Class<?> cls, String name) {
+        if(cls == null) {
+            return null;
+        }
+        for (Field field : cls.getDeclaredFields()) {
             if (field.getName().equals(name)) {
                 XReflection.setAccessible(field);
                 return field;
             }
         }
-        return null;
+        return getField(cls.getSuperclass(), name);
     }
-    public static void invoke(Field field, Object obj, Object val) {
+    public static void invokeSetter(Field field, Object obj, Object val) {
         try {
             field.set(obj, val);
         } catch (Exception e) {
             XCaught.throwException(e);
         }
     }
-    public static <T> T invoke(Field field, Object obj) {
+    public static void invokeStaticSetter(Field field, Object val) {
+        invokeSetter(field, null, val);
+    }
+    public static <T> T invokeGetter(Field field, Object obj) {
         try {
             return (T) field.get(obj);
         } catch (Exception e) {
             throw XCaught.throwException(e);
         }
+    }
+    public static <T> T invokeStaticGetter(Field field) {
+        return invokeGetter(field, null);
     }
 
     /**
@@ -96,16 +159,16 @@ public class XReflection extends SecurityManager {
      * @param parameterTypes
      * @return declared constructor
      */
-    public static <T> Constructor<T> getConstructor(Class<?> clazz, Class<?>... parameterTypes) {
+    public static Constructor<?> getConstructor(Class<?> clazz, Class<?>... parameterTypes) {
         for (Constructor<?> constructor : clazz.getDeclaredConstructors()) {
             if(Arrays.equals(constructor.getParameterTypes(), parameterTypes)) {
                 XReflection.setAccessible(constructor);
-                return (Constructor<T>) constructor;
+                return constructor;
             }
         }
         return null;
     }
-    public static <T> T invoke(Constructor<?> constructor, Object... args) {
+    public static <T> T invokeConstructor(Constructor<?> constructor, Object... args) {
         try {
             return (T) constructor.newInstance(args);
         } catch (InvocationTargetException e) {
@@ -114,10 +177,10 @@ public class XReflection extends SecurityManager {
             throw XCaught.throwException(e);
         }
     }
+    
     public static <T> T newInstance(Class<?> clazz) {
-        return invoke(getConstructor(clazz));
+        return invokeConstructor(getConstructor(clazz));
     }
-
 
     /**
      * 获取Class.isAssignableFrom为true的所有类
