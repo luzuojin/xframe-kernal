@@ -19,9 +19,10 @@ import io.netty.handler.codec.http.HttpResponseStatus;
  */
 public class Response {
 
-    public static final Response   NOT_FOUND = of("Not Found!!!").set(HttpResponseStatus.NOT_FOUND);
-    public static final Response BAD_REQUEST = of("Bad Request!!!").set(HttpResponseStatus.BAD_REQUEST);
-    public static final Response EMPTY_ALLOW = of(new byte[0]).setHeader("Allow", "*");
+    public static final Response   NOT_FOUND = of("Not Found").set(HttpResponseStatus.NOT_FOUND);
+    public static final Response BAD_REQUEST = of("Bad Request").set(HttpResponseStatus.BAD_REQUEST);
+    public static final Response   FORBIDDEN = of("Forbidden").set(HttpResponseStatus.FORBIDDEN);
+    public static final Response       EMPTY = of("");
 
     public static Response of(byte[] bytes) {
         return of(ContentType.BINARY, bytes);
