@@ -4,6 +4,7 @@ import java.util.function.Function;
 
 import dev.xframe.inject.Bean;
 import dev.xframe.inject.Providable;
+import dev.xframe.net.codec.IMessage;
 import dev.xframe.utils.XCaught;
 import dev.xframe.utils.XLambda;
 
@@ -19,10 +20,16 @@ import dev.xframe.utils.XLambda;
 public class LiteParserFactory {
 	
     @SuppressWarnings("unchecked")
-    public Function<Object, Object> build(Class<?> claz) {
+    public Function<Object, Object> build(Class<?> cls) {
         try {
+            if(cls.equals(EmptyMsg.class)) {
+                return o -> EmptyMsg.Instance;
+            }
+            if(IMessage.class.isAssignableFrom(cls)) {
+                return o -> o;
+            }
             //basically use protobuf parse body by MessageLite.parseFrom
-            return XLambda.create(Function.class, claz, "parseFrom", byte[].class);
+            return XLambda.create(Function.class, cls, "parseFrom", byte[].class);
         } catch (Throwable e) {
             throw XCaught.throwException(e);
         }

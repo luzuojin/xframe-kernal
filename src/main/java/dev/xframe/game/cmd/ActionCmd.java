@@ -18,19 +18,19 @@ public final class ActionCmd<T extends Player> extends LoopedCmd<T>  {
     private ModularAdapter adapter;
     
     final Class<?> clazz;
+    final Supplier<?> factory;
     final Injector injector;
-    final Supplier<?> getter;
-    final MTypedLoader loader;
-    final LiteParser liteParser;
+    final MTypedLoader mLoader;
+    final LiteParser msgParser;
     
     public ActionCmd(Class<?> clazz) {
         try {
             BeanHelper.inject(this);
             this.clazz = clazz;
-            this.getter = XLambda.createByConstructor(clazz);
-            this.loader = adapter.getTypedLoader(Action.getModuleType(clazz));
+            this.factory = XLambda.createByConstructor(clazz);
+            this.mLoader = ModularAction.class.isAssignableFrom(clazz) ? adapter.getTypedLoader(ModularAction.getModuleType(clazz)) : null;
             this.injector = adapter.newInjector(clazz);
-            this.liteParser = LiteAction.class.isAssignableFrom(clazz) ? new LiteParser(clazz, LiteAction.class, "L") : null;
+            this.msgParser = new LiteParser(clazz, Action.class, "M");
         } catch (Throwable e) {
             throw XCaught.throwException(e);
         }
@@ -39,12 +39,17 @@ public final class ActionCmd<T extends Player> extends LoopedCmd<T>  {
     @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void exec(T player, IMessage req) throws Exception {
-        Action<T, ?> action = (Action<T, ?>) getter.get();
+        Action<T, Object> action = (Action<T, Object>) factory.get();
+        //inject
         adapter.runInject(injector, action, player);
-        if(action instanceof LiteAction) {
-        	((LiteAction) action).parser = liteParser;
+        //setup module loader if require
+        if(action instanceof ModularAction) {
+            ((ModularAction) action).mTypedLoader = mLoader;
         }
-        action.exec(player, loader.load(player), req);
+        //transfer msg
+        Object msg = msgParser.parse(req.getBody());
+        //run action
+        action.exec(player, msg);
     }
     
     @Override

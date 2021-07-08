@@ -9,7 +9,8 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.xframe.game.callable.PlayerCallable;
+import dev.xframe.game.cmd.RunnableAction;
+import dev.xframe.task.RunnableTask;
 import dev.xframe.task.Task;
 import dev.xframe.task.TaskExecutor;
 
@@ -219,34 +220,39 @@ public class PlayerContext {
         }
     }
 
-    public <T extends Player> void callPlayer(long id, PlayerCallable<T> callable) {
-        Player player = players.get(id);
+    public <T extends Player> void callPlayer(long id, RunnableAction<T> rAction) {
+        T player = (T) players.get(id);
         if(player != null) {
-        	execCall(callable, player);
+        	execCall(rAction, player);
         }
     }
 
-    public <T extends Player> void callOnlinePlayers(PlayerCallable<T> callable) {
+    public <T extends Player> void callOnlinePlayers(RunnableAction<T> rAction) {
         for (PlayerData data : players.datas()) {
-        	execCall(callable, data, true);
+        	execCall(rAction, data, true);
         }
     }
 
-    public <T extends Player> void callAllPlayers(PlayerCallable<T> callable) {
+    public <T extends Player> void callAllPlayers(RunnableAction<T> rAction) {
         for (PlayerData data : players.datas()) {
-        	execCall(callable, data, false);
+        	execCall(rAction, data, false);
         }
     }
     
-    private <T extends Player> void execCall(PlayerCallable<T> callable, PlayerData data, boolean requireOnline) {
-    	Player player;
-    	if(data != null && (player = data.getData()) != null && (!requireOnline || player.isOnline())) {
-    		execCall(callable, player);
+    private <T extends Player> void execCall(RunnableAction<T> rAction, PlayerData data, boolean requireOnline) {
+    	T player;
+    	if(data != null && (player = (T) data.getData()) != null && (!requireOnline || player.isOnline())) {
+    	    if(player.loop().inLoop()) {
+    	        execCall(rAction, player);
+            } else {//looped exec
+                RunnableTask.of(player.loop(), () -> execCall(rAction, player)).checkin();
+    	    }
     	}
     }
-	private <T extends Player> void execCall(PlayerCallable<T> callable, Player player) {
+    
+	private <T extends Player> void execCall(RunnableAction<T> rAction, T player) {
 		try {
-			callable.call((T) player);
+		    rAction.exec(player);;
 		} catch (Throwable e) {
 			logger.error("Call player throws: ", e);
 		}

@@ -2,13 +2,13 @@ package dev.xframe.test.game;
 
 import org.junit.Assert;
 
-import dev.xframe.game.cmd.LiteAction;
+import dev.xframe.game.cmd.ModularAction;
 import dev.xframe.inject.Inject;
 import dev.xframe.net.cmd.Cmd;
 import dev.xframe.test.game.GameProto.ValueMsg;
 
 @Cmd(101)
-public class TAction extends LiteAction<TPlayer, TPlayerInventory, ValueMsg>{
+public class TAction extends ModularAction<TPlayer, TPlayerInventory, ValueMsg>{
     
     @Inject
     private TComp tComp;
