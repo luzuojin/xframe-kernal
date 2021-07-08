@@ -45,12 +45,12 @@ public class TBootstrap {
 		testExecution.assertExecuted(TDepInventory.class);
 		testExecution.assertExecuted(TComponent.class);
         
-        PlayerCmd<TPlayer> cmd1 = (PlayerCmd<TPlayer>) commandCtx.get((short) 100);
+        PlayerCmd<TPlayer> cmd1 = (PlayerCmd<TPlayer>) commandCtx.get(100);
         cmd1.execute(null, Message.of(100, ValueMsg.newBuilder().setVal("hey").build().toByteArray()).copy(playerId));
         TimeUnit.MILLISECONDS.sleep(100);//wait queued executed
         testExecution.assertExecuted(TCommand.class);
         
-        PlayerCmd<TPlayer> cmd2 = (PlayerCmd<TPlayer>)  commandCtx.get((short) 101);
+        PlayerCmd<TPlayer> cmd2 = (PlayerCmd<TPlayer>)  commandCtx.get(101);
         cmd2.execute(null, Message.of(101, ValueMsg.newBuilder().setVal("hey").build().toByteArray()).copy(playerId));
         TimeUnit.MILLISECONDS.sleep(100);//wait queued executed
         testExecution.assertExecuted(TAction.class);
@@ -58,11 +58,12 @@ public class TBootstrap {
         player.player.dosomething();
         testExecution.assertExecuted(TPlayerInventory.class);
         
-        RunnableAction.of((TPlayer p, TPlayerInventory m) -> {
-            Assert.assertNotNull(p);
-            Assert.assertNotNull(m);
-            m.dosomething();
-        }).exec(player);
+        player.accept(
+                RunnableAction.of((TPlayer p, TPlayerInventory m) -> {
+                    Assert.assertNotNull(p);
+                    Assert.assertNotNull(m);
+                    m.dosomething();
+                }));
         
         TimeUnit.MILLISECONDS.sleep(100);//wait queued executed
         testExecution.assertExecuted(TPlayerInventory.class);

@@ -22,7 +22,7 @@ public class LiteParser {
 	private Function<Object, Object> func;
 	
 	public LiteParser(Class<?> clazz, Class<?> gerenic, String typeName) {
-	    func = factory.build(XGeneric.parse(clazz, gerenic).getByName(typeName));
+	    func = factory.newParseFunc(XGeneric.parse(clazz, gerenic).getByName(typeName));
 	}
 	
 	@SuppressWarnings("unchecked")

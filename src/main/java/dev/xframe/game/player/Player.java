@@ -1,5 +1,8 @@
 package dev.xframe.game.player;
 
+import dev.xframe.game.action.Action;
+import dev.xframe.game.action.ActionTask;
+import dev.xframe.game.action.EmptyMsg;
 import dev.xframe.module.ModuleType;
 import dev.xframe.module.beans.ModuleContainer;
 import dev.xframe.task.TaskLoop;
@@ -23,9 +26,19 @@ public abstract class Player {
     public TaskLoop loop() {
         return this.loop;
     }
-    @Deprecated
-    public long getPlayerId() {
-    	return id;
+    
+    //EmptyMsg Action
+    public <T extends Player> void accept(Action<T, EmptyMsg> action) {
+        accept(action, EmptyMsg.Instance);
+    }
+    @SuppressWarnings("unchecked")
+    public <T extends Player, M> void accept(Action<T, M> action, M msg) {
+        T player = (T) this;
+        if(loop.inLoop()) {
+            ActionTask.exec(action, player, msg);
+        } else {
+            ActionTask.of(action, player, msg).checkin();
+        }
     }
     
     public synchronized boolean load(ModuleType type) {

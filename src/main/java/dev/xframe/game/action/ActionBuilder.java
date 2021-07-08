@@ -28,20 +28,22 @@ public class ActionBuilder {
     }
     
     @SuppressWarnings("unchecked")
-    public <T extends Player> Action<T, Object> build(Player p) {
-        return (Action<T, Object>) makeCompelte(fac.get(), p);
+    public <T extends Player, M> Action<T, M> build(Player p) {
+        return (Action<T, M>) makeCompelte(fac.get(), p);
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Player> Object makeCompelte(Object a, Player p) {
+    public Object makeCompelte(Object a, Player p) {
         if(a instanceof IModularAction) {
-            ((IModularAction<?>) a).mTypedLoader = mTyped;
+            ((IModularAction<?>) a).mTyped = mTyped;
         }
         adapter.runInject(injector, a, p);
         return a;
     }
     
-    private static Map<Class<?>, ActionBuilder> cached = new HashMap<>();
+    /**---caches---*/
+    private final static Map<Class<?>, ActionBuilder> cached = new HashMap<>();
+    
     public static ActionBuilder of(Class<?> cls) {
         ActionBuilder ab = cached.get(cls);
         if(ab == null) {

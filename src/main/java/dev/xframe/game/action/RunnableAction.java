@@ -10,9 +10,19 @@ import dev.xframe.game.player.Player;
 import dev.xframe.inject.ApplicationContext;
 import dev.xframe.utils.XGeneric;
 
-public interface RunnableAction<T extends Player>{
+/**
+ * EmptyMsg Action 
+ * @author luzj
+ * @param <T>
+ */
+public interface RunnableAction<T extends Player> extends Action<T, EmptyMsg>{
     
-    void exec(T player) throws Exception;
+    @Override
+    default void exec(T player, EmptyMsg msg) throws Exception {
+        exec0(player);
+    }
+    
+    public void exec0(T player) throws Exception;
     
     /**
      * for implemention
@@ -20,52 +30,32 @@ public interface RunnableAction<T extends Player>{
      * @param <T>
      * @param <V>
      */
-    public static abstract class Modular<T extends Player, V> extends IModularAction<V> implements RunnableAction<T> {
+    public static abstract class Modularized<T extends Player, V> extends IModularAction<V> implements RunnableAction<T> {
         @Override
-        public final void exec(T player) throws Exception {
-            ActionBuilder.of(getClass()).makeCompelte(this, player);
-            exec(player, mTypedLoader.load(player));
+        public final void exec0(T player) throws Exception {
+            ensureMTyped(player);
+            exec0(player, mTyped.load(player));
         }
-        public abstract void exec(T player, V module) throws Exception;
+        public abstract void exec0(T player, V module) throws Exception;
     }
 
-    static class ModularFunc<T extends Player> implements RunnableAction<T> {
-        final BiConsumer<T, ?> func;
-        final MTypedLoader typed;
-        public ModularFunc(final BiConsumer<T, ?> func, final MTypedLoader mTypedLoader) {
-            this.func = func;
-            this.typed = mTypedLoader;
-        }
-        @Override
-        public void exec(T player) throws Exception {
-            func.accept(player, typed.load(player));
-        }
-    }
-    
-    static class SimpleFunc<T extends Player> implements RunnableAction<T> {
-        final Consumer<T> func;
-        public SimpleFunc(final Consumer<T> func) {
-            this.func = func;
-        }
-        @Override
-        public void exec(T player) throws Exception {
-            func.accept(player);
-        }
-    }
-    
-    public static <T extends Player, V> RunnableAction<T> of(BiConsumer<T, V> func) {
-        return new ModularFunc<>(func, getMTypeLoader(func));
-    }
     public static <T extends Player> RunnableAction<T> of(Consumer<T> func) {
-        return new SimpleFunc<>(func);
+        return player -> func.accept(player);
+    }
+    public static <T extends Player, V> RunnableAction<T> of(BiConsumer<T, V> func) {
+        return of(func, getMTypeLoader(func));
     }
     
-    public static <T extends Player, V> Supplier<RunnableAction<T>> factory(BiConsumer<T, V> func) {
-        final MTypedLoader loader = getMTypeLoader(func);
-        return () -> new ModularFunc<>(func, loader);
-    }
     public static <T extends Player> Supplier<RunnableAction<T>> factory(Consumer<T> func) {
-        return () -> new SimpleFunc<>(func);
+        return () -> of(func);
+    }
+    public static <T extends Player, V> Supplier<RunnableAction<T>> factory(BiConsumer<T, V> func) {
+        final MTypedLoader mTyped = getMTypeLoader(func);
+        return () -> of(func, mTyped);
+    }
+    
+    static <T extends Player, V> RunnableAction<T> of(BiConsumer<T, V> func, MTypedLoader mTyped) {
+        return player -> func.accept(player, mTyped.load(player));
     }
     
     static <T extends Player, V> MTypedLoader getMTypeLoader(BiConsumer<T, V> func) {

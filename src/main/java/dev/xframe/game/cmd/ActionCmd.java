@@ -7,7 +7,7 @@ import dev.xframe.inject.beans.BeanHelper;
 import dev.xframe.net.codec.IMessage;
 import dev.xframe.utils.XCaught;
 
-public final class ActionCmd<T extends Player> extends LoopedCmd<T>  {
+public final class ActionCmd<T extends Player> extends DirectCmd<T>  {
 
     final Class<?> actionCls;
     final ActionBuilder builder;
@@ -30,8 +30,8 @@ public final class ActionCmd<T extends Player> extends LoopedCmd<T>  {
         Action<T, Object> action = builder.build(player);
         //transfer msg
         Object msg = msgParser.parse(req.getBody());
-        //run action
-        action.exec(player, msg);
+        //run action (looped)
+        player.accept(action, msg);
     }
     
     @Override

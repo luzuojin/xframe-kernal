@@ -1,6 +1,6 @@
 package dev.xframe.game.action;
 
-public class EmptyMsg {
+public final class EmptyMsg {
 
     public static final EmptyMsg Instance = new EmptyMsg();
     

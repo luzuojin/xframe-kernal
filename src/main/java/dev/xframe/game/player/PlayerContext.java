@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.xframe.game.action.RunnableAction;
-import dev.xframe.task.RunnableTask;
 import dev.xframe.task.Task;
 import dev.xframe.task.TaskExecutor;
 
@@ -239,23 +238,19 @@ public class PlayerContext {
         }
     }
     
-    private <T extends Player> void execCall(RunnableAction<T> rAction, PlayerData data, boolean requireOnline) {
+    private <T extends Player> void execCall(RunnableAction<T> rAction, PlayerData data, boolean onlineRequired) {
     	T player;
-    	if(data != null && (player = (T) data.getData()) != null && (!requireOnline || player.isOnline())) {
-    	    if(player.loop().inLoop()) {
-    	        execCall(rAction, player);
-            } else {//looped exec
-                RunnableTask.of(player.loop(), () -> execCall(rAction, player)).checkin();
-    	    }
+    	if(data != null && (player = (T) data.getData()) != null && (!onlineRequired || player.isOnline())) {
+    	    execCall(rAction, player);
     	}
     }
     
 	private <T extends Player> void execCall(RunnableAction<T> rAction, T player) {
 		try {
-		    rAction.exec(player);;
+		    player.accept(rAction);
 		} catch (Throwable e) {
 			logger.error("Call player throws: ", e);
 		}
 	}
-    
+	
 }

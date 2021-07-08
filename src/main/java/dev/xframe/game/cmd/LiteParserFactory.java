@@ -21,7 +21,7 @@ import dev.xframe.utils.XLambda;
 public class LiteParserFactory {
 	
     @SuppressWarnings("unchecked")
-    public Function<Object, Object> build(Class<?> cls) {
+    public Function<Object, Object> newParseFunc(Class<?> cls) {
         try {
             if(cls.equals(EmptyMsg.class)) {
                 return o -> EmptyMsg.Instance;

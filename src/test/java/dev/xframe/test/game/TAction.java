@@ -20,7 +20,7 @@ public class TAction extends ModularAction<TPlayer, TPlayerInventory, ValueMsg>{
     private TAgent agent;
 
     @Override
-    public void exec(TPlayer player, TPlayerInventory module, ValueMsg value) throws Exception {
+    public void exec(TPlayer player, TPlayerInventory module, ValueMsg value) {
         Assert.assertNotNull(tComp);
         Assert.assertNotNull(player);
         Assert.assertNotNull(module);
