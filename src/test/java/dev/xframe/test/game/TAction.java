@@ -2,7 +2,7 @@ package dev.xframe.test.game;
 
 import org.junit.Assert;
 
-import dev.xframe.game.cmd.ModularAction;
+import dev.xframe.game.action.ModularAction;
 import dev.xframe.inject.Inject;
 import dev.xframe.net.cmd.Cmd;
 import dev.xframe.test.game.GameProto.ValueMsg;

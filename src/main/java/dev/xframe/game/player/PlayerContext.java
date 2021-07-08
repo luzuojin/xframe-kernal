@@ -9,7 +9,7 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.xframe.game.cmd.RunnableAction;
+import dev.xframe.game.action.RunnableAction;
 import dev.xframe.task.RunnableTask;
 import dev.xframe.task.Task;
 import dev.xframe.task.TaskExecutor;

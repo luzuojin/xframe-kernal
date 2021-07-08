@@ -2,6 +2,7 @@ package dev.xframe.game.cmd;
 
 import java.util.function.Function;
 
+import dev.xframe.game.action.EmptyMsg;
 import dev.xframe.inject.Bean;
 import dev.xframe.inject.Providable;
 import dev.xframe.net.codec.IMessage;

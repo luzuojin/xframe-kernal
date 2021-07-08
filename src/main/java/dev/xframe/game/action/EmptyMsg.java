@@ -1,4 +1,4 @@
-package dev.xframe.game.cmd;
+package dev.xframe.game.action;
 
 public class EmptyMsg {
 

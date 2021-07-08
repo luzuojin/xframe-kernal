@@ -1,6 +1,6 @@
 package dev.xframe.game;
 
-import dev.xframe.game.cmd.Action;
+import dev.xframe.game.action.Action;
 import dev.xframe.game.cmd.ActionCmd;
 import dev.xframe.game.player.ModularAdapter;
 import dev.xframe.game.player.Player;

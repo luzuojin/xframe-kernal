@@ -6,7 +6,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import dev.xframe.game.callable.ModularCallable;
+import dev.xframe.game.action.RunnableAction;
 import dev.xframe.game.cmd.PlayerCmd;
 import dev.xframe.game.player.ModularAdapter;
 import dev.xframe.game.player.PlayerContext;
@@ -58,14 +58,12 @@ public class TBootstrap {
         player.player.dosomething();
         testExecution.assertExecuted(TPlayerInventory.class);
         
-        new ModularCallable<TPlayer, TPlayerInventory>() {
-            @Override
-            public void exec(TPlayer player, TPlayerInventory module) {
-                Assert.assertNotNull(player);
-                Assert.assertNotNull(module);
-                module.dosomething();
-            }
-        }.call(player);
+        RunnableAction.of((TPlayer p, TPlayerInventory m) -> {
+            Assert.assertNotNull(p);
+            Assert.assertNotNull(m);
+            m.dosomething();
+        }).exec(player);
+        
         TimeUnit.MILLISECONDS.sleep(100);//wait queued executed
         testExecution.assertExecuted(TPlayerInventory.class);
         
