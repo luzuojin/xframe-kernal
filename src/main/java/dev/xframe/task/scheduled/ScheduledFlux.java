@@ -9,9 +9,20 @@ import dev.xframe.task.RunnableTask;
 import dev.xframe.task.TaskLoop;
 import dev.xframe.utils.XLogger;
 
+/**
+ * 多个ScheduledTask包装类. 
+ * @author luzj
+ */
 public class ScheduledFlux implements Runnable {
+    private static long StartTime = System.nanoTime();
+    private static long calcDeadline(int delay) {   //计划执行时间
+        return System.nanoTime() - StartTime + TimeUnit.MILLISECONDS.toNanos(delay);
+    }
+    private static long calcBaseline() {            //当前时间
+        return System.nanoTime() - StartTime;
+    }
 	
-	private PriorityQueue<Unit> units = new PriorityQueue<>();
+	private PriorityQueue<SFUnit> units = new PriorityQueue<>();
 	
 	private TaskLoop loop;
 	
@@ -29,17 +40,17 @@ public class ScheduledFlux implements Runnable {
 	}
 	
     private void doRegist(Runnable task, int delay) {
-        Unit unit = new Unit(task, System.currentTimeMillis() + delay);
+        SFUnit unit = new SFUnit(task, calcDeadline(delay));
         units.add(unit);
         tryCheckin();
     }
-    
+
     @Override
     public void run() {
-        long now = System.currentTimeMillis();
+        long now = calcBaseline();
         for(;;) {
-            Unit next = units.peek();
-            if(next == null || next.execTime > now) {
+            SFUnit next = units.peek();
+            if(next == null || next.deadline > now) {
                 break;
             }
             try {
@@ -70,30 +81,29 @@ public class ScheduledFlux implements Runnable {
 	    tryCheckin(units.peek());
     }
 	
-	private void tryCheckin(Unit unit) {
+	private void tryCheckin(SFUnit unit) {
         if(unit != null && !unit.checked) {
             unit.checked = true;
             int delay = (int) unit.getDelay(TimeUnit.MILLISECONDS);
-            DelayTask.of(loop, delay, this).checkin();;
+            DelayTask.of(loop, delay, this).checkin();
         }
 	}
 
-	static class Unit implements Delayed {
+	static class SFUnit implements Delayed {
 		final Runnable runner;
-		final long execTime;
+		final long deadline;
 		boolean checked = false;
-		public Unit(Runnable runner, long execTime) {
+		public SFUnit(Runnable runner, long deadline) {
 			this.runner = runner;
-			this.execTime = execTime;
+			this.deadline = deadline;
 		}
 		@Override
 		public int compareTo(Delayed o) {
-			return Long.compare(execTime, ((Unit) o).execTime);
+			return Long.compare(deadline, ((SFUnit) o).deadline);
 		}
 		@Override
 		public long getDelay(TimeUnit unit) {
-			return unit.convert(this.execTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+			return Math.max(0, unit.convert(this.deadline - calcBaseline(), TimeUnit.NANOSECONDS));
 		}
 	}
-
 }

@@ -19,8 +19,11 @@ public abstract class ScheduledTask extends DelayTask {
 	@Override
 	protected void done() {
 		if(period > 0) {//从执行开始时间计算
-			long periodBegin = execTime > 0 ? execTime : System.currentTimeMillis();
-			recheckin(periodBegin, period);
+		    if(delayMillis > 0) {
+		        recheckin(period);
+		    } else {
+		        recheckin(createTime, period);//@See DelayTask.run(timout)
+		    }
 		}
 	}
 	

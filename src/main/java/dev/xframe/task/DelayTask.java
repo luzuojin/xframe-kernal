@@ -1,15 +1,13 @@
 package dev.xframe.task;
 
-import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
-import dev.xframe.utils.XDateFormatter;
 import io.netty.util.Timeout;
 import io.netty.util.TimerTask;
 
-public abstract class DelayTask extends Task implements Delayed, TimerTask {
+public abstract class DelayTask extends Task implements TimerTask {
     
-    protected long execTime;
+    protected int delayMillis;
     
     volatile boolean isCancelled;
     
@@ -25,13 +23,13 @@ public abstract class DelayTask extends Task implements Delayed, TimerTask {
 
     private void reset(long curTime, int delay) {
         this.isCancelled = false;
-        this.createTime = curTime;
-        this.execTime = delay > 0 ? (curTime + delay) : 0;
+        this.createTime  = curTime;
+        this.delayMillis = delay;
 	}
 
 	@Override
     public void checkin() {
-	    if(this.execTime == 0) {//don`t need delay
+	    if(this.delayMillis == 0) {//don`t need delay
 	        loop.checkin(this);
 	    } else {
 	        loop.schedule(this);
@@ -57,38 +55,14 @@ public abstract class DelayTask extends Task implements Delayed, TimerTask {
     	if(isCancelled || timeout.isCancelled())
     		return;
     	//checkin as simple task
-    	createTime = execTime;
+    	createTime = createTime + delayMillis;
     	loop.checkin(this);
 	}
 
-	public boolean tryExec(long curTime) {
-        if(isCancelled) {
-            return true;
-        }
-        
-		if(curTime >= execTime) {
-			createTime = curTime;
-			loop.checkin(this);
-			return true;
-		}
-		return false;
-	}
-    
-    @Override
-    public int compareTo(Delayed o) {
-        return Long.compare(this.execTime, ((DelayTask)o).execTime);
-    }
-
-    @Override
     public long getDelay(TimeUnit unit) {
-        return Math.max(0, unit.convert(this.execTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS));
+        return Math.max(0, unit.convert(this.delayMillis, TimeUnit.MILLISECONDS));
     }
     
-    @Override
-    public String toString() {
-        return getName() + "[" + XDateFormatter.from(execTime) + "]";
-    }
-
     public static final DelayTask of(TaskLoop loop, int delay, Runnable runnable) {
 		return new DelayTask(loop, delay) {
 			protected void exec() {

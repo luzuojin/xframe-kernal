@@ -3,6 +3,7 @@ package dev.xframe.task.scheduled;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import dev.xframe.task.TaskLoop;
@@ -43,9 +44,9 @@ public class ScheduledBuilder {
 	}
 	private static int getDelay(Method scheduledMethod) {
 		Scheduled scheduled = scheduledMethod.getAnnotation(Scheduled.class);
-		if(scheduled.dailyOffset() > 0) {//daily
+		if(scheduled.daily()) {//daily
 			long now = System.currentTimeMillis();
-			long off = scheduled.dailyOffset() - (now - TimeUnit.MILLISECONDS.toDays(now));
+			long off = Math.max(0, scheduled.delay()) + TimeZone.getDefault().getRawOffset() - (now - TimeUnit.DAYS.toMillis(TimeUnit.MILLISECONDS.toDays(now)));
 			long dly = off > 0 ? off : TimeUnit.DAYS.toMillis(1) + off;//off < 0
 			return (int) dly;
 		}
@@ -56,7 +57,7 @@ public class ScheduledBuilder {
 	}
 	private static int getPeriod(Method scheduledMethod) {
 		Scheduled scheduled = scheduledMethod.getAnnotation(Scheduled.class);
-		if(scheduled.dailyOffset() > 0) {//daily
+		if(scheduled.daily()) {//daily
 			return (int) TimeUnit.DAYS.toMillis(1);
 		}
 		return scheduled.period();

@@ -6,8 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.TYPE})
 public @interface Scheduled {
+    
 	/**
 	 * 周期间隔
 	 */
@@ -19,8 +20,8 @@ public @interface Scheduled {
 	int delay() default -1;
 
 	/**
-	 * 每天执行一次的任务(距标准时间0点的偏移量)
+	 * 每日任务, delay以每日0点(系统默认时区)为基准
 	 */
-	int dailyOffset() default -1;
+	boolean daily() default false;
 	
 }
