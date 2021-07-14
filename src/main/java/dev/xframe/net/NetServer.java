@@ -68,7 +68,7 @@ public class NetServer {
 	            new ServerBootstrap()
     	            .group(bossGroup, workerGroup)
     	            .channel(NioServerSocketChannel.class)
-    	            .childHandler(new ServerChannelInitializer(netHandler, iCodec))
+    	            .childHandler(new ServerChannelInitializer(netHandler, iCodec, listener))
     	            .childOption(ChannelOption.SO_KEEPALIVE, true)//开启时系统会在连接空闲一定时间后像客户端发送请求确认连接是否有效
     	            .childOption(ChannelOption.TCP_NODELAY, true)//关闭Nagle算法
 //    	            .childOption(ChannelOption.SO_LINGER, 0)//连接关闭时,偿试把未发送完成的数据继续发送(等待时间, 如果为0则直接设置连接为CLOSE状态 不进行TIME_WAIT...)

@@ -41,11 +41,6 @@ public class NetMessageHandler extends ChannelInboundHandlerAdapter {
 	}
 
     @Override
-    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-        listener.onSessionUnRegister(Session.get(ctx));
-    }
-
-    @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         logger.warn("Channel closed", cause);
         ctx.close();

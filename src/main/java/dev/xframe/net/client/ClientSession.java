@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import dev.xframe.net.LifecycleListener;
 import dev.xframe.net.session.ChannelSession;
 import dev.xframe.net.session.Session;
+import dev.xframe.utils.XProperties;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -16,6 +17,8 @@ import io.netty.channel.ChannelFuture;
 public class ClientSession extends ChannelSession {
     
     private static final Logger logger = LoggerFactory.getLogger(ClientSession.class);
+    
+    private static final int AwaitTime = XProperties.getAsInt("xframe.client.awaittime", 1);
     
     private final Bootstrap bootstrap;
     private final String host;
@@ -40,11 +43,10 @@ public class ClientSession extends ChannelSession {
             if(isConnecting.compareAndSet(false, true)) {
                 if(!this.isActive()) {
                     ChannelFuture future = bootstrap.connect(host, port);
-                    future.await(1, TimeUnit.SECONDS);
                     Channel channel = future.channel();
-                    if(channel != null && channel.isActive()) {
-                        initial(channel);
-                    } else {
+                    bindChannel(channel);
+                    future.await(AwaitTime, TimeUnit.SECONDS);
+                    if(!channel.isActive()) {
                         logFailure(future.cause());
                     }
                 }
@@ -60,16 +62,11 @@ public class ClientSession extends ChannelSession {
     
     public Session syncConnect() throws InterruptedException {
         if (!isActive()) {
-            initial(bootstrap.connect(host, port).sync().channel());
+            bindChannel(bootstrap.connect(host, port).sync().channel());
         }
         return this;
     }
     
-    private void initial(Channel channel) {
-        bindChannel(channel);
-        listener.onSessionRegister(this);
-    }
-
     private void logFailure(Throwable e) {
         logger.warn("session connect[{}:{}] failed, cause {}", host, port, e.getMessage());
     }

@@ -58,7 +58,7 @@ public class WebSocketMessageHandler extends ChannelInboundHandlerAdapter {
     			WebSocketServerHandshakerFactory.sendUnsupportedVersionResponse(ctx.channel()).addListener(ChannelFutureListener.CLOSE);
     		} else {
     			handshaker.handshake(ctx.channel(), req);
-				listener.onSessionRegister(new WebSocketSession(ctx.channel(), listener));
+				listener.onSessionConnected(new WebSocketSession(ctx.channel(), listener));
     		}
         } else {
         	ctx.writeAndFlush(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST)).addListener(ChannelFutureListener.CLOSE);
@@ -89,7 +89,7 @@ public class WebSocketMessageHandler extends ChannelInboundHandlerAdapter {
 
 	@Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-        listener.onSessionUnRegister(Session.get(ctx));
+        listener.onSessionDisconnected(Session.get(ctx));
     }
 
     @Override

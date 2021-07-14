@@ -34,11 +34,11 @@ public class ClientChannelInitializer extends ChannelInitializer<SocketChannel> 
         pipeline.addLast("decoder", new NetMessageDecoder(iCodec));
         pipeline.addLast("encoder", new NetMessageEncoder(iCodec));
         pipeline.addLast("idleStateHandler", new IdleStateHandler(0, 60, 0, TimeUnit.SECONDS));//60秒发一次心跳操作
-        pipeline.addLast("idleTriggerHandler", new IdleTriggerHandler());
+        pipeline.addLast("idleHandler", new IdleHandler());
         pipeline.addLast("handler", handler);
     }
     
-    class IdleTriggerHandler extends ChannelDuplexHandler {
+    class IdleHandler extends ChannelDuplexHandler {
         @Override
         public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
             if(evt instanceof IdleStateEvent) {

@@ -15,7 +15,12 @@ public class ServerMessageHandler extends NetMessageHandler {
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         Session session = new ServerSession(ctx.channel(), listener);
-        listener.onSessionRegister(session);
+        listener.onSessionConnected(session);
+    }
+    
+    @Override
+    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
+        listener.onSessionDisconnected(Session.get(ctx));
     }
     
 }
