@@ -23,13 +23,13 @@ public abstract class Session {
     
     public abstract void sendMessage(IMessage message);
     
-    public abstract void sendMessage(IMessage message, SendingListener slistener);
+    public abstract void sendMessage(IMessage message, OperationListener opListener);
 
     public abstract void sendMessageAndClose(IMessage message);
 
     public abstract boolean isActive();
 
-    public abstract boolean connect();
+    public abstract void connect(OperationListener opListener);
 
     public abstract void close();
 

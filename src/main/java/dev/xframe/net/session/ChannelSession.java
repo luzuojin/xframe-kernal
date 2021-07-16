@@ -38,10 +38,10 @@ public abstract class ChannelSession extends Session {
     }
 
     @Override
-    public void sendMessage(IMessage message, SendingListener slistener) {
+    public void sendMessage(IMessage message, OperationListener opListener) {
         listener.onMessageSending(this, message);
         
-        channel.writeAndFlush(message).addListener(slistener);
+        channel.writeAndFlush(message).addListener(opListener);
     }
 
     @Override

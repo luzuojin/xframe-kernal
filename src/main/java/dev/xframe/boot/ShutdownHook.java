@@ -38,9 +38,9 @@ public class ShutdownHook implements Eventual {
 			CompositeBuilder.forEach(agents, (ShutdownAgent agent)->{
 				try {
 					agent.shutdown();
-					XLogger.info("Shutting down agent [" + agent.getClass().getSimpleName() + "]");
+					XLogger.info("Shutting down agent [{}]", agent.getClass().getSimpleName());
 				} catch (Throwable e) {
-					XLogger.warn("Shutting down agent", e);
+					XLogger.warn("Shutting down agent [{}]", agent.getClass().getSimpleName(), e);
 				}
 			});
 			

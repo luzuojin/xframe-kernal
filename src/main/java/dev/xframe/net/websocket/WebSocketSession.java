@@ -2,6 +2,7 @@ package dev.xframe.net.websocket;
 
 import dev.xframe.net.LifecycleListener;
 import dev.xframe.net.session.ChannelSession;
+import dev.xframe.net.session.OperationListener;
 import io.netty.channel.Channel;
 
 public class WebSocketSession extends ChannelSession {
@@ -12,7 +13,7 @@ public class WebSocketSession extends ChannelSession {
 	}
 
 	@Override
-	public boolean connect() {
+	public void connect(OperationListener opListener) {
 		throw new UnsupportedOperationException("WebSocketSession don`t support connect!");
 	}
 

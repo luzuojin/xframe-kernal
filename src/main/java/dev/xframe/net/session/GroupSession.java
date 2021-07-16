@@ -57,7 +57,7 @@ public class GroupSession extends Session {
     }
 
     @Override
-    public void sendMessage(IMessage message, SendingListener slistener) {
+    public void sendMessage(IMessage message, OperationListener opListener) {
         long id = message.getId();
         Session s = getSession(id);
         if(s == null) {
@@ -68,8 +68,8 @@ public class GroupSession extends Session {
             XLogger.warn("Session not active for id[{}] send message[{}]", id, message.getCode());
             return;
         }
-        if(slistener != null) {
-            s.sendMessage(message, slistener);
+        if(opListener != null) {
+            s.sendMessage(message, opListener);
         } else {
             s.sendMessage(message);
         }
@@ -97,8 +97,8 @@ public class GroupSession extends Session {
     }
     
     @Override
-    public boolean connect() {
-        throw new UnsupportedOperationException();
+    public void connect(OperationListener opListener) {
+        throw new UnsupportedOperationException("GroupSession don`t support connect!");
     }
     
     public void add(Session s) {

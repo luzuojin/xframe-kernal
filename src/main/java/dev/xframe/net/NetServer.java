@@ -28,8 +28,8 @@ public class NetServer {
         return Runtime.getRuntime().availableProcessors();
     }
 	
-	private Channel bossChannel;
-	private NioEventLoopGroup bossGroup;
+	private Channel masterChannel;
+	private NioEventLoopGroup masterGroup;
 	private NioEventLoopGroup workerGroup;
 	
 	private int threads = defaultThreads();
@@ -60,13 +60,13 @@ public class NetServer {
     }
 
     public NetServer startup() {
-	    bossGroup = new NioEventLoopGroup(1, new XThreadFactory("netty.boss"));
-	    workerGroup = new NioEventLoopGroup(threads, new XThreadFactory("netty.worker"));
-        NetMessageHandler netHandler = new ServerMessageHandler(listener, handler);
-        
+	    masterGroup = new NioEventLoopGroup(      1, new XThreadFactory("master"));
+	    workerGroup = new NioEventLoopGroup(threads, new XThreadFactory("worker"));
+	    NetMessageHandler netHandler = new ServerMessageHandler(listener, handler);
+	    
         ServerBootstrap bootstrap =
 	            new ServerBootstrap()
-    	            .group(bossGroup, workerGroup)
+    	            .group(masterGroup, workerGroup)
     	            .channel(NioServerSocketChannel.class)
     	            .childHandler(new ServerChannelInitializer(netHandler, iCodec, listener))
     	            .childOption(ChannelOption.SO_KEEPALIVE, true)//开启时系统会在连接空闲一定时间后像客户端发送请求确认连接是否有效
@@ -83,7 +83,7 @@ public class NetServer {
         workerGroup.setIoRatio(100);//优先处理网络任务(IOTask)再处理UserTask
         
 	    try {
-	        bossChannel = bootstrap.bind(port).sync().channel();
+	        masterChannel = bootstrap.bind(port).sync().channel();
             logger.info("NetServer listening to port : " + port);
         } catch (InterruptedException e) {
             logger.error("NetServer start failed ...", e);
@@ -92,9 +92,9 @@ public class NetServer {
 	}
 	
 	public void shutdown() {
-        bossGroup.shutdownGracefully();
+        masterGroup.shutdownGracefully();
         workerGroup.shutdownGracefully();
-	    bossChannel.close().awaitUninterruptibly();
+	    masterChannel.close().awaitUninterruptibly();
 	}
 	
 }
