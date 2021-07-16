@@ -21,7 +21,7 @@ public class GroupSession extends Session {
     
     private SessionSet set = new SessionSet();
     
-    private Map<Long, Session> mappings = new ConcurrentHashMap<>();
+    private Map<Long, Integer> mapped = new ConcurrentHashMap<>();
     
     @Override
     public long id() {
@@ -35,17 +35,20 @@ public class GroupSession extends Session {
     }
 
     private Session getSession(long id) {
-        if (mappings.containsKey(id)) {
-            Session session = mappings.get(id);
-            if (session.isActive()) {
+        int index;
+        Integer ex = mapped.get(id);//mapped index (仅cache index, 防止Session Close时引用没有及时更新)
+        if(ex != null && (index = ex.intValue()) != -1) {
+            Session session = set.get(index);
+            if(session != null && session.isActive()) {
                 return session;
             }
         }
-        Session session = set.get();
-        if (session != null) {
-            mappings.put(id, session);
+        //new allocate
+        index = set.get();
+        if (index != -1) {
+            mapped.put(id, index);
         }
-        return session;
+        return set.get(index);
     }
     
     @Override
@@ -103,7 +106,7 @@ public class GroupSession extends Session {
     }
 
     public void remove(Session s) {
-        set.add(s);
+        set.remove(s);
     }
     
     public void forEach(Consumer<Session> c) {

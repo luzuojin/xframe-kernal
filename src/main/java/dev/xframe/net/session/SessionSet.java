@@ -2,14 +2,14 @@ package dev.xframe.net.session;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class SessionSet implements Iterable<Session> {
+    
+    private final Object lock = new Object();
     
     private Session[] sessions;
     private int idx;
     private int size;
-    private ReentrantLock lock;
     
     public SessionSet() {
         this(0);
@@ -18,18 +18,16 @@ public class SessionSet implements Iterable<Session> {
         this.sessions = new Session[capacity];
         this.idx = -1;
         this.size = 0;
-        this.lock = new ReentrantLock();
     }
 
     private void incrCapacity() {
-        if(size < sessions.length) return;
-        
+        if(size < sessions.length)
+            return;
         sessions = Arrays.copyOf(sessions, sessions.length + 1);
     }
     
     public void add(Session session) {
-        lock.lock();
-        try {
+        synchronized (lock) {
             incrCapacity();
             
             for (int i = 0; i < sessions.length; i++) {
@@ -39,33 +37,36 @@ public class SessionSet implements Iterable<Session> {
                     break;
                 }
             }
-        } finally {
-            lock.unlock();
         }
     }
     
-    public Session get() {
-        if(this.size == 0) return null;
-        
-        lock.lock();
-        try {
-            if(this.size == 0) return null;//double check
+    public Session get(int index) {
+        if(index < 0 || index >= sessions.length) {
+            return null;
+        }
+        return sessions[index];
+    }
+    
+    public int get() {
+        if(this.size == 0)
+            return -1;
+        synchronized (lock) {
+            if(this.size == 0)//double check
+                return -1;
             
             int len = this.sessions.length;
             int next = this.idx;
             for(int i=0; i<len; i++) {//只找一圈
                 ++ next;
-                if(next >= len) next = 0;
-                
-                Session ret = sessions[next];
-                if(ret != null) {
+                if(next >= len)
+                    next = 0;
+
+                if(sessions[next] != null) {//not empty pos
                     this.idx = next;
-                    return ret;
+                    return next;
                 }
             }
-            return null;
-        } finally {
-            lock.unlock();
+            return -1;
         }
     }
     
@@ -79,11 +80,8 @@ public class SessionSet implements Iterable<Session> {
     }
     
     private Session remove(int idx) {
-        lock.lock();
-        try {
+        synchronized (lock) {
             return remove0(idx);
-        } finally {
-            lock.unlock();
         }
     }
 
@@ -98,13 +96,10 @@ public class SessionSet implements Iterable<Session> {
     }
     
     public void close() {
-        lock.lock();
-        try {
+        synchronized (lock) {
             for (int i = 0; i < sessions.length; i++) {
                 remove0(i);
             }
-        } finally {
-            lock.unlock();
         }
     }
     
