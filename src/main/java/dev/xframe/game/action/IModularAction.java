@@ -15,7 +15,7 @@ abstract class IModularAction<V> {
     }
     
     static Class<?> getModuleType(Class<?> cls) {
-        return XGeneric.parse(cls, IModularAction.class).getByName("V");
+        return XGeneric.parse(cls, IModularAction.class).getOnlyType();
     }
 
 }
