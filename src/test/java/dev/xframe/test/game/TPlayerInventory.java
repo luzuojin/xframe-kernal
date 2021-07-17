@@ -3,9 +3,9 @@ package dev.xframe.test.game;
 import org.junit.Assert;
 
 import dev.xframe.event.Subscribe;
+import dev.xframe.game.module.Module;
+import dev.xframe.game.module.ModuleType;
 import dev.xframe.inject.Inject;
-import dev.xframe.module.Module;
-import dev.xframe.module.ModuleType;
 
 @Module(ModuleType.RESIDENT)
 public class TPlayerInventory implements TInventory, TSharablePlayer, TAgent {

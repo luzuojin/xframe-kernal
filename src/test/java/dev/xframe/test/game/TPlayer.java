@@ -3,10 +3,10 @@ package dev.xframe.test.game;
 import dev.xframe.event.EventBus;
 import dev.xframe.event.Registrator;
 import dev.xframe.event.Subscriber;
-import dev.xframe.game.Assemble;
+import dev.xframe.game.config.Assemble;
+import dev.xframe.game.module.ModuleType;
 import dev.xframe.game.player.Player;
 import dev.xframe.inject.Inject;
-import dev.xframe.module.ModuleType;
 import dev.xframe.task.ScheduledContext;
 import dev.xframe.task.TaskLoop;
 

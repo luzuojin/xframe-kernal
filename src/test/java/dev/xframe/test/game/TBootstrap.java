@@ -8,12 +8,12 @@ import org.junit.runner.RunWith;
 
 import dev.xframe.game.action.RunnableAction;
 import dev.xframe.game.cmd.PlayerCmd;
+import dev.xframe.game.module.ModuleType;
 import dev.xframe.game.player.ModularAdapter;
 import dev.xframe.game.player.PlayerContext;
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.junit.ContextScan;
 import dev.xframe.inject.junit.Junit4ClassRunner;
-import dev.xframe.module.ModuleType;
 import dev.xframe.net.cmd.CommandContext;
 import dev.xframe.net.codec.Message;
 import dev.xframe.test.game.GameProto.ValueMsg;

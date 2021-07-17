@@ -1,13 +1,12 @@
 package dev.xframe.game.player;
 
-import dev.xframe.game.PlayerLoader;
 import dev.xframe.inject.Bean;
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.Providable;
 
 @Bean
 @Providable
-public class SimplePlayerLoader implements PlayerLoader {
+public class SimplePlayerProvider implements PlayerProvider {
     
     @Inject(nullable=true)
     private PlayerContext playerCtx;
@@ -18,7 +17,7 @@ public class SimplePlayerLoader implements PlayerLoader {
     }
     
     @Override
-    public <T extends Player> T getPlayer(long playerId) {
+    public <T extends Player> T get(long playerId) {
         return playerCtx == null ? null : playerCtx.getPlayerWithLoad(playerId);
     }
 

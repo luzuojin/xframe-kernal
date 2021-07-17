@@ -1,4 +1,4 @@
-package dev.xframe.module.beans;
+package dev.xframe.game.module.beans;
 
 import java.lang.reflect.Field;
 import java.util.List;

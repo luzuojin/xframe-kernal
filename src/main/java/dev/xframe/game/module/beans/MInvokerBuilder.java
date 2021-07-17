@@ -1,4 +1,4 @@
-package dev.xframe.module.beans;
+package dev.xframe.game.module.beans;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import dev.xframe.game.module.ModularMethods;
 import dev.xframe.inject.beans.BeanIndexing;
 import dev.xframe.inject.beans.BeanPretreater;
 import dev.xframe.inject.code.CtHelper;
 import dev.xframe.inject.code.CtParser;
-import dev.xframe.module.ModularMethods;
 import dev.xframe.utils.XCaught;
 import dev.xframe.utils.XReflection;
 import javassist.ClassPool;

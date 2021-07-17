@@ -1,12 +1,17 @@
-package dev.xframe.module;
+package dev.xframe.game.module;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+@Inherited
+@ModularScope
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface ModularIgnore {
-	
+public @interface Module {
+    
+    ModuleType value() default ModuleType.TRANSIENT;
+
 }

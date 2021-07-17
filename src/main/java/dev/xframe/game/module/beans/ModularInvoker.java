@@ -1,6 +1,6 @@
-package dev.xframe.module.beans;
+package dev.xframe.game.module.beans;
 
-import dev.xframe.module.ModularMethods;
+import dev.xframe.game.module.ModularMethods;
 
 /**
  * @see ModularMethods 

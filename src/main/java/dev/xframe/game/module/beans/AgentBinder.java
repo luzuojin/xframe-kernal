@@ -1,10 +1,10 @@
-package dev.xframe.module.beans;
+package dev.xframe.game.module.beans;
 
+import dev.xframe.game.module.ModularAgent;
 import dev.xframe.inject.beans.BeanBinder;
 import dev.xframe.inject.beans.BeanFetcher;
 import dev.xframe.inject.beans.Injector;
 import dev.xframe.inject.code.CompositeBuilder;
-import dev.xframe.module.ModularAgent;
 import dev.xframe.utils.XFactory;
 
 public class AgentBinder extends ModularBinder implements ModularListener {

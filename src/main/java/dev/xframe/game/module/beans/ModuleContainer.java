@@ -1,9 +1,9 @@
-package dev.xframe.module.beans;
+package dev.xframe.game.module.beans;
 
+import dev.xframe.game.module.ModuleType;
 import dev.xframe.inject.beans.BeanBinder;
 import dev.xframe.inject.beans.BeanContainer;
 import dev.xframe.inject.beans.BeanProvider;
-import dev.xframe.module.ModuleType;
 
 public class ModuleContainer extends BeanContainer  {
 	

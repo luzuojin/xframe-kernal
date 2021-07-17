@@ -1,8 +1,13 @@
-package dev.xframe.module;
+package dev.xframe.game.module;
 
 import java.util.List;
 import java.util.function.Predicate;
 
+import dev.xframe.game.module.beans.AgentBinder;
+import dev.xframe.game.module.beans.DeclaredBinder;
+import dev.xframe.game.module.beans.ModularBinder;
+import dev.xframe.game.module.beans.ModularIndexes;
+import dev.xframe.game.module.beans.ModuleContainer;
 import dev.xframe.inject.Bean;
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.beans.BeanBinder;
@@ -12,11 +17,6 @@ import dev.xframe.inject.beans.BeanProvider;
 import dev.xframe.inject.beans.BeanRegistrator;
 import dev.xframe.inject.beans.Injector;
 import dev.xframe.inject.code.Codes;
-import dev.xframe.module.beans.AgentBinder;
-import dev.xframe.module.beans.DeclaredBinder;
-import dev.xframe.module.beans.ModularBinder;
-import dev.xframe.module.beans.ModularIndexes;
-import dev.xframe.module.beans.ModuleContainer;
 import dev.xframe.utils.XReflection;
 
 @Bean

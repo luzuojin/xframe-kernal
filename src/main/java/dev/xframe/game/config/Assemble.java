@@ -1,4 +1,4 @@
-package dev.xframe.game;
+package dev.xframe.game.config;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

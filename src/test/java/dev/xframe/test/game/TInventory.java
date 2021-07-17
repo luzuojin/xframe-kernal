@@ -1,7 +1,7 @@
 package dev.xframe.test.game;
 
 import dev.xframe.game.event.RegistryAdapter;
-import dev.xframe.module.ModularMethods;
+import dev.xframe.game.module.ModularMethods;
 
 public interface TInventory extends RegistryAdapter {
     

@@ -1,13 +1,13 @@
-package dev.xframe.module.beans;
+package dev.xframe.game.module.beans;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+import dev.xframe.game.module.ModularHelper;
+import dev.xframe.game.module.ModularScope;
 import dev.xframe.inject.beans.BeanBinder;
 import dev.xframe.inject.beans.BeanIndexes;
 import dev.xframe.inject.beans.BeanIndexing;
-import dev.xframe.module.ModularHelper;
-import dev.xframe.module.ModularScope;
 
 @ModularScope
 public class ModularIndexes extends BeanIndexes {

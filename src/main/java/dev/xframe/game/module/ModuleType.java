@@ -1,4 +1,4 @@
-package dev.xframe.module;
+package dev.xframe.game.module;
 
 import java.util.concurrent.TimeUnit;
 

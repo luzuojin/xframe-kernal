@@ -2,9 +2,9 @@ package dev.xframe.test.game;
 
 import org.junit.Assert;
 
+import dev.xframe.game.module.ModularComponent;
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.Loadable;
-import dev.xframe.module.ModularComponent;
 
 @ModularComponent
 public class TComponent implements Loadable {

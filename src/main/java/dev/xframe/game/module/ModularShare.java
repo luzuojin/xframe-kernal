@@ -1,17 +1,20 @@
-package dev.xframe.module;
+package dev.xframe.game.module;
 
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Inherited
+/**
+ * 
+ * mark module sharable interface
+ * 
+ * @author luzj
+ *
+ */
 @ModularScope
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Module {
-    
-    ModuleType value() default ModuleType.TRANSIENT;
+public @interface ModularShare {
 
 }

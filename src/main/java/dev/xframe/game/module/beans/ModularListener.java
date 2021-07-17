@@ -1,4 +1,4 @@
-package dev.xframe.module.beans;
+package dev.xframe.game.module.beans;
 
 interface ModularListener {
 	

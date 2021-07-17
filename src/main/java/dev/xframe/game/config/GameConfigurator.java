@@ -1,4 +1,4 @@
-package dev.xframe.game;
+package dev.xframe.game.config;
 
 import dev.xframe.game.action.Action;
 import dev.xframe.game.cmd.ActionCmd;

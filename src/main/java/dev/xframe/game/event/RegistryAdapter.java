@@ -2,7 +2,7 @@ package dev.xframe.game.event;
 
 import dev.xframe.event.Registrator;
 import dev.xframe.event.Registry;
-import dev.xframe.module.ModularMethods;
+import dev.xframe.game.module.ModularMethods;
 
 public interface RegistryAdapter {
     

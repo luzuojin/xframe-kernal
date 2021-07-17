@@ -1,10 +1,10 @@
 package dev.xframe.game.player;
 
+import dev.xframe.game.module.ModularContext;
+import dev.xframe.game.module.beans.ModularBinder;
 import dev.xframe.inject.Bean;
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.beans.Injector;
-import dev.xframe.module.ModularContext;
-import dev.xframe.module.beans.ModularBinder;
 
 @Bean
 public class ModularAdapter implements ModuleLoader {

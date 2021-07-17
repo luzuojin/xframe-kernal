@@ -3,8 +3,8 @@ package dev.xframe.game.player;
 import dev.xframe.game.action.Action;
 import dev.xframe.game.action.ActionTask;
 import dev.xframe.game.action.EmptyMsg;
-import dev.xframe.module.ModuleType;
-import dev.xframe.module.beans.ModuleContainer;
+import dev.xframe.game.module.ModuleType;
+import dev.xframe.game.module.beans.ModuleContainer;
 import dev.xframe.task.TaskLoop;
 
 public abstract class Player {
