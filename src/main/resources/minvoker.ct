@@ -1,7 +1,7 @@
 ///invoker_name
 ${module_name}$MInvoker
 ///
-public class ${invoker_name} implements dev.xframe.module.beans.ModularInvoker {
+public class ${invoker_name} implements dev.xframe.game.module.beans.ModularInvoker {
     
     ///logger_field
     static final org.slf4j.Logger _logger = org.slf4j.LoggerFactory.getLogger("${module_name}");
@@ -16,7 +16,7 @@ public class ${invoker_name} implements dev.xframe.module.beans.ModularInvoker {
 	///
 
     ///load_method
-	public void invokeLoad(dev.xframe.module.beans.ModuleContainer mc) {
+	public void invokeLoad(dev.xframe.game.module.beans.ModuleContainer mc) {
 		try {
 		if(!mc.isModuleLoaded(${module_index})) {
 			${module_name} _local_name = (${module_name}) mc.getBean(${module_index});
@@ -33,7 +33,7 @@ public class ${invoker_name} implements dev.xframe.module.beans.ModularInvoker {
 	///
 	
 	///unload_method
-	public void invokeUnload(dev.xframe.module.beans.ModuleContainer mc) {
+	public void invokeUnload(dev.xframe.game.module.beans.ModuleContainer mc) {
 		try {
 			if(mc.isModuleLoaded(${module_index})) {
 				${module_name} _local_name = (${module_name}) mc.getBean(${module_index});
@@ -49,7 +49,7 @@ public class ${invoker_name} implements dev.xframe.module.beans.ModularInvoker {
 	///
 	
 	///save_method
-	public void invokeSave(dev.xframe.module.beans.ModuleContainer mc) {
+	public void invokeSave(dev.xframe.game.module.beans.ModuleContainer mc) {
 		try {
 			if(mc.isModuleLoaded(${module_index})) {
 				${module_name} _local_name = (${module_name}) mc.getBean(${module_index});
