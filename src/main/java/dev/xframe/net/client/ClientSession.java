@@ -26,10 +26,7 @@ public class ClientSession extends ChannelSession {
 
     @Override
     public void connect(OperationListener opListener) {
-        if(isActive() || connecting.get() || bootstrap.config().group().isShutdown()) {
-            return;
-        }
-        if(connecting.compareAndSet(false, true)) {
+        if(isConnectAvailable() && connecting.compareAndSet(false, true)) {
             if(this.isActive()) {
                 connecting.set(false);
                 return;
@@ -45,6 +42,21 @@ public class ClientSession extends ChannelSession {
                         }
                     });
         }
+    }
+
+    private boolean isConnectAvailable() {
+        return !(isActive() || connecting.get() || bootstrap.config().group().isShutdown());
+    }
+    
+    /**
+     * sync connect
+     * @throws InterruptedException
+     */
+    public ClientSession connect() throws InterruptedException {
+        if(isConnectAvailable()) {
+            onConnected(bootstrap.connect(host, port).sync().channel());
+        }
+        return this;
     }
 
     private void onConnected(Channel channel) {

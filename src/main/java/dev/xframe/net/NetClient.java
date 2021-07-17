@@ -1,12 +1,12 @@
 package dev.xframe.net;
 
-import dev.xframe.inject.beans.BeanHelper;
 import dev.xframe.net.client.ClientChannelInitializer;
 import dev.xframe.net.client.ClientLifecycleListener;
 import dev.xframe.net.client.ClientMessageHandler;
 import dev.xframe.net.client.ClientSession;
 import dev.xframe.net.codec.MessageCodec;
 import dev.xframe.net.session.Session;
+import dev.xframe.utils.XCaught;
 import dev.xframe.utils.XProperties;
 import dev.xframe.utils.XThreadFactory;
 import io.netty.bootstrap.Bootstrap;
@@ -25,7 +25,7 @@ public class NetClient {
         return Runtime.getRuntime().availableProcessors();
     }
 
-    private EventLoopGroup group;
+    private EventLoopGroup workGroup;
     private Bootstrap bootstrap;
     
     private int threads = defaultThreads();
@@ -56,35 +56,50 @@ public class NetClient {
         return this;
     }
 
-    private synchronized NetClient ensureBootstrap() {
+    synchronized NetClient initialize() {
         if(this.bootstrap == null) {
-            BeanHelper.inject(this);
-            
             this.bootstrap = new Bootstrap();
-            this.group = new NioEventLoopGroup(threads, new XThreadFactory("client"));
+            this.workGroup = new NioEventLoopGroup(threads, new XThreadFactory("client"));
             NetMessageHandler netHandler = new ClientMessageHandler(listener, handler);
             
-            this.bootstrap.group(group)
-            .channel(NioSocketChannel.class)
-            .option(ChannelOption.TCP_NODELAY, true)
-            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeout)
-            .option(ChannelOption.SO_SNDBUF, 2048)//系统sockets发送数据buff的大小(k)
-            .option(ChannelOption.SO_RCVBUF, 2048)//---接收(k)
-            .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)//使用bytebuf池, 默认不使用
-            .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator())//使用bytebuf池, 默认不使用
-            .option(ChannelOption.WRITE_BUFFER_WATER_MARK, WriteBufferWaterMark.DEFAULT)//消息缓冲区
-            .handler(new ClientChannelInitializer(netHandler, iCodec, listener));
+            this.bootstrap.group(workGroup)
+                .channel(NioSocketChannel.class)
+                .option(ChannelOption.TCP_NODELAY, true)
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeout)
+                .option(ChannelOption.SO_SNDBUF, 2048)//系统sockets发送数据buff的大小(k)
+                .option(ChannelOption.SO_RCVBUF, 2048)//---接收(k)
+                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)//使用bytebuf池, 默认不使用
+                .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator())//使用bytebuf池, 默认不使用
+                .option(ChannelOption.WRITE_BUFFER_WATER_MARK, WriteBufferWaterMark.DEFAULT)//消息缓冲区
+                .handler(new ClientChannelInitializer(netHandler, iCodec, listener));
         }
         return this;
     }
     
     public Session create(long id, String host, int port) {
-        this.ensureBootstrap();
-        return new ClientSession(listener, bootstrap, host, port).bind(id);
+        this.initialize();
+        return create0(id, host, port);
+    }
+    private ClientSession create0(long id, String host, int port) {
+        ClientSession cs = new ClientSession(listener, bootstrap, host, port);
+        cs.bind(id);
+        return cs;
+    }
+    /**
+     * await connected
+     * throws exception on failed
+     */
+    public Session connect(long id, String host, int port) {
+        try {
+            this.initialize();
+            return create0(id, host, port).connect();
+        } catch (InterruptedException e) {
+            throw XCaught.throwException(e);
+        }
     }
     
     public void shutdown() {
-        if(group != null) group.shutdownGracefully();
+        if(workGroup != null) workGroup.shutdownGracefully();
     }
     
     public void close(Channel channel) {
