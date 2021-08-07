@@ -17,7 +17,7 @@ public class ScheduledContext {
     private TaskLoop loop;
 
     private void ensure() {
-        if(running.get() && running.compareAndSet(false, true)) {
+        if(!running.get() && running.compareAndSet(false, true)) {
             executor = TaskExecutors.newFixed("scheduled", threads());
             loop = new TaskLoop.Direct(executor);
         }
