@@ -33,13 +33,17 @@ public class TaskExecutors {
     }
     
     private static TaskExecutor hold(TaskExecutor executor) {
-        executors.add(executor);
+        synchronized (executors) {
+            executors.add(executor);
+        }
         return executor;
     }
     
     public static void shutdown() {
-        for (TaskExecutor executor : executors) {
-            executor.shutdown();
+        synchronized (executors) {
+            for (TaskExecutor executor : executors) {
+                executor.shutdown();
+            }
         }
     }
     

@@ -10,9 +10,9 @@ public class SimpleTaskExecutor implements TaskExecutor {
     
     private final ExecutorService executor;
     
+    private final ScheduledTimer scheduler;
+    
     private volatile boolean isRunning = true;
-    //delay set
-    private volatile ScheduledTimer scheduler;
     
     /**
      * 执行task队列的线程池
