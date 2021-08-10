@@ -50,6 +50,6 @@ public class ScheduledBuilder {
     }
     private static int getPeriodMillis(Method scheduledMethod) {
         Scheduled scheduled = scheduledMethod.getAnnotation(Scheduled.class);
-        return scheduled.period() == -1 ? scheduled.baseline().period : scheduled.period();
+        return scheduled.period() == -1 ? scheduled.baseline().period : (int) scheduled.unit().toMillis(scheduled.period());
     }
 }
