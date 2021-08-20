@@ -1,6 +1,7 @@
 package dev.xframe.boot;
 
 import dev.xframe.http.HttpServer;
+import dev.xframe.http.service.ServiceHandler;
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.Ordered;
 import dev.xframe.inject.beans.BeanHelper;
@@ -17,6 +18,8 @@ import dev.xframe.net.websocket.WebSocketMessageInterceptor;
 @Ordered(Integer.MAX_VALUE)
 public class Networker implements ShutdownAgent {
     
+    @Inject
+    ServiceHandler serHandler;
     @Inject
     CommandHandler cmdHandler;
     @Inject
@@ -84,7 +87,7 @@ public class Networker implements ShutdownAgent {
             	ws = new WebSocketServer().setCodec(iCodec).setThreads(wsThreads).setHost(wsHost).setPort(wsPort).setListener(wsLifecycleListener).setHandler(newMessageHandler()).startup();
             }
             if(httpPort > 0) {
-                http = new HttpServer().setThreads(httpThreads).setPort(httpPort).startup();
+                http = new HttpServer().setThreads(httpThreads).setPort(httpPort).setHandler(serHandler).startup();
             }
         } catch (Throwable ex) {
             Bootstrap.logger.error("Startup failed!", ex);

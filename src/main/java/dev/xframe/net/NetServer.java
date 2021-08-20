@@ -60,8 +60,8 @@ public class NetServer {
     }
 
     public NetServer startup() {
-	    masterGroup = new NioEventLoopGroup(      1, new XThreadFactory("master"));
-	    workerGroup = new NioEventLoopGroup(threads, new XThreadFactory("worker"));
+	    masterGroup = new NioEventLoopGroup(      1, new XThreadFactory("net.master"));
+	    workerGroup = new NioEventLoopGroup(threads, new XThreadFactory("net"));
 	    NetMessageHandler netHandler = new ServerMessageHandler(listener, handler);
 	    
         ServerBootstrap bootstrap =

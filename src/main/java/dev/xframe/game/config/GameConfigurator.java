@@ -37,7 +37,7 @@ public final class GameConfigurator implements Loadable {
 	}
 
 	private TaskExecutor newExecutor(Class<?> assemble) {
-	    String name = "logics";
+	    String name = "biz";
 	    Assemble anno = assemble.getAnnotation(Assemble.class);
         int nThreads = anno.threads() > 0 ? anno.threads() : Runtime.getRuntime().availableProcessors();
 		return anno.sharding() ? TaskExecutors.newSharding(name, nThreads) : TaskExecutors.newFixed(name, nThreads);

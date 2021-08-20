@@ -4,8 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.xframe.http.service.ServiceHandler;
-import dev.xframe.inject.Inject;
-import dev.xframe.inject.beans.BeanHelper;
 import dev.xframe.utils.XThreadFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -29,15 +27,14 @@ public class HttpServer {
         return Runtime.getRuntime().availableProcessors();
     }
     
-    @Inject
-    private ServiceHandler handler;
-    
     private Channel bossChannel;
-    private NioEventLoopGroup bossGroup;
+    private NioEventLoopGroup masterGroup;
     private NioEventLoopGroup workerGroup;
     
     private int threads = defaultThreads();
     private int port;
+    
+    private ServiceHandler handler;
     
     public HttpServer setThreads(int threads) {
         this.threads = threads;
@@ -47,16 +44,18 @@ public class HttpServer {
         this.port = port;
         return this;
     }
+    public HttpServer setHandler(ServiceHandler handler) {
+        this.handler = handler;
+        return this;
+    }
     
     public HttpServer startup() {
-        BeanHelper.inject(this);
-        
-        bossGroup = new NioEventLoopGroup(1, new XThreadFactory("http.boss"));
-        workerGroup = new NioEventLoopGroup(threads, new XThreadFactory("http.worker"));
+        masterGroup = new NioEventLoopGroup(1,       new XThreadFactory("http.master"));
+        workerGroup = new NioEventLoopGroup(threads, new XThreadFactory("http"));
         
         ServerBootstrap bootstrap =
                 new ServerBootstrap()
-                    .group(bossGroup, workerGroup)
+                    .group(masterGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new HttpChannelInitializer(handler))
                     .childOption(ChannelOption.SO_KEEPALIVE, false)//开启时系统会在连接空闲一定时间后像客户端发送请求确认连接是否有效
@@ -82,7 +81,7 @@ public class HttpServer {
     }
     
     public void shutdown() {
-        bossGroup.shutdownGracefully();
+        masterGroup.shutdownGracefully();
         workerGroup.shutdownGracefully();
         bossChannel.close().awaitUninterruptibly();
     }
