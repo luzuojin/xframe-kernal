@@ -12,9 +12,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class XGeneric {
@@ -220,7 +218,7 @@ public class XGeneric {
         if(lambdaSuper.getGenericReturnType() instanceof TypeVariable<?>) {
             Class<?> returnType = lambdaImple instanceof Method ? ((Method) lambdaImple).getReturnType()
             		: ((Constructor<?>) lambdaImple).getDeclaringClass();
-			map.put(keyName(superClazz, (TypeVariable<?>) lambdaSuper.getGenericReturnType()), AutoBoxing.wrapperType(returnType));
+			map.put(keyName(superClazz, (TypeVariable<?>) lambdaSuper.getGenericReturnType()), XBoxing.getWrapper(returnType));
         }
         
         Class<?>[] impleParamters = ((Executable) lambdaImple).getParameterTypes();
@@ -237,7 +235,7 @@ public class XGeneric {
         int impleOffset = Math.max(0, impleParamters.length - superParamters.length);
         for (int i = 0; i + superOffset < superParamters.length; i++) {
             if(superParamters[i] instanceof TypeVariable) {
-                map.put(keyName(superClazz, (TypeVariable<?>) superParamters[i+superOffset]), AutoBoxing.wrapperType(impleParamters[i+impleOffset]));
+                map.put(keyName(superClazz, (TypeVariable<?>) superParamters[i+superOffset]), XBoxing.getWrapper(impleParamters[i+impleOffset]));
             }
         }
         return superClazz;
@@ -262,7 +260,7 @@ public class XGeneric {
             if(member == null || isLambdaInternal(member, lambdaType)) {
             	continue;
             }
-            if(!(member instanceof Method && AutoBoxing.isAuthBoxingMethod((Method) member))) {
+            if(!(member instanceof Method && XBoxing.isBoxingMethod((Method) member))) {
             	return member;
             }
         }
@@ -287,53 +285,6 @@ public class XGeneric {
         }
         return null;
     }
-    
-    public static class AutoBoxing {
-        static List<AutoBoxing> boxings = Arrays.asList(
-                new AutoBoxing(boolean.class, Boolean.class),
-                new AutoBoxing(byte.class, Byte.class),
-                new AutoBoxing(char.class, Character.class),
-                new AutoBoxing(short.class, Short.class),
-                new AutoBoxing(int.class, Integer.class),
-                new AutoBoxing(float.class, Float.class),
-                new AutoBoxing(long.class, Long.class),
-                new AutoBoxing(double.class, Double.class)
-                );
-        public static Class<?> getPrimitive(Class<?> wrapper) {
-            return boxings.stream().filter(b->b.wrapper==wrapper).map(b->b.primitive).findAny().orElse(null);
-        }
-        public static Class<?> getWrapper(Class<?> primitive) {
-            return boxings.stream().filter(b->b.primitive==primitive).map(b->b.wrapper).findAny().orElse(null);
-        }
-        public static Class<?> wrapperType(Class<?> c) {
-            return c.isPrimitive() ? getWrapper(c) : c;
-        }
-        //boxing: Integer.valueOf
-        //unboxing: Integer.intValue
-        public static boolean isAuthBoxingMethod(Method method) {
-            if(method.getReturnType().isPrimitive()) {//Integer.intValue
-                if(method.getParameterTypes().length != 0) {
-                    return false;
-                }
-                return isAutoboxingMethod(method, method.getReturnType(), method.getDeclaringClass());
-            } else {//Integer.valueOf
-                if(method.getParameterTypes().length != 1) {
-                    return false;
-                }
-                return isAutoboxingMethod(method, method.getParameterTypes()[0], method.getReturnType());
-            }
-        }
-        static boolean isAutoboxingMethod(Method method, Class<?> primitive, Class<?> wrapper) {
-            return primitive == getPrimitive(wrapper) && wrapper == getWrapper(primitive) && method.getDeclaringClass() == wrapper;
-        }
-        final Class<?> primitive;
-        final Class<?> wrapper;
-        AutoBoxing(Class<?> primitive, Class<?> wrapper) {
-            this.primitive = primitive;
-            this.wrapper = wrapper;
-        }
-    }
-    
     public static class GVariable {
         public final String name;
         public final Class<?> type;
