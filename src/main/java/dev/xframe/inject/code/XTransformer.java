@@ -31,10 +31,12 @@ public class XTransformer implements ClassFileTransformer, Eventual {
 
     @Override
     public void eventuate() {
+        //开发环境, 开启动态Patch
         if(Files.isRegularFile(Paths.get(XInstrument.getProtectionPath())) && XInstrument.isTransportModel()) {
-            XInstrument.loadAgent();
-            XInstrument._inst.addTransformer(new XTransformer());
-            XInstrument.logger.info("Listening class file transformer...");
+            if(XInstrument.loadAgent()) {
+                XInstrument._inst.addTransformer(new XTransformer());
+                XInstrument.logger.info("Listening class file transformer...");
+            }
         }
     }
 }

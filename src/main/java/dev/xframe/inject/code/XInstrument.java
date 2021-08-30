@@ -3,11 +3,15 @@ package dev.xframe.inject.code;
 import java.lang.instrument.ClassDefinition;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
+import java.lang.invoke.MethodHandle;
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dev.xframe.utils.XLookup;
 import dev.xframe.utils.XPaths;
 import dev.xframe.utils.XReflection;
 
@@ -18,9 +22,15 @@ public class XInstrument {
     static boolean _loaded = false;
     static Instrumentation _inst;
     
-    synchronized static void loadAgent() {
+    synchronized static boolean loadAgent() {
         if(_inst == null && !_loaded) {
             try {
+                double JAVA_VERSION = Double.parseDouble(System.getProperty("java.specification.version", "0"));
+                if(JAVA_VERSION >= 9) {//JDK9 默认不支持attach current vm, 需要设置jdk.attach.allowAttachSelf=true
+                    Class<?> vmCls = JAVA_VERSION >= 10 ? Class.forName("jdk.internal.misc.VM") : Class.forName("sun.misc.VM");
+                    MethodHandle getter = XLookup.lookup().findStaticGetter(vmCls, "savedProps", Map.class);
+                    ((Map<String, String>) getter.invoke()).put("jdk.attach.allowAttachSelf", "true");
+                }
                 //使用反射代替以下代码. 去掉pom.xml中的tools.jar的编译依赖
                 Class<?> vmClass = Class.forName("com.sun.tools.attach.VirtualMachine");
                 Object vmObj = XReflection.getMethod(vmClass, "attach", String.class).invoke(null, getProcessId());
@@ -32,11 +42,14 @@ public class XInstrument {
                 vm.detach();
                 */
                 logger.info("Load instrument success...");
+            } catch (InvocationTargetException t) {
+                logger.info("Load instrument failed, cause: {}", t.getCause().getMessage());
             } catch (Throwable e) {
-                logger.info("Load instrument failed...", e);
+                logger.info("Load instrument failed, cause: {}", e.getMessage());
             }
             _loaded = true;
         }
+        return _inst != null;
     }
     
     static String getProcessId() {
