@@ -1,13 +1,11 @@
 package dev.xframe.utils;
 
-import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -211,23 +209,23 @@ public class XGeneric {
     }
     
     private static Class<?> parseLambda(Class<?> type, Map<String, Class<?>> map) throws Exception {
-        Member lambdaImple = getLambdaBasedMethod(type);//method or constructor
-        Method lambdaSuper = getLambdaSuperMethod(type.getInterfaces()[0]);
-        Class<?> superClazz = lambdaSuper.getDeclaringClass();
+        Member lambdaRef = XReflection.getLambdaRefMember(type);//method or constructor
+        Method lambdaFun = XReflection.getLambdaFuncMethod(type);//implemented method
+        Class<?> superClazz = lambdaFun.getDeclaringClass();
         
-        if(lambdaSuper.getGenericReturnType() instanceof TypeVariable<?>) {
-            Class<?> returnType = lambdaImple instanceof Method ? ((Method) lambdaImple).getReturnType()
-            		: ((Constructor<?>) lambdaImple).getDeclaringClass();
-			map.put(keyName(superClazz, (TypeVariable<?>) lambdaSuper.getGenericReturnType()), XBoxing.getWrapper(returnType));
+        if(lambdaFun.getGenericReturnType() instanceof TypeVariable<?>) {
+            Class<?> returnType = lambdaRef instanceof Method ? ((Method) lambdaRef).getReturnType()
+            		: ((Constructor<?>) lambdaRef).getDeclaringClass();
+			map.put(keyName(superClazz, (TypeVariable<?>) lambdaFun.getGenericReturnType()), XBoxing.getWrapper(returnType));
         }
         
-        Class<?>[] impleParamters = ((Executable) lambdaImple).getParameterTypes();
-        Type[] superParamters = lambdaSuper.getGenericParameterTypes();
+        Class<?>[] impleParamters = ((Executable) lambdaRef).getParameterTypes();
+        Type[] superParamters = lambdaFun.getGenericParameterTypes();
         //第一个参数为methodRef对象本身的lambda表达式
         int superOffset = 0;//BiFunction<String, Integer, Character> = String::charAt;
         if(superParamters.length > 0 && superParamters[0] instanceof TypeVariable 
         		&& superParamters.length == impleParamters.length + 1) {
-        	map.put(keyName(superClazz, (TypeVariable<?>) superParamters[0]), lambdaImple.getDeclaringClass());
+        	map.put(keyName(superClazz, (TypeVariable<?>) superParamters[0]), lambdaRef.getDeclaringClass());
         	superOffset = 1;
         }
         //superOffset>0时impleParamters<superParamters
@@ -241,51 +239,7 @@ public class XGeneric {
         return superClazz;
     }
     
-    private static Method poolObjGetter;
-    private static Method poolSizeGetter;
-    private static Method poolMethodGetter;
-    static {
-        try {
-            poolObjGetter = XReflection.getMethod(Class.class, "getConstantPool");
-            Class<?> poolClass = poolObjGetter.invoke(Class.class).getClass();
-            poolSizeGetter = XReflection.getMethod(poolClass, "getSize");
-            poolMethodGetter = XReflection.getMethod(poolClass, "getMethodAt", int.class);
-        } catch (Exception e) {e.printStackTrace();}//ignore
-    }
-    private static Member getLambdaBasedMethod(Class<?> lambdaType) throws Exception {
-        Object pool = poolObjGetter.invoke(lambdaType);
-        int size = (Integer) poolSizeGetter.invoke(pool);
-        for (int i = 0; i < size; i++) {
-            Member member = poolMethodAt(pool, i);
-            if(member == null || isLambdaInternal(member, lambdaType)) {
-            	continue;
-            }
-            if(!(member instanceof Method && XBoxing.isBoxingMethod((Method) member))) {
-            	return member;
-            }
-        }
-        return null;
-    }
-    private static boolean isLambdaInternal(Member member, Class<?> lambdaType) {
-    	Class<?> declaringClass = member.getDeclaringClass();
-		return declaringClass == lambdaType || (member instanceof Constructor && (declaringClass == Object.class || declaringClass == SerializedLambda.class));
-    }
-    private static Member poolMethodAt(Object pool, int i) {
-        try {
-            return (Member) poolMethodGetter.invoke(pool, i);
-        } catch (Exception e) {}//ignore
-        return null;
-    }
-    private static Method getLambdaSuperMethod(Class<?> type) {
-        Method[] methods = type.getMethods();
-        for (Method method : methods) {
-            if(!method.isDefault() && !Modifier.isStatic(method.getModifiers())) {
-                return method;
-            }
-        }
-        return null;
-    }
-    public static class GVariable {
+    private static class GVariable {
         public final String name;
         public final Class<?> type;
         public GVariable(String name, Class<?> type) {

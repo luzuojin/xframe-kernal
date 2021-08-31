@@ -1,10 +1,12 @@
 package dev.xframe.utils;
 
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.security.AccessController;
@@ -246,6 +248,58 @@ public class XReflection extends SecurityManager {
      */
     public static void setAccessible(AccessibleObject ao) {
         AccessibleSetter.accept(ao);
+    }
+    
+    /*
+     * get lambda method ref
+     */
+    private static Method poolObjGetter;
+    private static Method poolSizeGetter;
+    private static Method poolMethodGetter;
+    static {
+        try {
+            poolObjGetter = XReflection.getMethod(Class.class, "getConstantPool");
+            Class<?> poolClass = poolObjGetter.invoke(Class.class).getClass();
+            poolSizeGetter = XReflection.getMethod(poolClass, "getSize");
+            poolMethodGetter = XReflection.getMethod(poolClass, "getMethodAt", int.class);
+        } catch (Exception e) {e.printStackTrace();}//ignore
+    }
+    public static Method getLambdaFuncMethod(Class<?> lambdaType) {
+        Class<?> parentType = lambdaType.getInterfaces()[0];
+        for (Method method : parentType.getMethods()) {
+            if(!method.isDefault() && !Modifier.isStatic(method.getModifiers())) {
+                return method;
+            }
+        }
+        return null;
+    }
+    public static Member getLambdaRefMember(Class<?> lambdaType) {
+        try {
+            Object pool = poolObjGetter.invoke(lambdaType);
+            int size = (Integer) poolSizeGetter.invoke(pool);
+            for (int i = 0; i < size; i++) {
+                Member member = poolMethodAt(pool, i);
+                if(member == null || isLambdaInternal(member, lambdaType)) {
+                    continue;
+                }
+                if(!(member instanceof Method && XBoxing.isBoxingMethod((Method) member))) {
+                    return member;
+                }
+            }
+            return null;
+        } catch (Throwable e) {
+            throw XCaught.throwException(e);
+        }
+    }
+    private static boolean isLambdaInternal(Member member, Class<?> lambdaType) {
+        Class<?> declaringClass = member.getDeclaringClass();
+        return declaringClass == lambdaType || (member instanceof Constructor && (declaringClass == Object.class || declaringClass == SerializedLambda.class));
+    }
+    private static Member poolMethodAt(Object pool, int i) {
+        try {
+            return (Member) poolMethodGetter.invoke(pool, i);
+        } catch (Exception e) {}//ignore
+        return null;
     }
 
 }
