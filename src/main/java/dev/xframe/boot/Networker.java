@@ -12,6 +12,7 @@ import dev.xframe.net.cmd.CommandHandler;
 import dev.xframe.net.codec.MessageCodec;
 import dev.xframe.net.server.ServerLifecycleListener;
 import dev.xframe.net.server.ServerMessageInterceptor;
+import dev.xframe.net.server.ServerSessionFactory;
 import dev.xframe.net.websocket.WebSocketLifecycleListener;
 import dev.xframe.net.websocket.WebSocketMessageInterceptor;
 
@@ -22,6 +23,8 @@ public class Networker implements ShutdownAgent {
     ServiceHandler serHandler;
     @Inject
     CommandHandler cmdHandler;
+    @Inject
+    ServerSessionFactory sSessionFactory;
     @Inject
     ServerLifecycleListener sLifecycleListener;
     @Inject
@@ -81,7 +84,7 @@ public class Networker implements ShutdownAgent {
             shutdownHook.append(this);
             
             if(tcpPort > 0) {
-                tcp = new NetServer().setCodec(iCodec).setThreads(tcpThreads).setPort(tcpPort).setListener(sLifecycleListener).setHandler(newMessageHandler()).startup();
+                tcp = new NetServer().setCodec(iCodec).setThreads(tcpThreads).setPort(tcpPort).setListener(sLifecycleListener).setFactory(sSessionFactory).setHandler(newMessageHandler()).startup();
             }
             if(wsPort > 0) {
             	ws = new WebSocketServer().setCodec(iCodec).setThreads(wsThreads).setHost(wsHost).setPort(wsPort).setListener(wsLifecycleListener).setHandler(newMessageHandler()).startup();

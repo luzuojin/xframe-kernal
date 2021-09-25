@@ -14,7 +14,7 @@ public class ClientSession extends ChannelSession {
     private final Bootstrap bootstrap;
     private final String host;
     private final int port;
-    private AtomicBoolean connecting;
+    private final AtomicBoolean connecting;
     
     public ClientSession(LifecycleListener listener, Bootstrap bootstrap, String host, int port) {
         super(listener);

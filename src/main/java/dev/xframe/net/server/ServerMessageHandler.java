@@ -7,14 +7,17 @@ import dev.xframe.net.session.Session;
 import io.netty.channel.ChannelHandlerContext;
 
 public class ServerMessageHandler extends NetMessageHandler {
+    
+    protected ServerSessionFactory factory;
 
-    public ServerMessageHandler(LifecycleListener listener, MessageHandler handler) {
+    public ServerMessageHandler(ServerSessionFactory factory, LifecycleListener listener, MessageHandler handler) {
         super(listener, handler);
+        this.factory = factory;
     }
 
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-        Session session = new ServerSession(ctx.channel(), listener);
+        Session session = factory.newSession(ctx.channel(), listener);
         listener.onSessionConnected(session);
     }
     
