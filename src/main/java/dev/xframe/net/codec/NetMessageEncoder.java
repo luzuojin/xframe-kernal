@@ -11,15 +11,15 @@ import io.netty.handler.codec.MessageToByteEncoder;
  */
 public class NetMessageEncoder extends MessageToByteEncoder<IMessage> {
 
-    private MessageCodec iCodec;
+    private MessageCodec codec;
     
-    public NetMessageEncoder(MessageCodec iCodec) {
-        this.iCodec = iCodec;
+    public NetMessageEncoder(MessageCodec codec) {
+        this.codec = codec;
     }
     
     @Override
     protected void encode(ChannelHandlerContext ctx, IMessage message, ByteBuf out) throws Exception {
-        iCodec.encode(ctx, message, out);
+        codec.encode(ctx, message, out);
     }
 
 }

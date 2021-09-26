@@ -13,7 +13,7 @@ import io.netty.buffer.ByteBuf;
  * 
  * @author luzj
  */
-public class Message implements BuiltinAbstMessage {
+public class Message implements IMessage, WritableMessage {
 
     public static final byte[] EMPTY_BODY = new byte[0];
 
@@ -118,18 +118,24 @@ public class Message implements BuiltinAbstMessage {
         Param param = params.get(key);
         return param == null ? null : param.val;
     }
-
+    
+    public static int readableBytes(ByteBuf buff) {
+        int readableBytes = buff.readableBytes();
+        if (readableBytes < HDR_SIZE)//header size
+            return -1;
+        int offset = buff.readerIndex();
+        int plen = buff.getShort(offset + HDR_SIZE - 6);
+        int blen = buff.getInt  (offset + HDR_SIZE - 4);
+        int rlen = plen + blen + HDR_SIZE;
+        //header + param + body size
+        if (readableBytes < rlen) {
+            return -1;
+        }
+        return rlen;
+    }
     public static Message readFrom(ByteBuf buff) {
-        if (buff.readableBytes() < HDR_SIZE) // 不够字节忽略
-            return null;
-        buff.markReaderIndex();
         Message message = Message.empty();
         message.readHeader(buff);
-        int len = message.getBodyLen() + message.getParamsLen();
-        if (len > buff.readableBytes()) {
-            buff.resetReaderIndex();
-            return null;
-        }
         message.readParams(buff);
         message.readBody(buff);
         return message;
@@ -179,7 +185,6 @@ public class Message implements BuiltinAbstMessage {
         }
     }
 
-    @Override
     public void writeTo(ByteBuf buff) {
         writeHeader(buff);
         writeParams(buff);
@@ -187,10 +192,9 @@ public class Message implements BuiltinAbstMessage {
     }
     
     protected void writeHeader(ByteBuf buff) {
-        writeHeader0(buff, this.flag, this.code, this.id);
+        writeHeader0(buff, this.id, this.code);
     }
-
-    private void writeHeader0(ByteBuf buff, short flag, int code, long id) {
+    protected void writeHeader0(ByteBuf buff, long id, int code) {
         buff.writeShort(flag);
         buff.writeInt(code);
         buff.writeLong(id);
@@ -251,13 +255,13 @@ public class Message implements BuiltinAbstMessage {
     }
 
     public IMessage copy(long id) {
-        return new CopiedMessage(this, id, code);
+        return new Duplicated(this, id, this.code);
     }
     public IMessage copy(long id, int code) {
-        return new CopiedMessage(this, id, code);
+        return new Duplicated(this, id, code);
     }
     public IMessage copyViaCode(int code) {
-        return new CopiedMessage(this, this.id, code);
+        return new Duplicated(this, this.id, code);
     }
     
     private static class Param {
@@ -288,20 +292,18 @@ public class Message implements BuiltinAbstMessage {
         }
     }
 
-    private static class CopiedMessage implements BuiltinAbstMessage {
-    	private short flag;
-    	private int code;
+    private static class Duplicated implements IMessage, WritableMessage {
     	private long id;
-    	private Message message;
-        public CopiedMessage(Message message, long id, int code) {
-            this.flag = message.flag;
+    	private int code;
+    	private Message msg;
+        public Duplicated(Message msg, long id, int code) {
             this.id = id;
             this.code = code;
-            this.message = message;
+            this.msg = msg;
         }
         @Override
         public short getFlag() {
-            return this.flag;
+            return msg.getFlag();
         }
         @Override
         public int getCode() {
@@ -314,33 +316,21 @@ public class Message implements BuiltinAbstMessage {
         @Override
         @SuppressWarnings("unchecked")
         public byte[] getBody() {
-            return message.getBody();
+            return msg.getBody();
         }
         @Override
         public String getParam(String key) {
-            return message.getParam(key);
+            return msg.getParam(key);
         }
         @Override
         public int getVersion() {
-            return message.getVersion();
-        }
-        @Override
-        public void setFlag(short flag) {
-            this.flag = flag;
-        }
-        @Override
-        public void setCode(int code) {
-            this.code = code;
-        }
-        @Override
-        public int getBodyLen() {
-            return message.getBodyLen();
+            return msg.getVersion();
         }
         @Override
         public void writeTo(ByteBuf buff) {
-            message.writeHeader0(buff, flag, code, id);
-            message.writeParams(buff);
-            message.writeBody(buff);
+            msg.writeHeader0(buff, getId(), getCode());
+            msg.writeParams(buff);
+            msg.writeBody(buff);
         }
     }
 

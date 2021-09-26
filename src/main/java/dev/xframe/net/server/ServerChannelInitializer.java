@@ -20,20 +20,20 @@ import io.netty.handler.timeout.IdleStateHandler;
 public class ServerChannelInitializer extends ChannelInitializer<SocketChannel> {
     
     private final ChannelHandler handler;
-    private final MessageCodec iCodec;
+    private final MessageCodec codec;
     private final LifecycleListener listener;
 
-    public ServerChannelInitializer(ChannelHandler handler, MessageCodec iCodec, LifecycleListener listener) {
+    public ServerChannelInitializer(ChannelHandler handler, MessageCodec codec, LifecycleListener listener) {
         this.handler = handler;
-        this.iCodec = iCodec;
+        this.codec = codec;
         this.listener = listener;
     }
 
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline();
-        pipeline.addLast("decoder", new NetMessageDecoder(iCodec));
-        pipeline.addLast("encoder", new NetMessageEncoder(iCodec));
+        pipeline.addLast("decoder", new NetMessageDecoder(codec));
+        pipeline.addLast("encoder", new NetMessageEncoder(codec));
         pipeline.addLast("idleStateHandler", new IdleStateHandler(180, 0, 0, TimeUnit.SECONDS));//300秒不操作将会被断开
         pipeline.addLast("idleHandler", new IdleHandler());
         pipeline.addLast("handler", handler);

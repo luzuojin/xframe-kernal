@@ -21,12 +21,12 @@ import io.netty.handler.timeout.IdleStateHandler;
 public class WebSocketChannelInitlializer extends ChannelInitializer<SocketChannel> {
     
     private final ChannelHandler handler;
-    private final MessageCodec iCodec;
+    private final MessageCodec codec;
     private final LifecycleListener listener;
 
-    public WebSocketChannelInitlializer(ChannelHandler handler, MessageCodec iCodec, LifecycleListener listener) {
+    public WebSocketChannelInitlializer(ChannelHandler handler, MessageCodec codec, LifecycleListener listener) {
         this.handler = handler;
-        this.iCodec = iCodec;
+        this.codec = codec;
         this.listener = listener;
     }
 
@@ -36,7 +36,7 @@ public class WebSocketChannelInitlializer extends ChannelInitializer<SocketChann
         pipeline.addLast("httpcodec", new HttpServerCodec());
         pipeline.addLast("aggregator", new HttpObjectAggregator(1048576));
         pipeline.addLast("httpchunked", new ChunkedWriteHandler());
-        pipeline.addLast("messageCodec", new WebSocketMessageCodec(iCodec));
+        pipeline.addLast("messageCodec", new WebSocketMessageCodec(codec));
         pipeline.addLast("idleStateHandler", new IdleStateHandler(180, 0, 0, TimeUnit.SECONDS));//300秒不操作将会被断开
         pipeline.addLast("idleHandler", new IdleHandler());
         pipeline.addLast("handler", handler);

@@ -32,7 +32,7 @@ public class NetClient {
     private int threads = defaultThreads();
     private int connectTimeout = XProperties.getAsInt("xframe.client.connect.timeout", 3000);//s
     
-    private MessageCodec iCodec;
+    private MessageCodec codec;
     private MessageHandler handler;
     private ClientLifecycleListener listener;
     private ClientSessionFactory factory = new ClientSessionFactory();
@@ -49,8 +49,8 @@ public class NetClient {
         this.threads = threads;
         return this;
     }
-    public NetClient setCodec(MessageCodec iCodec) {
-        this.iCodec = iCodec;
+    public NetClient setCodec(MessageCodec codec) {
+        this.codec = codec;
         return this;
     }
     public NetClient setHandler(MessageHandler handler) {
@@ -81,7 +81,7 @@ public class NetClient {
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)//使用bytebuf池, 默认不使用
                 .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator())//使用bytebuf池, 默认不使用
                 .option(ChannelOption.WRITE_BUFFER_WATER_MARK, WriteBufferWaterMark.DEFAULT)//消息缓冲区
-                .handler(new ClientChannelInitializer(netHandler, iCodec, listener));
+                .handler(new ClientChannelInitializer(netHandler, codec, listener));
             }
         }
     }

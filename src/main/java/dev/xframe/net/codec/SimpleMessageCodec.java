@@ -7,7 +7,7 @@ import io.netty.channel.ChannelHandlerContext;
 
 @Bean
 @Providable
-class BuiltinMessageCodec implements MessageCodec {
+class SimpleMessageCodec implements MessageCodec {
     
     private MessageCrypt crypt = MessageCrypts.fromSysOps();
     
@@ -16,16 +16,17 @@ class BuiltinMessageCodec implements MessageCodec {
     }
 
     public final IMessage decode(ChannelHandlerContext ctx, ByteBuf buf) {
-        Message message = Message.readFrom(buf);
-        if(message != null) {
-            crypt.decrypt(ctx, message);
+        int readableBytes;
+        if((readableBytes = Message.readableBytes(buf)) != -1) {
+            crypt.decrypt(ctx, buf, readableBytes);
+            return Message.readFrom(buf);
         }
-        return message;
+        return null;
     }
     
     public final void encode(ChannelHandlerContext ctx, IMessage message, ByteBuf buf) {
-        crypt.encrypt(ctx, message);
-        ((BuiltinAbstMessage) message).writeTo(buf);
+        ((WritableMessage) message).writeTo(buf);
+        crypt.encrypt(ctx, buf);
     }
 
 }
