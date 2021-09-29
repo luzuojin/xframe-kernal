@@ -11,14 +11,14 @@ import dev.xframe.inject.ApplicationContext;
 import dev.xframe.utils.XGeneric;
 
 /**
- * EmptyMsg Action 
+ * Void Action 
  * @author luzj
  * @param <T>
  */
-public interface RunnableAction<T extends Player> extends Action<T, EmptyMsg>{
+public interface RunnableAction<T extends Player> extends Action<T, Void>{
     
     @Override
-    default void exec(T player, EmptyMsg msg) throws Exception {
+    default void exec(T player, Void msg) throws Exception {
         exec0(player);
     }
     

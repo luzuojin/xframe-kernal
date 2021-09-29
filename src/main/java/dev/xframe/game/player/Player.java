@@ -2,7 +2,7 @@ package dev.xframe.game.player;
 
 import dev.xframe.game.action.Action;
 import dev.xframe.game.action.ActionTask;
-import dev.xframe.game.action.EmptyMsg;
+import dev.xframe.game.action.RunnableAction;
 import dev.xframe.game.module.ModuleType;
 import dev.xframe.game.module.beans.ModuleContainer;
 import dev.xframe.task.TaskLoop;
@@ -27,9 +27,9 @@ public abstract class Player {
         return this.loop;
     }
     
-    //EmptyMsg Action
-    public <T extends Player> void accept(Action<T, EmptyMsg> action) {
-        accept(action, EmptyMsg.Instance);
+    //RunnableAction msg is Void
+    public <T extends Player> void accept(RunnableAction<T> action) {
+        accept(action, null);
     }
     @SuppressWarnings("unchecked")
     public <T extends Player, M> void accept(Action<T, M> action, M msg) {

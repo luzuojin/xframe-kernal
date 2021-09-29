@@ -2,7 +2,6 @@ package dev.xframe.game.cmd;
 
 import java.util.function.Function;
 
-import dev.xframe.game.action.EmptyMsg;
 import dev.xframe.inject.Bean;
 import dev.xframe.inject.Providable;
 import dev.xframe.net.codec.IMessage;
@@ -23,8 +22,8 @@ public class LiteParserFactory {
     @SuppressWarnings("unchecked")
     public Function<Object, Object> newParseFunc(Class<?> cls) {
         try {
-            if(cls.equals(EmptyMsg.class)) {
-                return o -> EmptyMsg.Instance;
+            if(Void.class.equals(cls)) {
+                return o -> null;
             }
             if(IMessage.class.isAssignableFrom(cls)) {
                 return o -> o;
