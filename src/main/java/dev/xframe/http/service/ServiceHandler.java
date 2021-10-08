@@ -7,9 +7,11 @@ import dev.xframe.http.config.HttpInterceptor;
 import dev.xframe.http.config.HttpListener;
 import dev.xframe.inject.Bean;
 import dev.xframe.inject.Inject;
+import dev.xframe.inject.Providable;
 import io.netty.channel.ChannelHandlerContext;
 
 @Bean
+@Providable
 public class ServiceHandler {
 
     @Inject
@@ -17,7 +19,7 @@ public class ServiceHandler {
     @Inject
     private ServiceContext serCtx;
 
-    public final void exec(ChannelHandlerContext ctx, Request req) {
+    public void exec(ChannelHandlerContext ctx, Request req) {
         HttpInterceptor interceptor = config.getInterceptor();
         HttpListener listener = config.getListener();
         
