@@ -1,5 +1,7 @@
 package dev.xframe.test.game;
 
+import javax.annotation.Resource;
+
 import org.junit.Assert;
 
 import dev.xframe.event.Subscribe;
@@ -41,6 +43,11 @@ public class TPlayerInventory implements TInventory, TSharablePlayer, TAgent {
     @Override
     public boolean dox() {
         return false;
+    }
+
+    @Resource
+    public int callmodule(int x) {
+        return (int) Math.pow(x, 2);
     }
 
 }

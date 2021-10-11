@@ -109,6 +109,10 @@ public class GroupSession extends Session {
         set.remove(s);
     }
     
+    public int size() {
+        return set.size();
+    }
+    
     public void forEach(Consumer<Session> c) {
         for (Session s : set) {
             c.accept(s);

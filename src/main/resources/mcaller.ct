@@ -1,0 +1,23 @@
+///caller_name
+${caller_interfaze}$MCaller
+///
+public class ${caller_name} implements ${caller_interfaze} {
+    
+	public void doCall(dev.xframe.game.player.Player _player, ${method_params})
+	///call_method_body
+	{
+	    ${module_name} _module = (${module_name}) dev.xframe.game.player.ModularAdapter.loadModuleStatic($1, ${module_index});
+	    if(_module == null) {
+	        throw new NullPointerException("Current module[${module_name}] is null");
+	    }
+	    ${call_part}
+	    ///void_call_part
+	    _module.${method_name}(${method_params});
+	    ///
+	    ///obj_call_part
+        return _module.${method_name}(${method_params});
+        ///
+	}
+	///
+
+}

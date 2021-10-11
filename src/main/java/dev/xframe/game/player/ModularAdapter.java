@@ -29,7 +29,11 @@ public class ModularAdapter implements ModuleLoader {
 	}
 	
 	public <T> T loadModule(Player player, int moduleIndex) {
-		return player.mc.getBean(moduleIndex);
+		return loadModuleStatic(player, moduleIndex);
+	}
+	
+	public static final <T> T loadModuleStatic(Player player, int moduleIndex) {
+	    return player.mc.getBean(moduleIndex);
 	}
 	
 	@Override

@@ -250,7 +250,7 @@ public class PlayerContext {
 		    player.accept(rAction);
 		} catch (Throwable e) {
 			logger.error("Call player throws: ", e);
-		}
+        }
 	}
 	
 }

@@ -30,6 +30,8 @@ public class TBootstrap {
     private CommandContext commandCtx;
     @Inject
     private ModularAdapter adapter;
+    @Inject
+    private TCaller tCaller;
     
     @Test
     @SuppressWarnings("unchecked")
@@ -84,9 +86,12 @@ public class TBootstrap {
 		
 		new TPlayerInfo().dosomething();
 		
+		Assert.assertEquals(tCaller.callmodule(player, 101), (int)Math.pow(101, 2));
+		
 		player.unload(ModuleType.RESIDENT);
 		testExecution.assertExecuted(TPlayerInventory.class);
 		Assert.assertNull(adapter.loadModule(player, TPlayerInventory.class));
+		
 	}
 
 }
