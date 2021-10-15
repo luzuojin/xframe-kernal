@@ -14,22 +14,29 @@ import dev.xframe.utils.XFactory;
 @Prototype
 public class ActionBuilder {
     
-    private XFactory<?> fac;
+    private boolean onlyCompletion;
+    
+    private XFactory<?> factory;
+    
     private Injector injector;
     //optional
     private MTypedLoader mTyped;
     @Inject
     private ModularAdapter adapter;
     
-    private ActionBuilder(Class<?> cls) {
-        this.fac = XFactory.of(cls);
+    private ActionBuilder(Class<?> cls, boolean onlyCompletion) {
+        this.onlyCompletion = onlyCompletion;
+        this.factory = onlyCompletion ? null : XFactory.of(cls);
         this.injector = adapter.newInjector(cls);
         this.mTyped = IModularAction.class.isAssignableFrom(cls) ? adapter.getTypedLoader(IModularAction.getModuleType(cls)) : null;
     }
     
     @SuppressWarnings("unchecked")
     public <T extends Player, M> Action<T, M> build(Player p) {
-        return (Action<T, M>) makeCompelte(fac.get(), p);
+        if(onlyCompletion) {
+            throw new IllegalArgumentException("this ActionBuilder is only for Instance completion");
+        }
+        return (Action<T, M>) makeCompelte(factory.get(), p);
     }
 
     @SuppressWarnings("unchecked")
@@ -41,13 +48,27 @@ public class ActionBuilder {
         return a;
     }
     
+    public static void ensureCompleted(Object a, Player p) {
+        if(a instanceof IModularAction
+                && ((IModularAction<?>) a).mTyped != null) {
+            //completed
+            return;
+        }
+        of(a.getClass(), true).makeCompelte(a, p);
+    }
+    
     /**---caches---*/
     private final static Map<Class<?>, ActionBuilder> cached = new HashMap<>();
     
-    public static ActionBuilder of(Class<?> cls) {
+    /**
+     * @param cls
+     * @param onlyCompletion
+     * @return
+     */
+    public static ActionBuilder of(Class<?> cls, boolean onlyCompletion) {
         ActionBuilder ab = cached.get(cls);
         if(ab == null) {
-            ab = new ActionBuilder(cls);
+            ab = new ActionBuilder(cls, onlyCompletion);
             cached.put(cls, ab);
         }
         return ab;

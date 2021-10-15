@@ -33,7 +33,6 @@ public interface RunnableAction<T extends Player> extends Action<T, Void>{
     public static abstract class Modularized<T extends Player, V> extends IModularAction<V> implements RunnableAction<T> {
         @Override
         public final void exec0(T player) throws Exception {
-            ensureMTyped(player);
             exec0(player, mTyped.load(player));
         }
         public abstract void exec0(T player, V module) throws Exception;

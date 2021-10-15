@@ -6,7 +6,6 @@ public abstract class ModularAction<T extends Player, V, M> extends IModularActi
 
     @Override
     public final void exec(T player, M msg) throws Exception {
-        ensureMTyped(player);
         exec(player, mTyped.load(player), msg);
     }
 

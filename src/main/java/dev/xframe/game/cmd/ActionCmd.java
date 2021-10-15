@@ -2,6 +2,7 @@ package dev.xframe.game.cmd;
 
 import dev.xframe.game.action.Action;
 import dev.xframe.game.action.ActionBuilder;
+import dev.xframe.game.action.ActionTask;
 import dev.xframe.game.player.Player;
 import dev.xframe.inject.beans.BeanHelper;
 import dev.xframe.net.codec.IMessage;
@@ -17,7 +18,7 @@ public final class ActionCmd<T extends Player> extends DirectCmd<T>  {
         try {
             BeanHelper.inject(this);
             this.actionCls = cls;
-            this.builder = ActionBuilder.of(cls);
+            this.builder = ActionBuilder.of(cls, false);
             this.msgParser = new LiteParser(cls, Action.class, "M");
         } catch (Throwable e) {
             throw XCaught.throwException(e);
@@ -31,7 +32,7 @@ public final class ActionCmd<T extends Player> extends DirectCmd<T>  {
         //transfer msg
         Object msg = msgParser.parse(req.getBody());
         //run action (looped)
-        player.accept(action, msg);
+        ActionTask.trusted(action, player, msg).checkin();
     }
     
     @Override
