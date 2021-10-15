@@ -69,8 +69,8 @@ public class Injector {
 			this.indexing = indexing;
 			this.index = -1;
 		}
-		private boolean isNullable() {
-			return field.getAnnotation(Inject.class).nullable();
+		private boolean isRequired() {
+			return field.getAnnotation(Inject.class).required();
 		}
 		private Object getKeyword() {
 		    Inject an = field.getAnnotation(Inject.class);
@@ -92,7 +92,7 @@ public class Injector {
 		}
 		public void inject(Object bean, BeanFetcher fetcher) {
 			Object obj = fetcher.fetch(getIndex());
-			if(obj == null && !isNullable()) {
+			if(obj == null && isRequired()) {
 				throw new IllegalStateException("Bean [" + field.getType().getName() + "] doesn`t registed");
 			}
 			set(bean, obj);

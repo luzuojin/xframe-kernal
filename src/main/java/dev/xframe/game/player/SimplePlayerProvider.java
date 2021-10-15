@@ -8,7 +8,7 @@ import dev.xframe.inject.Providable;
 @Providable
 public class SimplePlayerProvider implements PlayerProvider {
     
-    @Inject(nullable=true)
+    @Inject(required=false)
     private PlayerContext playerCtx;
     
     @Override

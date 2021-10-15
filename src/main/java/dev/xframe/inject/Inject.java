@@ -13,6 +13,6 @@ public @interface Inject {
     
     boolean lazy() default false;
     
-    boolean nullable() default false;
+    boolean required() default true;
     
 }
