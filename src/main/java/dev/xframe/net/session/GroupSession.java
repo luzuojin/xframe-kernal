@@ -2,6 +2,7 @@ package dev.xframe.net.session;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 import dev.xframe.net.codec.IMessage;
@@ -17,38 +18,61 @@ import io.netty.channel.Channel;
  */
 public class GroupSession extends Session {
     
-    private long id;
+    /**
+     * wheel
+     */
+    public static class SimpleChooser implements BiFunction<SessionSet, IMessage, Session> {
+        @Override
+        public Session apply(SessionSet set, IMessage msg) {
+            return set.next();
+        }
+    }
     
+    /**
+     * bind session by IMessage.id
+     */
+    public static class IdBindChooser implements BiFunction<SessionSet, IMessage, Session> {
+        private final Map<Long, Integer> mapped = new ConcurrentHashMap<>();
+        @Override
+        public Session apply(SessionSet set, IMessage msg) {
+            long id = msg.getId();
+            int index;
+            Integer ex = mapped.get(id);//mapped index (仅cache index, 防止Session Close时引用没有及时更新)
+            if(ex != null && (index = ex.intValue()) != -1) {
+                Session session = set.get(index);
+                if(session != null && session.isActive()) {
+                    return session;
+                }
+            }
+            //new allocate
+            index = set.nextIndex();
+            if (index != -1) {
+                mapped.put(id, index);
+            }
+            return set.get(index);
+        }
+    }
+    
+    private BiFunction<SessionSet, IMessage, Session> chooser;
+    
+    private long id;
     private SessionSet set = new SessionSet();
     
-    private Map<Long, Integer> mapped = new ConcurrentHashMap<>();
+    public GroupSession() {
+        this(new IdBindChooser());
+    }
+    public GroupSession(BiFunction<SessionSet, IMessage, Session> chooser) {
+        this.chooser = chooser;
+    }
     
     @Override
     public long id() {
         return id;
     }
-
     @Override
     public Session bind(long id) {
         this.id = id;
         return this;
-    }
-
-    private Session getSession(long id) {
-        int index;
-        Integer ex = mapped.get(id);//mapped index (仅cache index, 防止Session Close时引用没有及时更新)
-        if(ex != null && (index = ex.intValue()) != -1) {
-            Session session = set.get(index);
-            if(session != null && session.isActive()) {
-                return session;
-            }
-        }
-        //new allocate
-        index = set.get();
-        if (index != -1) {
-            mapped.put(id, index);
-        }
-        return set.get(index);
     }
     
     @Override
@@ -58,14 +82,13 @@ public class GroupSession extends Session {
 
     @Override
     public void sendMessage(IMessage message, OperationListener opListener) {
-        long id = message.getId();
-        Session s = getSession(id);
+        Session s = chooser.apply(set, message);
         if(s == null) {
-            XLogger.warn("Session not exists for id[{}] send message[{}]", id, message.getCode());
+            XLogger.warn("Session not exists for id[{}] send message[{}]", message.getId(), message.getCode());
             return;
         }
         if(!s.isActive()) {
-            XLogger.warn("Session not active for id[{}] send message[{}]", id, message.getCode());
+            XLogger.warn("Session not active for id[{}] send message[{}]", message.getId(), message.getCode());
             return;
         }
         if(opListener != null) {

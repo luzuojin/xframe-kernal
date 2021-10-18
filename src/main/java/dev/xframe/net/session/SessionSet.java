@@ -2,13 +2,14 @@ package dev.xframe.net.session;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SessionSet implements Iterable<Session> {
     
     private final Object lock = new Object();
     
     private Session[] sessions;
-    private int idx;
+    private AtomicInteger idx;
     private int size;
     
     public SessionSet() {
@@ -16,7 +17,7 @@ public class SessionSet implements Iterable<Session> {
     }
     public SessionSet(int capacity) {
         this.sessions = new Session[capacity];
-        this.idx = -1;
+        this.idx = new AtomicInteger(-1);
         this.size = 0;
     }
 
@@ -47,27 +48,32 @@ public class SessionSet implements Iterable<Session> {
         return sessions[index];
     }
     
-    public int get() {
-        if(this.size == 0)
-            return -1;
-        synchronized (lock) {
-            if(this.size == 0)//double check
-                return -1;
-            
-            int len = this.sessions.length;
-            int next = this.idx;
-            for(int i=0; i<len; i++) {//只找一圈
-                ++ next;
-                if(next >= len)
-                    next = 0;
-
-                if(sessions[next] != null) {//not empty pos
-                    this.idx = next;
-                    return next;
-                }
+    public Session next() {
+        return get(nextIndex());
+    }
+    
+    private int nextIndex0() {
+        for (;;) {
+            int current = idx.get();
+            int next = current + 1;
+            if(next >= size) {
+                next = 0;
             }
-            return -1;
+            if (idx.compareAndSet(current, next)) {
+                return next;
+            }
         }
+    }
+    
+    public int nextIndex() {
+        int len = sessions.length;
+        for (int i = 0; i < len; i++) { // 只找一圈
+            int pos = nextIndex0();
+            if (sessions[pos] != null) {// not empty pos
+                return pos;
+            }
+        }
+        return -1;
     }
     
     public Session remove(Session session) {
