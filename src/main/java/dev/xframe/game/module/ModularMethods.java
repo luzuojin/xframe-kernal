@@ -26,4 +26,10 @@ public @interface ModularMethods {
     public @interface Unload {
     }
     
+    @Inherited
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    public @interface Tick {//定时执行. 可配置(xframe.modular.tickduration=1min)
+    }
+    
 }

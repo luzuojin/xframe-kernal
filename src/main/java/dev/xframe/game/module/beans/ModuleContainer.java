@@ -85,6 +85,16 @@ public class ModuleContainer extends BeanContainer  {
 		}
 	}
 	
+	public void tickModules() {
+	    tickModules(((ModularIndexes)indexes).residents);
+	    tickModules(((ModularIndexes)indexes).transients);
+    }
+    private void tickModules(ModularBinder[] binders) {
+        for (ModularBinder binder : binders) {
+            binder.getInvoker().invokeTick(this);//异常在ModularInvoker已经捕获
+        }
+    }
+	
 	public boolean isModuleLoaded(int index) {
 		return getFlag(index);
 	}

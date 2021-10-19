@@ -11,5 +11,6 @@ public interface ModularInvoker {
 	public void invokeLoad(ModuleContainer mc);
 	public void invokeUnload(ModuleContainer mc);
 	public void invokeSave(ModuleContainer mc);
+	public void invokeTick(ModuleContainer mc);
 
 }

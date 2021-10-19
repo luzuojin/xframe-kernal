@@ -63,5 +63,21 @@ public class ${invoker_name} implements dev.xframe.game.module.beans.ModularInvo
         }
 	}
 	///
+	
+	///tick_method
+    public void invokeTick(dev.xframe.game.module.beans.ModuleContainer mc) {
+        try {
+            if(mc.isModuleLoaded(${module_index})) {
+                ${module_name} _local_name = (${module_name}) mc.getBean(${module_index});
+                ${methods_call}
+                /*
+                ${method_call};
+                */
+            }
+        } catch (Throwable throwable) {
+            _logger.warn("tick [${module_name}] error:", throwable);
+        }
+    }
+    ///
 
 }

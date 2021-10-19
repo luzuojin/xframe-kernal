@@ -41,29 +41,30 @@ public abstract class Player {
         }
     }
     
-    public synchronized boolean load(ModuleType type) {
+    public synchronized void load(ModuleType type) {
     	this.mc.loadModules(type);
     	this.loaded |= type.code;
-        return true;
     }
     
-    public synchronized boolean unload(ModuleType type) {
+    public synchronized void unload(ModuleType type) {
     	this.mc.unloadModules(type);
     	this.loaded &= ~type.code;
-        return true;
     }
     
-    public boolean save() {
+    public void save() {
 		this.mc.saveModules();
-        return true;
+    }
+    
+    public void tick() {
+        this.mc.tickModules();
     }
     
     public final boolean isLoaded(ModuleType type) {
         return (loaded & type.code) > 0;
     }
     
-    public final boolean load() {
-        return this.load(ModuleType.RESIDENT);
+    public final void load() {
+        this.load(ModuleType.RESIDENT);
     }
     
     public final boolean idle(long lastActiveTime) {

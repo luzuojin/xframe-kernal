@@ -39,6 +39,7 @@ public class MInvokerBuilder {
 			cc.addMethod(CtNewMethod.make(buildMethodBody("load_method", ModularMethods.Load.class, module, indexing), cc));
 			cc.addMethod(CtNewMethod.make(buildMethodBody("unload_method", ModularMethods.Unload.class, module, indexing), cc));
 			cc.addMethod(CtNewMethod.make(buildMethodBody("save_method", ModularMethods.Save.class, module, indexing), cc));
+			cc.addMethod(CtNewMethod.make(buildMethodBody("tick_method", ModularMethods.Tick.class, module, indexing), cc));
 
 			return XReflection.newInstance(cc.toClass());
 		} catch (Exception e) {

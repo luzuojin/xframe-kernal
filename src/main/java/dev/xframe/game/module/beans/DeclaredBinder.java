@@ -49,6 +49,7 @@ public class DeclaredBinder extends ModularBinder {
 			public void invokeUnload(ModuleContainer mc) {}
 			public void invokeSave(ModuleContainer mc) {}
 			public void invokeLoad(ModuleContainer mc) {}
+			public void invokeTick(ModuleContainer mc) {}
 		};
 	}
 

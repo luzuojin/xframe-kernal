@@ -21,7 +21,7 @@ import dev.xframe.task.TaskExecutor;
 @SuppressWarnings("unchecked")
 public class PlayerContext {
     
-    private Logger logger = LoggerFactory.getLogger(PlayerContext.class);
+    private final Logger logger = LoggerFactory.getLogger(PlayerContext.class);
     
     private final PlayerCollection players;
     
@@ -33,81 +33,79 @@ public class PlayerContext {
 		return id->new PlayerData(factory.newPlayer(id, executor.newLoop()));
 	}
 	
-	private void handleIncorrentId(long playerId) {
-		logger.error("Incorrect player: [{}]", playerId);
+	private void logIncorrent(long id) {
+		logger.error("Incorrect player: [{}]", id);
 	}
-	private void handleLoadError(long playerId) {
-		logger.error("Load player [{}] error", playerId);
-		players.remove(playerId);
+	private Player doLoad(Player player) {
+	    try {
+	        player.load();
+	        return player;
+	    } catch (Throwable e) {
+	        long id = player.id();
+	        players.remove(id);
+            logger.error(String.format("Load player [%s] error", id), e);
+        }
+	    return null;
 	}
 	
-    public <T extends Player> T getPlayerExists(long playerId) {
-        if(playerId < 1) {
-            handleIncorrentId(playerId);
+    public <T extends Player> T getPlayerExists(long id) {
+        if(id < 1) {
+            logIncorrent(id);
             return null;
         }
-        return (T) players.get(playerId);
+        return (T) players.get(id);
     }
     
     public <T extends Player> T getPlayer(long playerId) {
         if(playerId < 1) {
-            handleIncorrentId(playerId);
+            logIncorrent(playerId);
             return null;
         }
         return (T) players.get(playerId);
     }
 
-    public <T extends Player> T getPlayerImmediately(long playerId) {
-        if(playerId < 1) {
-            handleIncorrentId(playerId);
+    public <T extends Player> T getPlayerImmediately(long id) {
+        if(id < 1) {
+            logIncorrent(id);
             return null;
         }
-        Player player = players.getOrNew(playerId);
-        if(!player.load()) {
-            handleLoadError(playerId);
-            return null;
-        }
-        return (T) player;
+        return (T) doLoad(players.getOrNew(id));
     }
 
-    public <T extends Player> T getPlayerWithLoad(long playerId) {
-        if(playerId < 1) {
-            handleIncorrentId(playerId);
+    public <T extends Player> T getPlayerWithLoad(long id) {
+        if(id < 1) {
+            logIncorrent(id);
             return null;
         }
-        Player player = players.getOrNew(playerId);
+        Player player = players.getOrNew(id);
         //通过playerTask Load数据
         new Task(player.loop()) {
             @Override
             protected void exec() {
-                if(!player.load()) {
-                    handleLoadError(playerId);
-                }
+                doLoad(player);
             }
         }.checkin();
         return (T) player;
     }
     
-    public <T extends Player> T getPlayerWithLatch(long playerId, CountDownLatch latch) {
-        if(playerId < 1) {
+    public <T extends Player> T getPlayerWithLatch(long id, CountDownLatch latch) {
+        if(id < 1) {
             latch.countDown();
             return null;
         }
-        Player tmp = players.get(playerId);
+        Player tmp = players.get(id);
         if(tmp != null) {
             latch.countDown();
             return (T) tmp;
         }
-        final Player player = players.getOrNew(playerId);
+        final Player player = players.getOrNew(id);
         //不存在缓存中, 从DB中load
         //通过player.loop Load数据
         new Task(player.loop()) {
             @Override
             protected void exec() {
                 try {
-                    if(!player.load()) {
-                        handleLoadError(playerId);
-                    }
+                    doLoad(player);
                 } finally {
                     latch.countDown();
                 }
@@ -116,8 +114,8 @@ public class PlayerContext {
         return (T) player;
     }
     
-    public boolean exists(long playerId) {
-        return players.isExist(playerId);
+    public boolean exists(long id) {
+        return players.isExist(id);
     }
     
     /**
@@ -138,7 +136,7 @@ public class PlayerContext {
                     removePlayer(player);
                 }
             } catch (Exception ex) {
-                logger.error("persistence players", ex);
+                logger.error("Persistence players", ex);
             }
         }
     }
