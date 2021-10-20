@@ -2,6 +2,10 @@ package dev.xframe.game.module;
 
 import java.util.function.Consumer;
 
+import dev.xframe.game.player.ModularAdapter;
+import dev.xframe.game.player.Player;
+import dev.xframe.inject.ApplicationContext;
+import dev.xframe.inject.beans.Injector;
 import dev.xframe.inject.code.CompositeBuilder;
 
 public class ModularHelper {
@@ -9,13 +13,18 @@ public class ModularHelper {
     public static <T> void removeAgent(T agent, T delegate) {
         CompositeBuilder.remove(agent, delegate);
     }
-    
     public static <T> void appendAgent(T agent, T delegate) {
         CompositeBuilder.append(agent, delegate);
     }
-    
     public static <T> void forEachAgent(T agent, Consumer<T> consumer) {
         CompositeBuilder.forEach(agent, consumer);
+    }
+    
+    public static Injector makeInjector(Class<?> cls) {
+        return ApplicationContext.getBean(ModularAdapter.class).newInjector(cls);
+    }
+    public static void inject(Injector injector, Object bean, Player player) {
+        ModularAdapter.runInjectStatic(injector, bean, player);
     }
     
     public static boolean isModularClass(Class<?> c) {

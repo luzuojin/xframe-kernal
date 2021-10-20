@@ -21,7 +21,10 @@ public class ModularAdapter implements ModuleLoader {
 	}
 	
 	public void runInject(Injector injector, Object bean, Player player) {
-		injector.inject(bean, player.mc);
+	    runInjectStatic(injector, bean, player);
+	}
+	public static final void runInjectStatic(Injector injector, Object bean, Player player) {
+	    injector.inject(bean, player.mc);
 	}
 	
 	public int indexOf(Class<?> moduleCls) {
