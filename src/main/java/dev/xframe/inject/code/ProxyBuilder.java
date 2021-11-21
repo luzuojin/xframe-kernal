@@ -50,7 +50,7 @@ public class ProxyBuilder {
             CtClass ctParent = pool.get(basic.getName());
             String proxyName = cts.get("proxy_name").replace("${proxy_basic}", basic.getName());
             
-            Class<?> proxyClass = defineClass(proxyName);
+            Class<?> proxyClass = CtHelper.defineClass(proxyName);
             
             if(proxyClass == null) {
                 CtClass ctClass = makeCtClassWithParent(pool, ctParent, proxyName);
@@ -67,14 +67,6 @@ public class ProxyBuilder {
         } catch (Throwable e) {
             throw XCaught.throwException(e);
         }
-    }
-    
-    private static Class<?> defineClass(String proxyName) {
-        Class<?> proxyClass = null;
-        try {
-            proxyClass = Class.forName(proxyName);
-        } catch(ClassNotFoundException e) {}
-        return proxyClass;
     }
     
     private static <T> void makeMethodsInvokeCode(CtClass ctClass, CtClass ctParent, Class<?> delegate) throws NotFoundException, CannotCompileException {

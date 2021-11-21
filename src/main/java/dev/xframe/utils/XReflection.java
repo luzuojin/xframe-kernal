@@ -183,6 +183,21 @@ public class XReflection extends SecurityManager {
         return invokeConstructor(getConstructor(clazz));
     }
 
+    public static MethodHandle findGetter(Class<?> refc, String name, Class<?> type) {
+        try {
+            return XLookup.lookup().findGetter(refc, name, type);
+        } catch (Exception e) {
+            throw XCaught.throwException(e);
+        }
+    }
+    public static MethodHandle findSetter(Class<?> refc, String name, Class<?> type) {
+        try {
+            return XLookup.lookup().findSetter(refc, name, type);
+        } catch (Exception e) {
+            throw XCaught.throwException(e);
+        }
+    }
+    
     /**
      * 获取Class.isAssignableFrom为true的所有类
      */

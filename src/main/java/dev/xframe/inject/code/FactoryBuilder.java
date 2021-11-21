@@ -37,7 +37,7 @@ public class FactoryBuilder {
             CtClass ctParent = pool.getCtClass(factoryInteface.getName());
             String factoryName = factoryInteface.getName() + "$Factory";
             
-            Class<?> dc = defineClass(factoryName);
+            Class<?> dc = CtHelper.defineClass(factoryName);
             if(dc != null) {
                 return XReflection.newInstance(dc);
             }
@@ -53,7 +53,7 @@ public class FactoryBuilder {
             
             return XReflection.newInstance(ct.toClass());
         } catch (Throwable e) {
-            return XCaught.throwException(e);
+            throw XCaught.throwException(e);
         }
     }
     
@@ -101,14 +101,6 @@ public class FactoryBuilder {
         body.append("}");
         
         ct.addMethod(CtHelper.copy(cm, body.toString(), ct));
-    }
-    
-    private static Class<?> defineClass(String name) {
-        Class<?> proxyClass = null;
-        try {
-            proxyClass = Class.forName(name);
-        } catch(ClassNotFoundException e) {}
-        return proxyClass;
     }
     
     private static boolean isCaseTypeEnum(Class<?> keyType) {

@@ -58,5 +58,21 @@ public class CtHelper {
     public static boolean isDefault(CtMethod method) {
         return ((method.getModifiers() & (Modifier.ABSTRACT | Modifier.PUBLIC | Modifier.STATIC)) == Modifier.PUBLIC) && method.getDeclaringClass().isInterface();
     }
+    
+    public static boolean isStatic(CtMethod method) {
+        return (method.getModifiers() & Modifier.STATIC) > 0;
+    }
+    
+    /**
+     * define class before gen class
+     */
+    public static Class<?> defineClass(String clsName) {
+        try {
+            return Class.forName(clsName);
+        } catch (ClassNotFoundException e) {
+            //ignore
+            return null;
+        }
+    }
 
 }
