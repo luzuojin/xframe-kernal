@@ -37,13 +37,13 @@ public class BeanHelper {
 	public static Injector makeInjector(Class<?> c) {
 		return Injector.of(c, ApplicationContext.Internal.indexing(), !c.isAnnotationPresent(Prototype.class));//prototype父类会有一个独立的Injector
 	}
-	public static Object inject(Class<?> c) {
+	public static <T> T inject(Class<T> c) {
 		return inject(XReflection.newInstance(c), makeInjector(c));
 	}
-	public static Object inject(Object bean) {
+	public static <T> T inject(T bean) {
 		return inject(bean, makeInjector(bean.getClass()));
 	}
-	public static Object inject(Object bean, Injector injector) {
+	public static <T> T inject(T bean, Injector injector) {
 		injector.inject(bean, ApplicationContext.Internal.fetcher());
 		BeanLoader.doLoad(bean);
 		return bean;
