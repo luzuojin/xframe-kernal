@@ -124,7 +124,7 @@ public class XLambda {
             Class<?> refCls = field.getDeclaringClass();
             Class<?> typCls = field.getType();
             
-            String cname = String.format("%s_%s_%s_LambdaGetter", refCls.getName(), field.getName(), lambdaInterface.getSimpleName());
+            String cname = String.format("%s_%s_%sGetter", refCls.getName(), field.getName(), lambdaInterface.hashCode());
             
             Class<?> getterCls = CtHelper.defineClass(cname);
             if(getterCls == null) {
@@ -156,11 +156,12 @@ public class XLambda {
                     b.addInvokestatic(binaryToInternal(boxedType.getName()), "valueOf", String.format("(%s)%s", classToDescriptor(typCls), classToDescriptor(boxedType)));
                 }
                 b.addReturn(m.getReturnType());
+                
                 MethodInfo mi = m.getMethodInfo();
                 mi.setCodeAttribute(b.toCodeAttribute());
                 mi.setAccessFlags(mi.getAccessFlags() & ~AccessFlag.ABSTRACT);//remove abstract access flag
-                
                 c.addMethod(m);
+                
                 getterCls = c.toClass();
             }
             return (T) getterCls.newInstance();
@@ -178,7 +179,7 @@ public class XLambda {
             Class<?> refCls = field.getDeclaringClass();
             Class<?> typCls = field.getType();
             
-            String cname = String.format("%s_%s_%s_LambdaSetter", refCls.getName(), field.getName(), lambdaInterface.getSimpleName());
+            String cname = String.format("%s_%s_%sSetter", refCls.getName(), field.getName(), lambdaInterface.hashCode());
             
             Class<?> setterCls = CtHelper.defineClass(cname);
             if(setterCls == null) {
