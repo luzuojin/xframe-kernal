@@ -2,6 +2,8 @@ package dev.xframe.inject.code;
 
 import java.lang.reflect.Method;
 import java.security.ProtectionDomain;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import dev.xframe.utils.XCaught;
 import dev.xframe.utils.XReflection;
@@ -45,6 +47,13 @@ public class CtHelper {
 
     public static CtConstructor copy(CtConstructor src, String body, CtClass declaring) throws CannotCompileException, NotFoundException {
         return CtNewConstructor.make(src.getParameterTypes(), src.getExceptionTypes(), body, declaring);
+    }
+    
+    public static String wrapParams(int len) {
+        return wrapParams(len, 0);
+    }
+    public static String wrapParams(int len, int skip) {
+        return String.join(",", IntStream.rangeClosed(skip + 1, len).mapToObj(i->"$"+i).collect(Collectors.toList()));
     }
 
     public static boolean isObjectType(CtClass clazz) {

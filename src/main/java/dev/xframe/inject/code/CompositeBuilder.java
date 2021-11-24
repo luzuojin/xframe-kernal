@@ -3,7 +3,6 @@ package dev.xframe.inject.code;
 import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.stream.IntStream;
 
 import dev.xframe.inject.Composite;
 import dev.xframe.utils.XCaught;
@@ -77,8 +76,6 @@ public class CompositeBuilder {
                     if(invokable) {
                         CtClass rtype = ctMethod.getReturnType();
                         
-                        String args = String.join(",", IntStream.rangeClosed(1, ctMethod.getParameterTypes().length).mapToObj(idx->"$"+idx).toArray(String[]::new));
-                        
                         String invk = cts.get(rtype==CtClass.voidType ? "void_invoke_part" : "obj_invoke_part");
                         
                         String rdef = rtype==CtClass.booleanType ? String.valueOf(!boolByTrue) : cts.get(rtype==CtClass.voidType ? "void_rdef" : rtype.isPrimitive() ? "pri_rdef" : "obj_rdef");
@@ -87,7 +84,7 @@ public class CompositeBuilder {
                                 .replace("${obj_invoke_part}", ignoreError ? cts.get("obj_invoke_ex_part").replace("${obj_invoke_ex_part}", invk) : invk)
                                 .replace("${composite_basic}", basicName)
                                 .replace("${method_name}", ctMethod.getName())
-                                .replace("${method_params}", args)
+                                .replace("${method_params}", CtHelper.wrapParams(ctMethod.getParameterTypes().length))
                                 .replace("${return_class}", rtype.getName())
                                 .replace("${return_default}", rdef);
                         

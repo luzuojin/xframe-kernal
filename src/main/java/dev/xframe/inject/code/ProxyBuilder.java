@@ -7,8 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import dev.xframe.utils.XCaught;
 import dev.xframe.utils.XReflection;
@@ -79,13 +77,9 @@ public class ProxyBuilder {
     private static String makeSimpleInvokeCode(CtMethod cm) throws NotFoundException {
         return cts.get(cm.getReturnType()==CtClass.voidType ? "void_invoke_part" : "obj_invoke_part")
                 .replace("${method_name}", cm.getName())
-                .replace("${method_params}", makeMethodInvokeParams(cm));
+                .replace("${method_params}", CtHelper.wrapParams(cm.getParameterTypes().length));
     }
     
-    private static String makeMethodInvokeParams(CtMethod cm) throws NotFoundException {
-        return String.join(",", IntStream.rangeClosed(1, cm.getParameterTypes().length).mapToObj(i->"$"+i).collect(Collectors.toList()));
-    }
-
     private static void makeDelegateField(CtClass ctClass, Class<?> delegate) throws CannotCompileException {
         ctClass.addField(CtField.make(cts.get("delegate_field").replace("${proxy_delegate}", delegate.getName()), ctClass));
     }

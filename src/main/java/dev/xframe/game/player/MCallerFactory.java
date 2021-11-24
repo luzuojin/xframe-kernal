@@ -3,8 +3,6 @@ package dev.xframe.game.player;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import dev.xframe.inject.code.CtHelper;
 import dev.xframe.inject.code.CtParser;
@@ -50,7 +48,7 @@ public class MCallerFactory {
                         .replace("${module_index}", String.valueOf(moduleIndex))
                         .replace("${call_part}", cts.get(method.getReturnType()==void.class?"void_call_part":"obj_call_part"))
                         .replace("${method_name}", method.getName())
-                        .replace("${method_params}", String.join(",", IntStream.rangeClosed(2, ctMethod.getParameterTypes().length).mapToObj(i->"$"+i).collect(Collectors.toList())));
+                        .replace("${method_params}", CtHelper.wrapParams(ctMethod.getParameterTypes().length, 1));
                 ctClass.addMethod(CtHelper.copy(ctMethod, ctBody, ctClass));
                 
                 callerCls = ctClass.toClass();
