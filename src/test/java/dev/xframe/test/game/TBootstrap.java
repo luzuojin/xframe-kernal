@@ -7,13 +7,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import dev.xframe.game.action.RunnableAction;
-import dev.xframe.game.cmd.PlayerCmd;
 import dev.xframe.game.module.ModuleType;
 import dev.xframe.game.player.ModularAdapter;
 import dev.xframe.game.player.PlayerContext;
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.junit.ContextScan;
 import dev.xframe.inject.junit.Junit4ClassRunner;
+import dev.xframe.net.cmd.Command;
 import dev.xframe.net.cmd.CommandContext;
 import dev.xframe.net.codec.Message;
 import dev.xframe.test.game.GameProto.ValueMsg;
@@ -47,12 +47,12 @@ public class TBootstrap {
 		testExecution.assertExecuted(TDepInventory.class);
 		testExecution.assertExecuted(TComponent.class);
         
-        PlayerCmd<TPlayer> cmd1 = (PlayerCmd<TPlayer>) commandCtx.get(100);
+		Command cmd1 = commandCtx.get(100);
         cmd1.execute(null, Message.of(100, ValueMsg.newBuilder().setVal("hey").build().toByteArray()).copy(playerId));
         TimeUnit.MILLISECONDS.sleep(100);//wait queued executed
         testExecution.assertExecuted(TCommand.class);
         
-        PlayerCmd<TPlayer> cmd2 = (PlayerCmd<TPlayer>)  commandCtx.get(101);
+        Command cmd2 = commandCtx.get(101);
         cmd2.execute(null, Message.of(101, ValueMsg.newBuilder().setVal("hey").build().toByteArray()).copy(playerId));
         TimeUnit.MILLISECONDS.sleep(100);//wait queued executed
         testExecution.assertExecuted(TAction.class);

@@ -1,40 +1,35 @@
 package dev.xframe.game.cmd;
 
-import dev.xframe.game.player.ModularAdapter;
 import dev.xframe.game.player.MTypedLoader;
+import dev.xframe.game.player.ModularAdapter;
 import dev.xframe.game.player.Player;
 import dev.xframe.inject.Inject;
-import dev.xframe.net.codec.IMessage;
 import dev.xframe.utils.XGeneric;
 
 /**
  * module 入口
  * Modular必然是Looped
  * @author luzj
- * @param <T>
- * @param <V>
  */
-public abstract class ModularCmd<T extends Player, V> extends LoopedCmd<T> {
+public abstract class ModularCmd<T extends Player, V, M> extends LoopedCmd<T, M> {
 	
 	@Inject
-	private ModularAdapter adapter;
+	private ModularAdapter mAdapter;
+	private MTypedLoader mLoader;
+    @Override
+    public void load() {
+        super.load();
+        mLoader = mAdapter.getTypedLoader(getModuleCls());
+    }
     
-    private MTypedLoader loader;
-    
-    private MTypedLoader getLoader() {
-    	if(loader == null)
-    		loader = adapter.getTypedLoader(getModuleType(this.getClass()));
-		return loader;
-	}
-    
-    public static Class<?> getModuleType(Class<?> clazz) {
-        return XGeneric.parse(clazz, ModularCmd.class).getByName("V");
+    protected Class<?> getModuleCls() {
+        return XGeneric.parse(getClass(), ModularCmd.class).getByIndex(1);
     }
 
-    public final void exec(T player, IMessage req) throws Exception {
-        exec(player, getLoader().load(player), req);
+    public final void exec(T player, M msg) throws Exception {
+        exec(player, mLoader.load(player), msg);
     }
     
-	public abstract void exec(T player, V module, IMessage req) throws Exception;
+	public abstract void exec(T player, V module, M msg) throws Exception;
     
 }

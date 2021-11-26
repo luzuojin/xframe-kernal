@@ -2,13 +2,13 @@ package dev.xframe.test.game;
 
 import org.junit.Assert;
 
-import dev.xframe.game.cmd.ModularLiteCmd;
+import dev.xframe.game.cmd.ModularCmd;
 import dev.xframe.inject.Inject;
 import dev.xframe.net.cmd.Cmd;
 import dev.xframe.test.game.GameProto.ValueMsg;
 
 @Cmd(100)
-public class TCommand extends ModularLiteCmd<TPlayer, TPlayerInventory, ValueMsg> {
+public class TCommand extends ModularCmd<TPlayer, TPlayerInventory, ValueMsg> {
     
     @Inject
     private TComp tComp;

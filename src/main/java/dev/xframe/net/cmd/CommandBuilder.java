@@ -20,13 +20,9 @@ public class CommandBuilder {
     public Command build(Class<?> clazz) {
         for (Map.Entry<Predicate<Class<?>>, Function<Class<?>, Command>> entry : builders.entrySet()) {
             if(entry.getKey().test(clazz)) {
-                return entry.getValue().apply(clazz);
+                return BeanHelper.inject(entry.getValue().apply(clazz));
             }
         }
-        return build0(clazz);
-    }
-
-    private Command build0(Class<?> clazz) {
         return (Command) BeanHelper.inject(clazz);
     }
     

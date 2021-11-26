@@ -6,16 +6,15 @@ import org.slf4j.LoggerFactory;
 import dev.xframe.game.player.Player;
 import dev.xframe.inject.Bean;
 import dev.xframe.inject.Providable;
-import dev.xframe.net.codec.IMessage;
 import dev.xframe.utils.XStrings;
 
 @Bean
 @Providable
-public class PlayerCmdInvoker<T extends Player> {
+public class PlayerCmdInvoker<T extends Player, E> {
     
     protected static final Logger logger = LoggerFactory.getLogger(PlayerCmdInvoker.class);
     
-    public final void invoke(PlayerCmd<T> cmd, T player, IMessage req) {
+    public final void invoke(PlayerCmd<T, E> cmd, T player, E req) {
         try {
             doInvoke(cmd, player, req);
         } catch (Throwable e) {
@@ -23,15 +22,15 @@ public class PlayerCmdInvoker<T extends Player> {
         }
     }
 
-    protected void doInvoke(PlayerCmd<T> cmd, T player, IMessage req) throws Exception {
+    protected void doInvoke(PlayerCmd<T, E> cmd, T player, E req) throws Exception {
         doExec(cmd, player, req);
     }
 
-    protected void doExec(PlayerCmd<T> cmd, T player, IMessage req) throws Exception {
+    protected void doExec(PlayerCmd<T, E> cmd, T player, E req) throws Exception {
         cmd.exec(player, req);
     }
 
-    protected void onExCaught(PlayerCmd<T> cmd, T player, Throwable e) {
+    protected void onExCaught(PlayerCmd<T, E> cmd, T player, Throwable e) {
         logger.error("invoke player[{}] cmd[{}] error:\n {}", player.id(), cmd.getClazz(), XStrings.getStackTrace(e));
     }
 

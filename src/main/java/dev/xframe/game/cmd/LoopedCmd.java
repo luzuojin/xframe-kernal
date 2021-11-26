@@ -2,7 +2,6 @@ package dev.xframe.game.cmd;
 
 import dev.xframe.game.player.Player;
 import dev.xframe.inject.Inject;
-import dev.xframe.net.codec.IMessage;
 
 
 /**
@@ -10,14 +9,14 @@ import dev.xframe.net.codec.IMessage;
  * @author luzj
  *
  */
-public abstract class LoopedCmd<T extends Player> extends PlayerCmd<T> {
+public abstract class LoopedCmd<T extends Player, M> extends PlayerCmd<T, M> {
     
     @Inject
-    private PlayerCmdInvoker<T> invoker;
+    private PlayerCmdInvoker<T, M> invoker;
     
     @Override
-    protected final void execute0(T player, IMessage req) throws Exception {
-        new PlayerCmdInvokeTask<>(invoker, this, player, req, player.loop()).checkin();
+    protected final void execute0(T player, M msg) throws Exception {
+        new PlayerCmdInvokeTask<>(invoker, this, player, msg, player.loop()).checkin();
     }
 
 }
