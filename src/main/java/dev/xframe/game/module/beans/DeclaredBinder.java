@@ -38,7 +38,7 @@ public class DeclaredBinder extends ModularBinder {
 	}
 
 	@Override
-	public void makeComplete(ModularIndexes indexes) {
+	public void makeComplete(ModularIndexes indexes, MInvokerFactory miFactory) {
 		for (Member member : injector.getMebmers()) {
 			if(indexes.isValidIndex(member.getIndex())) {//Assemble的Index offset为0
 			 	((ModularBinder)indexes.getBinder(member.getIndex())).registListener(newMemberListener(member));

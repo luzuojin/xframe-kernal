@@ -32,8 +32,8 @@ public class ModularBinder extends BeanBinder.Classic {
 		return ModularHelper.isTransientModularClass(master);
 	}
 	
-	public void makeComplete(ModularIndexes indexes) {
-		invoker = MInvokerBuilder.build(master, indexes);
+	public void makeComplete(ModularIndexes indexes, MInvokerFactory miFactory) {
+		invoker = miFactory.makeInvoker(master, indexes);
 	}
 	
 	@Override

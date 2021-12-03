@@ -26,11 +26,11 @@ public class ModularIndexes extends BeanIndexes {
 		this.gIndexing = gIndexing;
 	}
 	
-	public void integrate() {
+	public void integrate(MInvokerFactory miFactory) {
 		List<ModularBinder> list = binders().stream().map(binder->((ModularBinder)binder)).collect(Collectors.toList());
 		residents = list.stream().filter(ModularBinder::isResident).toArray(ModularBinder[]::new);
 		transients = list.stream().filter(ModularBinder::isTransient).toArray(ModularBinder[]::new);
-		list.forEach(b->b.makeComplete(this));
+		list.forEach(b->b.makeComplete(this, miFactory));
 		frozen = true;
 	}
 	

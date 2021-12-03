@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 
 import dev.xframe.game.module.beans.AgentBinder;
 import dev.xframe.game.module.beans.DeclaredBinder;
+import dev.xframe.game.module.beans.MInvokerFactory;
 import dev.xframe.game.module.beans.ModularBinder;
 import dev.xframe.game.module.beans.ModularIndexes;
 import dev.xframe.game.module.beans.ModuleContainer;
@@ -28,6 +29,8 @@ public class ModularContext {
 	private BeanIndexing gIndexing;
 	@Inject
 	private BeanProvider gProvider;
+	@Inject
+	private MInvokerFactory miFactory;
 	
 	private ModularIndexes indexes;
 	
@@ -41,7 +44,7 @@ public class ModularContext {
 			registrator.regist(indexes);
 			List<Class<?>> scanned = Codes.getScannedClasses();
 			pretreatModules(scanned).forEach(c->indexes.regist(buildBinder(c, indexes)));
-			indexes.integrate();
+			indexes.integrate(miFactory);
 		}
 	}
 	
