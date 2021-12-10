@@ -1,7 +1,8 @@
 package dev.xframe.game.cmd;
 
 import dev.xframe.game.action.Action;
-import dev.xframe.game.action.ActionBuilder;
+import dev.xframe.game.action.Actions;
+import dev.xframe.game.action.ActionFactory;
 import dev.xframe.game.action.ActionTask;
 import dev.xframe.game.player.Player;
 import dev.xframe.utils.XGeneric;
@@ -9,11 +10,11 @@ import dev.xframe.utils.XGeneric;
 public final class ActionCmd<T extends Player, M> extends DirectCmd<T, M>  {
     
     final Class<?> cls;
-    final ActionBuilder fac;
+    final ActionFactory fac;
     
     public ActionCmd(Class<?> cls) {
         this.cls = cls;
-        this.fac = ActionBuilder.of(cls, false);
+        this.fac = Actions.getFactoryByCls(cls);
     }
     
     @Override
@@ -23,9 +24,8 @@ public final class ActionCmd<T extends Player, M> extends DirectCmd<T, M>  {
     
     @Override
     public void exec(T player, M msg) throws Exception {
-        Action<T, M> action = fac.build(player);
         //run action (looped)
-        ActionTask.trusted(action, player, msg).checkin();
+        ActionTask.of(fac.make(player), player, msg).checkin();
     }
     
     @Override

@@ -1,8 +1,9 @@
 package dev.xframe.game.player;
 
 import dev.xframe.game.action.Action;
+import dev.xframe.game.action.Actions;
 import dev.xframe.game.action.ActionTask;
-import dev.xframe.game.action.RunnableAction;
+import dev.xframe.game.action.Runnable;
 import dev.xframe.game.module.ModuleType;
 import dev.xframe.game.module.beans.ModuleContainer;
 import dev.xframe.task.TaskLoop;
@@ -26,21 +27,23 @@ public abstract class Player {
     public TaskLoop loop() {
         return this.loop;
     }
-    
-    //RunnableAction msg is Void
-    public <T extends Player> void accept(RunnableAction<T> action) {
-        accept(action, null);
+
+    public final <T extends Player, M> void accept(M msg) {
+        exec(Actions.makeByMsg(this, msg), msg);
+    }
+    public final <T extends Player> void accept(Runnable<T> runnable) {
+        exec(Actions.makeByRunnable(this, runnable), runnable);
     }
     @SuppressWarnings("unchecked")
-    public <T extends Player, M> void accept(Action<T, M> action, M msg) {
-        T player = (T) this;
+    private <T extends Player, M> void exec(Action<T, M> action, M msg) {
+        final T plr = (T) this;
         if(loop.inLoop()) {
-            ActionTask.exec(action, player, msg);
+            ActionTask.exec(action, plr, msg);
         } else {
-            ActionTask.of(action, player, msg).checkin();
+            ActionTask.of(action, plr, msg).checkin();
         }
     }
-    
+
     public synchronized void load(ModuleType type) {
     	this.mc.loadModules(type);
     	this.loaded |= type.code;

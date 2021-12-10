@@ -1,26 +1,21 @@
 package dev.xframe.inject.code;
 
+import dev.xframe.utils.XPaths;
+import dev.xframe.utils.XStrings;
+import dev.xframe.utils.XUnsafe;
+
 import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import dev.xframe.utils.XPaths;
-import dev.xframe.utils.XStrings;
-import dev.xframe.utils.XUnsafe;
 
 /**
  * class文件扫描
@@ -66,17 +61,20 @@ public class Scanner {
     private static Set<String> getClassPathes() throws Exception {
         Set<String> set = getClassPathes0(Thread.currentThread().getContextClassLoader());
         for(String cp : set.stream().filter(path->isJarFile(path)&&!isInsidePath(path)).collect(Collectors.toList())) {
-            JarFile jarFile = new JarFile(new File(cp));
-            String manfest = (String) jarFile.getManifest().getMainAttributes().getValue(MANFEST_CLASS_PATH);
-            if(!XStrings.isEmpty(manfest)) {
+            try(JarFile jarFile = new JarFile(new File(cp))) {
+                if(jarFile.getManifest() == null)
+                    continue;
+                String manfest = jarFile.getManifest().getMainAttributes().getValue(MANFEST_CLASS_PATH);
+                if(XStrings.isEmpty(manfest))
+                    continue;
                 for (String c : manfest.split("\\s+")) {
-                    if(c.contains(":"))
+                    if(c.contains(":")) {
                         set.add(XPaths.toPath(new URL(c)));
-                    else
+                    } else {
                         set.add(XPaths.toFile(c).getAbsolutePath());
+                    }
                 }
             }
-            jarFile.close();
         }
         return set;
     }
@@ -98,13 +96,15 @@ public class Scanner {
      * 获取文件下的所有文件(递归)
      */
     private static Set<File> getFiles(File file) {
-        Set<File> files = new LinkedHashSet<File>();
+        Set<File> files = new LinkedHashSet<>();
         if (!file.isDirectory()) {
             files.add(file);
         } else {
             File[] subFiles = file.listFiles();
-            for (File f : subFiles) {
-                files.addAll(getFiles(f));
+            if(subFiles != null) {
+                for (File f : subFiles) {
+                    files.addAll(getFiles(f));
+                }
             }
         }
         return files;
@@ -116,7 +116,7 @@ public class Scanner {
     private static Set<File> getClassFiles(File file) {
         // 获取所有文件
         Set<File> files = getFiles(file);
-        Set<File> classes = new LinkedHashSet<File>();
+        Set<File> classes = new LinkedHashSet<>();
         // 只保留.class 文件
         for (File f : files) {
             if (isClassFile(f.getName())) {
@@ -136,24 +136,25 @@ public class Scanner {
                     return getFromJarStream(jarFile.getInputStream(entry));
                 } else {//folder
                     Enumeration<JarEntry> entries = jarFile.entries();
-                    Set<ClassEntry> classes = new LinkedHashSet<ClassEntry>();
+                    Set<ClassEntry> classes = new LinkedHashSet<>();
                     while (entries.hasMoreElements()) {
-                        JarEntry entry = (JarEntry) entries.nextElement();
+                        JarEntry entry = entries.nextElement();
                         String name = entry.getName();
                         if (name.startsWith(_path[1]) && isClassFile(name)) {
                             String className = name.substring(_path[1].length(), entry.getName().indexOf(CLASS_FILE_EXT)).replace(FILE_SEPARATOR, PACKAGE_SEPARATOR);
                             classes.add(new ClassEntry(className, entry.getSize(), entry.getTime()));
                         }
                     }
+                    return classes;
                 }
             }
         }
-        return new LinkedHashSet<ClassEntry>();
+        return new LinkedHashSet<>();
     }
 
     private static Set<ClassEntry> getFromJarStream(InputStream input) throws Exception {
-        Set<ClassEntry> classes = new LinkedHashSet<ClassEntry>();
-        try(JarInputStream jarInput = new JarInputStream(input);) {
+        Set<ClassEntry> classes = new LinkedHashSet<>();
+        try(JarInputStream jarInput = new JarInputStream(input)) {
             JarEntry next;
             while((next = jarInput.getNextJarEntry()) != null) {
                 if(isClassFile(next.getName())) {
@@ -169,7 +170,7 @@ public class Scanner {
      */
     private static Set<ClassEntry> getFromDir(File file) {
         Set<File> files = getClassFiles(file);
-        Set<ClassEntry> classes = new LinkedHashSet<ClassEntry>();
+        Set<ClassEntry> classes = new LinkedHashSet<>();
         for (File f : files) {
             classes.add(new ClassEntry(file, f));
         }
@@ -180,11 +181,11 @@ public class Scanner {
      * 获取jar文件里的所有class文件名
      */
     private static Set<ClassEntry> getFromJar(File file) throws Exception {
-        try (JarFile jarFile = new JarFile(file);) {
+        try (JarFile jarFile = new JarFile(file)) {
             Enumeration<JarEntry> entries = jarFile.entries();
-            Set<ClassEntry> classes = new LinkedHashSet<ClassEntry>();
+            Set<ClassEntry> classes = new LinkedHashSet<>();
             while (entries.hasMoreElements()) {
-                JarEntry entry = (JarEntry) entries.nextElement();
+                JarEntry entry = entries.nextElement();
                 if (isClassFile(entry.getName())) {
                     classes.add(new ClassEntry(entry));
                 }
@@ -216,7 +217,7 @@ public class Scanner {
     }
 
     public static List<ClassEntry> scan(ScanMatcher matcher) {
-        List<ClassEntry> ret = new ArrayList<ClassEntry>();
+        List<ClassEntry> ret = new ArrayList<>();
         try {
             for (String path : getClassPathes(matcher)) {
                 for (ClassEntry clazz : getFromPath(path)) {
@@ -314,10 +315,8 @@ public class Scanner {
         public SingleMatcher(String res, boolean matchJarWhenEmpty) {
             List<Pattern> jarPatterns = new ArrayList<>(3);
             List<Pattern> clsPatterns = new ArrayList<>(3);
-            if(res != null && res.length() > 0) {
-                String[] regs = res.split(";");
-                for (int i = 0; i < regs.length; i++) {
-                    String reg = regs[i];
+            if(!XStrings.isEmpty(res)) {
+                for (String reg : res.split(";")) {
                     List<Pattern> list = reg.endsWith(".jar") ? jarPatterns : clsPatterns;
                     list.add(Pattern.compile(quote(reg)));
                 }

@@ -1,17 +1,16 @@
 package dev.xframe.game.player;
 
+import dev.xframe.game.action.Runnable;
+import dev.xframe.task.Task;
+import dev.xframe.task.TaskExecutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Function;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import dev.xframe.game.action.RunnableAction;
-import dev.xframe.task.Task;
-import dev.xframe.task.TaskExecutor;
 
 
 /**
@@ -165,7 +164,7 @@ public class PlayerContext {
         	this.factory = factory;
 		}
         public Player get(long playerId) {
-            PlayerData item = (PlayerData) datas.get(playerId);
+            PlayerData item = datas.get(playerId);
             if(item == null) {
                 return null;
             }
@@ -217,33 +216,33 @@ public class PlayerContext {
         }
     }
 
-    public <T extends Player> void callPlayer(long id, RunnableAction<T> rAction) {
+    public <T extends Player> void callPlayer(long id, Runnable<T> rAction) {
         T player = (T) players.get(id);
         if(player != null) {
         	execCall(rAction, player);
         }
     }
 
-    public <T extends Player> void callOnlinePlayers(RunnableAction<T> rAction) {
+    public <T extends Player> void callOnlinePlayers(Runnable<T> rAction) {
         for (PlayerData data : players.datas()) {
         	execCall(rAction, data, true);
         }
     }
 
-    public <T extends Player> void callAllPlayers(RunnableAction<T> rAction) {
+    public <T extends Player> void callAllPlayers(Runnable<T> rAction) {
         for (PlayerData data : players.datas()) {
         	execCall(rAction, data, false);
         }
     }
     
-    private <T extends Player> void execCall(RunnableAction<T> rAction, PlayerData data, boolean onlineRequired) {
+    private <T extends Player> void execCall(Runnable<T> rAction, PlayerData data, boolean onlineRequired) {
     	T player;
     	if(data != null && (player = (T) data.getData()) != null && (!onlineRequired || player.isOnline())) {
     	    execCall(rAction, player);
     	}
     }
     
-	private <T extends Player> void execCall(RunnableAction<T> rAction, T player) {
+	private <T extends Player> void execCall(Runnable<T> rAction, T player) {
 		try {
 		    player.accept(rAction);
 		} catch (Throwable e) {

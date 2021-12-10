@@ -1,12 +1,5 @@
 package dev.xframe.test.game;
 
-import java.util.concurrent.TimeUnit;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import dev.xframe.game.action.RunnableAction;
 import dev.xframe.game.module.ModuleType;
 import dev.xframe.game.player.ModularAdapter;
 import dev.xframe.game.player.PlayerContext;
@@ -17,6 +10,11 @@ import dev.xframe.net.cmd.Command;
 import dev.xframe.net.cmd.CommandContext;
 import dev.xframe.net.codec.Message;
 import dev.xframe.test.game.GameProto.ValueMsg;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.util.concurrent.TimeUnit;
 
 @RunWith(Junit4ClassRunner.class)
 @ContextScan(includes="dev.xframe.*", excludes="*.jar")
@@ -34,8 +32,7 @@ public class TBootstrap {
     private TCaller tCaller;
     
     @Test
-    @SuppressWarnings("unchecked")
-	public void test() throws Exception {
+    public void test() throws Exception {
         testExecution.assertExecuted(TComp.class);
         
 		long playerId = 10086;
@@ -60,16 +57,17 @@ public class TBootstrap {
         player.player.dosomething();
         testExecution.assertExecuted(TPlayerInventory.class);
         
-        player.accept(
-                RunnableAction.of((TPlayer p, TPlayerInventory m) -> {
-                    Assert.assertNotNull(p);
-                    Assert.assertNotNull(m);
-                    m.dosomething();
-                }));
-        
+        player.accept(new TIAction.Msg());
         TimeUnit.MILLISECONDS.sleep(100);//wait queued executed
         testExecution.assertExecuted(TPlayerInventory.class);
-        
+
+        player.accept((TPlayer tp) -> {
+            Assert.assertNotNull(tp);
+            testExecution.executing(TPlayerInventory.class);
+        });
+        TimeUnit.MILLISECONDS.sleep(100);//wait queued executed
+        testExecution.assertExecuted(TPlayerInventory.class);
+
         player.post(new TEvent());
         testExecution.assertExecuted(TPlayerInventory.class);
         
