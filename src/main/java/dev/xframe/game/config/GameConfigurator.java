@@ -58,10 +58,11 @@ public final class GameConfigurator implements Loadable {
 	}
 
 	private PlayerFactory newPlayerFactory(Class<?> assemble) {
-		PlayerFactory factory = XLambda.createByConstructor(PlayerFactory.class, assemble, long.class, TaskLoop.class);
+		final ModularAdapter _adapter = modularAdapter;
+		final PlayerFactory  _factory = XLambda.createByConstructor(PlayerFactory.class, assemble, long.class, TaskLoop.class);
 		return (long playerId, TaskLoop loop) -> {
-					Player player = factory.newPlayer(playerId, loop);
-					modularAdapter.assemble(player);
+					Player player = _factory.newPlayer(playerId, loop);
+					_adapter.assemble(player);
 					return player;
 				};
 	}

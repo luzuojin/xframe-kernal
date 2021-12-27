@@ -76,7 +76,7 @@ public class BeanContainer implements BeanFetcher {
 	//完成Bean初始化过程
 	protected void loadBeanExec(BeanBinder binder, Object bean) {
 		binder.integrate(bean, this);
-		BeanLoader.doLoad(bean);
+		BeanLoader.doLoad0(bean);
 	}
 
 	public void integrate() {
