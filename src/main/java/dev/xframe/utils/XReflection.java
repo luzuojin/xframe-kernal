@@ -2,13 +2,7 @@ package dev.xframe.utils;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.SerializedLambda;
-import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -40,9 +34,7 @@ public class XReflection extends SecurityManager {
     
     /**
      * @param cls
-     * @param name
-     * @param parameterTypes
-     * @return method
+     * @param predicate
      */
     public static List<Method> getMethods(Class<?> cls, Predicate<Method> predicate) {
         return getMethods0(cls, predicate, new ArrayList<>());
@@ -51,10 +43,9 @@ public class XReflection extends SecurityManager {
         if(cls == null) {
             return dest;
         }
-        Method res = null;
         for (Method m : cls.getDeclaredMethods()) {
             if (predicate.test(m)) {
-                XReflection.setAccessible(res);
+                XReflection.setAccessible(m);
                 dest.add(m);
             }
         }

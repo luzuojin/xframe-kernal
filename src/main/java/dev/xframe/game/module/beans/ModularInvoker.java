@@ -7,10 +7,17 @@ import dev.xframe.game.module.ModularMethods;
  * @author luzj
  */
 public interface ModularInvoker {
+
+	ModularInvoker Empty = new ModularInvoker() {
+		public void invokeLoad(ModuleContainer mc, Object module) {}
+		public void invokeUnload(ModuleContainer mc, Object module) {}
+		public void invokeSave(ModuleContainer mc, Object module) {}
+		public void invokeTick(ModuleContainer mc, Object module) {}
+	};
 	
-	public void invokeLoad(ModuleContainer mc);
-	public void invokeUnload(ModuleContainer mc);
-	public void invokeSave(ModuleContainer mc);
-	public void invokeTick(ModuleContainer mc);
+	void invokeLoad(ModuleContainer mc, Object module);
+	void invokeUnload(ModuleContainer mc, Object module);
+	void invokeSave(ModuleContainer mc, Object module);
+	void invokeTick(ModuleContainer mc, Object module);
 
 }

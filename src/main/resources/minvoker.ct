@@ -16,15 +16,15 @@ public class ${invoker_name} implements dev.xframe.game.module.beans.ModularInvo
 	///
 
     ///load_method
-	public void invokeLoad(dev.xframe.game.module.beans.ModuleContainer mc) {
+	public void invokeLoad(dev.xframe.game.module.beans.ModuleContainer mc, Object module) {
 		try {
-		if(!mc.isModuleLoaded(${module_index})) {
-			${module_name} _local_name = (${module_name}) mc.getBean(${module_index});
-            ${methods_call}
-            /*
-            ${method_call};
-            */
-		}
+            if(!mc.isModuleLoaded(${module_index})) {
+                ${module_name} _local_name = (${module_name}) module;
+                ${methods_call}
+                /*
+                ${method_call};
+                */
+            }
 		} catch (Throwable throwable) {
             _logger.warn("load [${module_name}] error");
             dev.xframe.utils.XCaught.throwException(throwable);
@@ -33,10 +33,10 @@ public class ${invoker_name} implements dev.xframe.game.module.beans.ModularInvo
 	///
 	
 	///unload_method
-	public void invokeUnload(dev.xframe.game.module.beans.ModuleContainer mc) {
+	public void invokeUnload(dev.xframe.game.module.beans.ModuleContainer mc, Object module) {
 		try {
 			if(mc.isModuleLoaded(${module_index})) {
-				${module_name} _local_name = (${module_name}) mc.getBean(${module_index});
+				${module_name} _local_name = (${module_name}) module;
 	            ${methods_call}
 	            /*
 	            ${method_call};
@@ -49,10 +49,10 @@ public class ${invoker_name} implements dev.xframe.game.module.beans.ModularInvo
 	///
 	
 	///save_method
-	public void invokeSave(dev.xframe.game.module.beans.ModuleContainer mc) {
+	public void invokeSave(dev.xframe.game.module.beans.ModuleContainer mc, Object module) {
 		try {
 			if(mc.isModuleLoaded(${module_index})) {
-				${module_name} _local_name = (${module_name}) mc.getBean(${module_index});
+				${module_name} _local_name = (${module_name}) module;
 	            ${methods_call}
 	            /*
 	            ${method_call};
@@ -65,10 +65,10 @@ public class ${invoker_name} implements dev.xframe.game.module.beans.ModularInvo
 	///
 	
 	///tick_method
-    public void invokeTick(dev.xframe.game.module.beans.ModuleContainer mc) {
+    public void invokeTick(dev.xframe.game.module.beans.ModuleContainer mc, Object module) {
         try {
             if(mc.isModuleLoaded(${module_index})) {
-                ${module_name} _local_name = (${module_name}) mc.getBean(${module_index});
+                ${module_name} _local_name = (${module_name}) module;
                 ${methods_call}
                 /*
                 ${method_call};

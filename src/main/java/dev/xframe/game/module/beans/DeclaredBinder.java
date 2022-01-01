@@ -1,13 +1,13 @@
 package dev.xframe.game.module.beans;
 
-import java.lang.reflect.Field;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import dev.xframe.inject.beans.BeanBinder;
 import dev.xframe.inject.beans.Injector;
 import dev.xframe.inject.beans.Injector.Member;
 import dev.xframe.utils.XReflection;
+
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class DeclaredBinder extends ModularBinder {
 
@@ -45,12 +45,7 @@ public class DeclaredBinder extends ModularBinder {
 			}
 		}
 		//empty invoker
-		invoker = new ModularInvoker() {
-			public void invokeUnload(ModuleContainer mc) {}
-			public void invokeSave(ModuleContainer mc) {}
-			public void invokeLoad(ModuleContainer mc) {}
-			public void invokeTick(ModuleContainer mc) {}
-		};
+		invoker = ModularInvoker.Empty;
 	}
 
 	private ModularListener newMemberListener(final Member member) {
