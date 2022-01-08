@@ -1,20 +1,26 @@
 package dev.xframe.event;
 
-import java.util.function.Consumer;
-
 import dev.xframe.utils.XGeneric;
+
+import java.util.function.Consumer;
 
 public abstract class Subscriber {
     
-    final int group;
-    final int type;
+    protected final int group;
+    protected final int type;
     
     public Subscriber(int group, int type) {
         this.group = group;
         this.type = type;
     }
-    
-    public abstract void onEvent(Object event) throws Exception;
+	public int group() {
+		return group;
+	}
+	public int type() {
+		return type;
+	}
+
+	public abstract void onEvent(Object event) throws Exception;
     
     public static <X> Subscriber of(int group, Consumer<X> sub) {
     	Class<?> evtType = XGeneric.parse(sub.getClass(), Consumer.class).getOnlyType();

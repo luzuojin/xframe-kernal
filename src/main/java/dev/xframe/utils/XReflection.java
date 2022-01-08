@@ -1,8 +1,18 @@
 package dev.xframe.utils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.SerializedLambda;
-import java.lang.reflect.*;
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -30,8 +40,25 @@ public class XReflection extends SecurityManager {
         int len = classes.length;
         return len > index ? classes[index] : classes[len - 1];
     }
-    
-    
+
+    /**
+     * get resource in classpath or as file
+     * @param res
+     * @return
+     */
+    public static InputStream getResourceAsStream(String res) {
+        InputStream input = getCallerClass().getClassLoader().getResourceAsStream(res);
+        if(input == null) {
+            File f = new File(res);
+            if(f.exists()) {
+                try {
+                    input = new FileInputStream(f);
+                } catch (FileNotFoundException e) {}//ignore
+            }
+        }
+        return input;
+    }
+
     /**
      * @param cls
      * @param predicate
@@ -146,7 +173,6 @@ public class XReflection extends SecurityManager {
     }
 
     /**
-     * @param <T>
      * @param clazz
      * @param parameterTypes
      * @return declared constructor
