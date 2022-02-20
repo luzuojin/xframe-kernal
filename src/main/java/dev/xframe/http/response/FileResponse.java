@@ -101,10 +101,14 @@ public abstract class FileResponse extends WriterResponse {
 		public Sys(File file) {
 			super(ContentType.mime(file.getName()));
 			assert file.exists() && !file.isHidden();
-			this.setFileName(file.getName());
 			this.file = file;
 		}
-		
+
+		public Sys setFileName() {
+			this.setFileName(file.getName());
+			return this;
+		}
+
 		public long lastModified() {
 			return file.lastModified();
 		}
