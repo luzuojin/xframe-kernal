@@ -1,14 +1,5 @@
 package dev.xframe.http.response;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-
 import dev.xframe.http.Request;
 import dev.xframe.http.Response;
 import dev.xframe.utils.XDateFormatter;
@@ -27,11 +18,29 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
 public abstract class FileResponse extends WriterResponse {
 	int cacheTime = 3600;//s (1h)
 	
 	public FileResponse(ContentType type) {
 		this.set(type);
+	}
+
+	public FileResponse forceDownload() {
+		this.set(ContentType.FORCE_DOWNLOAD);
+		return this;
+	}
+	public FileResponse setFileName(String fileName) {
+		this.setHeader(HttpHeaderNames.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", fileName));
+		return this;
 	}
 	
 	public abstract long lastModified();
@@ -92,6 +101,7 @@ public abstract class FileResponse extends WriterResponse {
 		public Sys(File file) {
 			super(ContentType.mime(file.getName()));
 			assert file.exists() && !file.isHidden();
+			this.setFileName(file.getName());
 			this.file = file;
 		}
 		

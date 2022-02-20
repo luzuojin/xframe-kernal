@@ -8,6 +8,7 @@ public class ContentType {
     public static final ContentType FILE = of("application/octet-stream");
     public static final ContentType JSONP = of("application/javascript; charset=UTF-8");
     public static final ContentType BINARY = of("application/octet-stream");
+    public static final ContentType FORCE_DOWNLOAD = of("application/force-download");
 	
 	public final String val;
 	public ContentType(String val) {

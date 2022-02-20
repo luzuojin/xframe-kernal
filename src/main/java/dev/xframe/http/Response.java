@@ -1,15 +1,15 @@
 package dev.xframe.http;
 
-import java.io.File;
-import java.util.Map;
-import java.util.TreeMap;
-
 import dev.xframe.http.response.ContentType;
 import dev.xframe.http.response.FileResponse;
 import dev.xframe.http.response.PlainResponse;
 import dev.xframe.http.response.ResponseWriter;
 import dev.xframe.utils.XStrings;
 import io.netty.handler.codec.http.HttpResponseStatus;
+
+import java.io.File;
+import java.util.Map;
+import java.util.TreeMap;
 
 
 /**
@@ -42,7 +42,7 @@ public class Response {
 
     private ResponseWriter writer;
     private ContentType type = ContentType.TEXT;
-    private Map<String, String> headers = new TreeMap<>();
+    private Map<CharSequence, String> headers = new TreeMap<>();
     private HttpResponseStatus status = HttpResponseStatus.OK;
 
     protected Response() {
@@ -55,7 +55,7 @@ public class Response {
         setWriter(writer);
     }
 
-    public Map<String, String> headers() {
+    public Map<CharSequence, String> headers() {
         return headers;
     }
 
@@ -72,7 +72,7 @@ public class Response {
         return this;
     }
 
-    public Response setHeader(String name, String value) {
+    public Response setHeader(CharSequence name, String value) {
         this.headers.put(name, value);
         return this;
     }

@@ -1,13 +1,13 @@
 package dev.xframe.http.response;
 
-import java.util.Map;
-
 import dev.xframe.http.Response;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpVersion;
+
+import java.util.Map;
 
 abstract class WriterResponse extends Response implements ResponseWriter {
 	
@@ -26,7 +26,7 @@ abstract class WriterResponse extends Response implements ResponseWriter {
 	}
 
 	private void setRespHeaders(HttpResponse resp) {
-		for(Map.Entry<String, String> header : headers().entrySet()) {
+		for(Map.Entry<CharSequence, String> header : headers().entrySet()) {
 			resp.headers().set(header.getKey(), header.getValue());
 		}
 	}
