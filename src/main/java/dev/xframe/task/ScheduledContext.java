@@ -1,11 +1,11 @@
 package dev.xframe.task;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import dev.xframe.inject.Bean;
 import dev.xframe.task.scheduled.ScheduledTask;
 import dev.xframe.utils.XProperties;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Bean
 public class ScheduledContext {
@@ -16,19 +16,19 @@ public class ScheduledContext {
 
     private TaskLoop loop;
 
-    private void ensure() {
+    private TaskLoop start() {
         if(!running.get() && running.compareAndSet(false, true)) {
-            executor = TaskExecutors.newFixed("scheduled", threads());
+            executor = TaskExecutors.newFixed("cron", threads());
             loop = new TaskLoop.Direct(executor);
         }
+        return loop;
     }
     private int threads() {
         return XProperties.getAsInt("xframe.scheduled.threads", 1);
     }
 
     public TaskLoop loop() {
-        this.ensure();
-        return loop;
+        return loop == null ? start() : loop;
     }
 
     public void once(Runnable task, int delay) {

@@ -1,8 +1,5 @@
 package dev.xframe.game.module;
 
-import java.util.List;
-import java.util.function.Predicate;
-
 import dev.xframe.game.module.beans.AgentBinder;
 import dev.xframe.game.module.beans.DeclaredBinder;
 import dev.xframe.game.module.beans.MInvokerFactory;
@@ -14,11 +11,15 @@ import dev.xframe.inject.Inject;
 import dev.xframe.inject.beans.BeanBinder;
 import dev.xframe.inject.beans.BeanIndexing;
 import dev.xframe.inject.beans.BeanPretreater;
+import dev.xframe.inject.beans.BeanPretreater.Annotated;
 import dev.xframe.inject.beans.BeanProvider;
 import dev.xframe.inject.beans.BeanRegistrator;
 import dev.xframe.inject.beans.Injector;
 import dev.xframe.inject.code.Codes;
 import dev.xframe.utils.XReflection;
+
+import java.util.List;
+import java.util.function.Predicate;
 
 @Bean
 public class ModularContext {
@@ -70,9 +71,8 @@ public class ModularContext {
 	}
 
 	private List<Class<?>> pretreatModules(List<Class<?>> scanned) {
-	    @SuppressWarnings("unchecked")
-	    BeanPretreater.Annotated anns = new BeanPretreater.Annotated(new Class[] {ModularAgent.class, ModularComponent.class, Module.class});
-		return new BeanPretreater(scanned).filter(isModularClass()).pretreat(anns.comparator()).collect();
+		Annotated annotated = new Annotated(ModularAgent.class, ModularComponent.class, Module.class);
+		return new BeanPretreater(scanned).filter(isModularClass()).pretreat(annotated.comparator()).collect();
 	}
 	private Predicate<Class<?>> isModularClass() {
 		return c -> isModularClass(c);

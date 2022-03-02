@@ -58,7 +58,7 @@ public class ApplicationContext {
 	}
 	
 	public static void registBean(BeanBinder binder) {
-	    gContainer.regist(binder);;
+	    gContainer.regist(binder);
 	}
 	
 	public static class Internal {

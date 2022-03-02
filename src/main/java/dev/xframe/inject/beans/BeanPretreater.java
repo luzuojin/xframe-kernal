@@ -1,17 +1,5 @@
 package dev.xframe.inject.beans;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
 import dev.xframe.inject.Dependence;
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.Loadable;
@@ -26,6 +14,18 @@ import javassist.CtClass;
 import javassist.NotFoundException;
 import javassist.expr.ExprEditor;
 import javassist.expr.NewExpr;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * 分析依赖关系
@@ -258,25 +258,43 @@ public class BeanPretreater implements Iterable<Class<?>> {
     }
 
     public static class Annotated {
-        final Class<? extends Annotation>[] annos;
-        public Annotated(Class<? extends Annotation>[] annos) {
-            this.annos = annos;
+        final Class<? extends Annotation>[] annotateds;
+        public Annotated(Class<? extends Annotation>... annotateds) {
+            this.annotateds = annotateds;
         }
-        int annoOrder(Class<?> c) {
-            for (int i = 0; i < annos.length; i++) {
-                if(c.isAnnotationPresent(annos[i])) {
+        public int getPriority(Class<?> c) {
+            for (int i = 0; i < annotateds.length; i++) {
+                if(c.isAnnotationPresent(annotateds[i])) {
                     return i;
                 }
             }
-            return annos.length;
-        }
-        /**按照给定的顺序从小到大排列*/
-        public Function<Class<?>, Comparable<?>> comparator() {
-            return this::annoOrder;
+            return annotateds.length;
         }
         public boolean isPresient(Class<?> c) {
-            return Arrays.stream(annos).filter(a->c.isAnnotationPresent(a)).findAny().isPresent();
+            return Arrays.stream(annotateds).anyMatch(a->c.isAnnotationPresent(a));
         }
+        public Function<Class<?>, Comparable<?>> comparator() {
+            return this::getPriority;
+        }
+    }
+    public static class Composited {
+        final Class<? extends Annotation> composited;
+        public Composited(Class<? extends Annotation> composited) {
+            this.composited = composited;
+        }
+        public int getPriority(Class<?> c) {
+            return Arrays.stream(c.getInterfaces()).anyMatch(i->i.isAnnotationPresent(composited)) ? -1 : 1;
+        }
+        public Function<Class<?>, Comparable<?>> comparator() {
+            return this::getPriority;
+        }
+    }
+
+    public static Function<Class<?>, Comparable<?>> comparator(Annotated annotated, Class<? extends Annotation> composited) {
+        return comparator(annotated, new Composited(composited));
+    }
+    public static Function<Class<?>, Comparable<?>> comparator(Annotated annotated, Composited composited) {
+        return c -> 2 * annotated.getPriority(c) + composited.getPriority(c);
     }
 
     public static <T> List<T> makeOrderly(List<T> list, Function<T, Comparable<?>> toComparable) {

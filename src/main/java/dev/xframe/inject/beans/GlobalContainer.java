@@ -1,12 +1,5 @@
 package dev.xframe.inject.beans;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
-
 import dev.xframe.inject.Component;
 import dev.xframe.inject.Composite;
 import dev.xframe.inject.Configurator;
@@ -21,6 +14,13 @@ import dev.xframe.inject.code.Factory;
 import dev.xframe.inject.code.FactoryBuilder;
 import dev.xframe.inject.code.ProxyBuilder;
 import dev.xframe.utils.XReflection;
+
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
  * 
@@ -63,7 +63,7 @@ public class GlobalContainer extends BeanContainer implements BeanProvider, Bean
         //@Repository可继承,只处理实现类(接口/父类不处理)
         Predicate<Class<?>> isBeanClass = c->anns.isPresient(c) && (!c.isAnnotationPresent(Repository.class) || XReflection.isImplementation(c));
         Predicate<Class<?>> isPrototype = c->c.isAnnotationPresent(Prototype.class);
-        new BeanPretreater(scanned).filter(isBeanClass).pretreat(anns.comparator(), isPrototype).forEach(c->reg.regist(newBinder(c)));
+        new BeanPretreater(scanned).filter(isBeanClass).pretreat(BeanPretreater.comparator(anns, Composite.class), isPrototype).forEach(c->reg.regist(newBinder(c)));
     }
     private void registDiscovery(List<Class<?>> scanned, BeanIndexes reg) {
         this.integrate(reg.getBinder(BeanDiscovery.class));   //提前组装完成

@@ -47,7 +47,7 @@ public class XReflection extends SecurityManager {
      * @return
      */
     public static InputStream getResourceAsStream(String res) {
-        InputStream input = getCallerClass().getClassLoader().getResourceAsStream(res);
+        InputStream input = Thread.currentThread().getContextClassLoader().getResourceAsStream(res);
         if(input == null) {
             File f = new File(res);
             if(f.exists()) {

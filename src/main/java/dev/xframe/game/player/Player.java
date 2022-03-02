@@ -1,49 +1,20 @@
 package dev.xframe.game.player;
 
-import dev.xframe.game.action.Action;
-import dev.xframe.game.action.Actions;
-import dev.xframe.game.action.ActionTask;
-import dev.xframe.game.action.Runnable;
+import dev.xframe.game.action.Actor;
 import dev.xframe.game.module.ModuleType;
 import dev.xframe.game.module.beans.ModuleContainer;
 import dev.xframe.task.TaskLoop;
 
-public abstract class Player {
+public abstract class Player extends Actor {
 
-	private TaskLoop loop;
-	private long id;
     private int loaded;
     //set by player factory
     ModuleContainer mc;
     
     public Player(long id, TaskLoop loop) {
-        this.id = id;
-        this.loop = loop;
+        super(id, loop);
     }
     
-    public long id() {
-    	return id;
-    }
-    public TaskLoop loop() {
-        return this.loop;
-    }
-
-    public final <T extends Player, M> void accept(M msg) {
-        exec(Actions.makeByMsg(this, msg), msg);
-    }
-    public final <T extends Player> void accept(Runnable<T> runnable) {
-        exec(Actions.makeByRunnable(this, runnable), runnable);
-    }
-    @SuppressWarnings("unchecked")
-    private <T extends Player, M> void exec(Action<T, M> action, M msg) {
-        final T plr = (T) this;
-        if(loop.inLoop()) {
-            ActionTask.exec(action, plr, msg);
-        } else {
-            ActionTask.of(action, plr, msg).checkin();
-        }
-    }
-
     public synchronized void load(ModuleType type) {
     	this.mc.loadModules(type);
     	this.loaded |= type.code;
