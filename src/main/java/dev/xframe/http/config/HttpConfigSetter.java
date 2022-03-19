@@ -1,13 +1,14 @@
 package dev.xframe.http.config;
 
-import java.util.function.Consumer;
-
 import dev.xframe.http.Response;
+import dev.xframe.http.service.rest.ArgParsers;
 import dev.xframe.inject.Configurator;
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.Loadable;
 import dev.xframe.inject.Providable;
 import dev.xframe.utils.XStrings;
+
+import java.util.function.Consumer;
 
 @Configurator
 @Providable
@@ -52,6 +53,8 @@ public class HttpConfigSetter implements HttpConfig, Loadable {
         setErrorHandler(v->errorhandler=v);
         setBodyDecoder(v->bodyDecoder=v);
         setRespEncoder(v->respEncoder=v);
+
+        setArgParser(ArgParsers::offer);
     }
 
     public void setInterceptor(Consumer<HttpInterceptor> setter) {
@@ -69,5 +72,9 @@ public class HttpConfigSetter implements HttpConfig, Loadable {
     }
     public void setRespEncoder(Consumer<RespEncoder> setter) {
         setter.accept(o -> (Response) o);
+    }
+
+    public void setArgParser(ArgParserSetter setter) {
+        //...
     }
 }

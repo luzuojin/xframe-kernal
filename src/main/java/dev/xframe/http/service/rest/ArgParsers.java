@@ -1,40 +1,55 @@
 package dev.xframe.http.service.rest;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Parameter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
-
 import dev.xframe.http.Request;
 import dev.xframe.http.config.BodyDecoder;
 import dev.xframe.http.service.path.PathMatcher;
+import dev.xframe.utils.XDateFormatter;
 import dev.xframe.utils.XStrings;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Parameter;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 public class ArgParsers {
 	
 	/**
 	 * body之外的参数均由string转换
 	 */
-	static final Map<Class<?>, Function<String, Object>> simpleParsers = new HashMap<>();
+	static final Map<Class<?>, Function<String, ?>> TypedParsers = new HashMap<>();
 	static {
-		offer(int.class, Integer::parseInt);
-		offer(Integer.class, Integer::parseInt);
-		offer(long.class, Long::parseLong);
-		offer(Long.class, Long::parseLong);
 		offer(boolean.class, Boolean::parseBoolean);
+		offer(int.class, Integer::parseInt);
+		offer(float.class, Float::parseFloat);
+		offer(long.class, Long::parseLong);
+		offer(double.class, Double::parseDouble);
+		offer(Integer.class, Integer::parseInt);
+		offer(Long.class, Long::parseLong);
+		offer(Float.class, Float::parseFloat);
 		offer(Boolean.class, Boolean::parseBoolean);
-		offer(String.class, s->s);
+		offer(Double.class, Double::parseDouble);
+		offer(String.class, Function.identity());
+		offer(LocalDate.class, XDateFormatter::toLocalDate);
+		offer(LocalTime.class, XDateFormatter::toLocalTime);
+		offer(Date.class, XDateFormatter::toDate);
+		offer(Timestamp.class, XDateFormatter::toTimestamp);
+		offer(LocalDateTime.class, XDateFormatter::toLocalDateTime);
 	}
-	static Function<String, Object> getParser(Class<?> type) {
-		Function<String, Object> func = simpleParsers.get(type);
+	static Function<String, ?> getParser(Class<?> type) {
+		Function<String, ?> func = TypedParsers.get(type);
 		if(func == null)
-			throw new IllegalArgumentException(String.format("Unsupported rest arg type[%s], set parser by ArgParsers.offer", type.getName()));
+			throw new IllegalArgumentException(String.format("Unsupported rest arg type[%s], set parser by HttpConfigSetter or ArgParsers.offer", type.getName()));
 		return func;
 	}
 	
-	public static void offer(Class<?> c, Function<String, Object> parser) {
-		simpleParsers.put(c, parser);
+	public static <T> void offer(Class<T> c, Function<String, T> parser) {
+		TypedParsers.put(c, parser);
 	}
 	
 	public static ArgParser of(Parameter p, BodyDecoder b) {
@@ -77,7 +92,7 @@ public class ArgParsers {
 		}
 	}
 	static class ParamParser implements CompletableArgParser {
-		Function<String, Object> parser;
+		Function<String, ?> parser;
 		String key;
 		public void complete(Parameter p, BodyDecoder b) {
 			key = XStrings.orElse(p.getAnnotation(HttpArgs.Param.class).value(), p.getName());
@@ -88,7 +103,7 @@ public class ArgParsers {
 		}
 	}
 	static class PathParser implements CompletableArgParser {
-		Function<String, Object> parser;
+		Function<String, ?> parser;
 		String key;
 		public void complete(Parameter p, BodyDecoder b) {
 			key = XStrings.orElse(p.getAnnotation(HttpArgs.Path.class).value(), p.getName());
@@ -99,7 +114,7 @@ public class ArgParsers {
 		}
 	}
 	static class HeaderParser implements CompletableArgParser {
-		Function<String, Object> parser;
+		Function<String, ?> parser;
 		String key;
 		public void complete(Parameter p, BodyDecoder b) {
 			key = XStrings.orElse(p.getAnnotation(HttpArgs.Header.class).value(), p.getName());
