@@ -8,6 +8,7 @@ import dev.xframe.inject.Loadable;
 import dev.xframe.inject.Providable;
 import dev.xframe.utils.XStrings;
 
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 @Configurator
@@ -18,11 +19,12 @@ public class HttpConfigSetter implements HttpConfig, Loadable {
     private HttpInterceptor interceptor;
     @Inject
     private HttpListener listener;
-    
+
+    private Executor serviceExecutor;
     private ErrorHandler errorhandler;
     private BodyDecoder bodyDecoder;
     private RespEncoder respEncoder;
-    
+
     @Override
     public final HttpInterceptor getInterceptor() {
         return interceptor;
@@ -31,7 +33,10 @@ public class HttpConfigSetter implements HttpConfig, Loadable {
     public HttpListener getListener() {
         return listener;
     }
-
+    @Override
+    public Executor getServiceExecutor() {
+        return serviceExecutor;
+    }
     @Override
     public final ErrorHandler getErrorhandler() {
         return errorhandler;
@@ -44,12 +49,13 @@ public class HttpConfigSetter implements HttpConfig, Loadable {
     public final RespEncoder getRespEncoder() {
         return respEncoder;
     }
-    
+
     @Override
     public final void load() {
         setInterceptor(v->interceptor=v);
         setListener(v->listener=v);
-        
+        setServiceExecutor(v->serviceExecutor=v);
+
         setErrorHandler(v->errorhandler=v);
         setBodyDecoder(v->bodyDecoder=v);
         setRespEncoder(v->respEncoder=v);
@@ -57,11 +63,14 @@ public class HttpConfigSetter implements HttpConfig, Loadable {
         setArgParser(ArgParsers::offer);
     }
 
+    public void setServiceExecutor(Consumer<Executor> setter) {
+        setter.accept(Runnable::run);//run directly
+    }
     public void setInterceptor(Consumer<HttpInterceptor> setter) {
-        setter.accept(interceptor);
+        //...
     }
     public void setListener(Consumer<HttpListener> setter) {
-        setter.accept(listener);
+        //...
     }
 
     public void setErrorHandler(Consumer<ErrorHandler> setter) {

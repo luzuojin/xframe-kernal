@@ -1,45 +1,55 @@
 package dev.xframe.http.request;
 
+import dev.xframe.utils.XStrings;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.util.CharsetUtil;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpRequest;
 
 public class HttpBody {
-    
-    FullHttpRequest request;
-    
+
+    static final byte[] Empty = new byte[0];
+
     transient Object data;
         
     public HttpBody(FullHttpRequest request) {
-        this.request = request;
+        if(isMultipart(request)) {
+            this.data = new MultiPart(request);
+        } else {
+            ByteBuf content = request.content();
+            if(content.readableBytes() == 0) {
+                this.data = Empty;
+            } else {
+                this.data = ByteBufUtil.getBytes(content);
+            }
+        }
     }
-    
-    protected ByteBuf content() { 
-        return request.content();
+
+    private boolean isMultipart(HttpRequest request) {
+        String contentType = request.headers().get(HttpHeaderNames.CONTENT_TYPE);
+        return !XStrings.isEmpty(contentType) && contentType.startsWith("multipart/form-data;");
+    }
+
+    private Object setData(Object data) {
+        return (this.data = data);
     }
     
     public byte[] toBytes() {
-    	return ByteBufUtil.getBytes(content());
+    	return (byte[]) data;
     }
     
     public QueryString toQueryString() {
-    	return (QueryString) (data == null ? setData(new QueryString(content().toString(CharsetUtil.UTF_8))) : data);
+        return (QueryString) (data instanceof byte[] ? setData(new QueryString(XStrings.newStringUtf8((byte[]) data))) : data);
     }
     
     public MultiPart toMultiPart() {
-        return (MultiPart) (data == null ? setData(new MultiPart(request)) : data);
+        return (MultiPart) data;
     }
-    
-	private Object setData(Object data) {
-		return (this.data = data);
-	}
 
 	public void destroy() {
 		if(data instanceof MultiPart) {
 			((MultiPart) data).destroy();
 		}
-		request.release();
 	}
-    
 }

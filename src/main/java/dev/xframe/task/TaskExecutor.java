@@ -1,11 +1,13 @@
 package dev.xframe.task;
 
+import java.util.concurrent.Executor;
+
 /**
  * 
  * @author luzj
  *
  */
-public interface TaskExecutor {
+public interface TaskExecutor extends Executor {
     
     default TaskLoop newLoop() {
         return new TaskLoop.Queued(this);
