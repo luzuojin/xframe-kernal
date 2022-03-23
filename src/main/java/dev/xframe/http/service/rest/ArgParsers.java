@@ -49,9 +49,15 @@ public class ArgParsers {
 	}
 	
 	public static <T> void offer(Class<T> c, Function<String, T> parser) {
-		TypedParsers.put(c, parser);
+		TypedParsers.put(c, c.isPrimitive() ? primitiveParser(parser) : objectParser(parser));
 	}
-	
+	private static <T> Function<String, T> primitiveParser(Function<String, T> parser) {
+		return v -> parser.apply(XStrings.orElse(v, "0"));//default: 0/false
+	}
+	private static <T> Function<String, Object> objectParser(Function<String, T> parser) {
+		return v -> XStrings.isEmpty(v) ? null : parser.apply(v);//default: null
+	}
+
 	public static ArgParser of(Parameter p, BodyDecoder b) {
 		CompletableArgParser ap = newArgParser(p);
 		ap.complete(p, b);
