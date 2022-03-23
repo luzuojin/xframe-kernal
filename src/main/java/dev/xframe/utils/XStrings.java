@@ -24,17 +24,18 @@ public class XStrings {
     public static boolean orElse(String val, boolean def) {
 		return isEmpty(val) ? def : Boolean.parseBoolean(val);
 	}
-    
+
     public static boolean isEmpty(String x) {
+        return x == null || x.length() == 0;
+    }
+    public static boolean isBlank(String x) {
         int len;
         if (x == null || (len = x.length()) == 0)
             return true;
-
         while (len-- > 0) {
             if (!Character.isWhitespace(x.charAt(len)))
                 return false;
         }
-
         return true;
     }
     
