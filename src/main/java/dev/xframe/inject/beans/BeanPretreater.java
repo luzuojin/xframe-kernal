@@ -294,7 +294,7 @@ public class BeanPretreater implements Iterable<Class<?>> {
         return comparator(annotated, new Composited(composited));
     }
     public static Function<Class<?>, Comparable<?>> comparator(Annotated annotated, Composited composited) {
-        return c -> 2 * annotated.getPriority(c) + composited.getPriority(c);
+        return c -> 10 * annotated.getPriority(c) + composited.getPriority(c);
     }
 
     public static <T> List<T> makeOrderly(List<T> list, Function<T, Comparable<?>> toComparable) {
