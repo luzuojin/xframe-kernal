@@ -1,8 +1,5 @@
 package dev.xframe.game.cmd;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import dev.xframe.game.player.Player;
 import dev.xframe.game.player.PlayerProvider;
 import dev.xframe.inject.Inject;
@@ -11,8 +8,10 @@ import dev.xframe.net.cmd.Command;
 import dev.xframe.net.codec.IMessage;
 import dev.xframe.net.session.Session;
 import dev.xframe.utils.XGeneric;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-abstract class PlayerCmd<T extends Player, M> implements Command, Loadable {
+public abstract class PlayerCmd<T extends Player, M> implements Command, Loadable {
     
     protected static Logger logger = LoggerFactory.getLogger(PlayerCmd.class);
     
@@ -22,10 +21,14 @@ abstract class PlayerCmd<T extends Player, M> implements Command, Loadable {
     ExplicitMsgParser eParser;
     
     @Override
-    public void load() {
+    public final void load() {
         eParser = ExplicitMsgParsers.newParser(getExplicitCls());
+        onLoad();
     }
-    
+
+    protected void onLoad() {
+    }
+
     protected Class<?> getExplicitCls() {
         return XGeneric.parse(getClass(), PlayerCmd.class).getByIndex(1);
     }

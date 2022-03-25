@@ -17,11 +17,10 @@ public abstract class ModularCmd<T extends Player, V, M> extends LoopedCmd<T, M>
 	private ModularAdapter mAdapter;
 	private MTypedLoader mLoader;
     @Override
-    public void load() {
-        super.load();
+    protected void onLoad() {
         mLoader = mAdapter.getTypedLoader(getModuleCls());
     }
-    
+
     protected Class<?> getModuleCls() {
         return XGeneric.parse(getClass(), ModularCmd.class).getByIndex(1);
     }
