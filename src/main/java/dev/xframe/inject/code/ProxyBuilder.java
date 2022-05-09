@@ -1,13 +1,5 @@
 package dev.xframe.inject.code;
 
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import dev.xframe.utils.XCaught;
 import dev.xframe.utils.XReflection;
 import javassist.CannotCompileException;
@@ -19,6 +11,15 @@ import javassist.CtMethod;
 import javassist.CtNewConstructor;
 import javassist.CtNewMethod;
 import javassist.NotFoundException;
+
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 public class ProxyBuilder {
     
@@ -46,7 +47,7 @@ public class ProxyBuilder {
         try {
             ClassPool pool = CtHelper.getClassPool();
             CtClass ctParent = pool.get(basic.getName());
-            String proxyName = cts.get("proxy_name").replace("${proxy_basic}", basic.getName());
+            String proxyName = cts.get("proxy_name").replace("${proxy_basic}", delegate.getName());
             
             Class<?> proxyClass = CtHelper.defineClass(proxyName);
             
@@ -67,7 +68,7 @@ public class ProxyBuilder {
         }
     }
     
-    private static <T> void makeMethodsInvokeCode(CtClass ctClass, CtClass ctParent, Class<?> delegate) throws NotFoundException, CannotCompileException {
+    private static void makeMethodsInvokeCode(CtClass ctClass, CtClass ctParent, Class<?> delegate) throws NotFoundException, CannotCompileException {
         for (CtMethod cm : getProxyMethods(ctParent)) {
             String body = cts.get("simple_method_body").replace("${proxy_delegate}", delegate.getName()).replace("${obj_invoke_part}", makeSimpleInvokeCode(cm));
             ctClass.addMethod(CtHelper.copy(cm, body, ctClass));
@@ -84,7 +85,7 @@ public class ProxyBuilder {
         ctClass.addField(CtField.make(cts.get("delegate_field").replace("${proxy_delegate}", delegate.getName()), ctClass));
     }
     
-    private static void makeDefaultMethods(CtClass ctClass, Class<?> delegate) throws CannotCompileException, NotFoundException {
+    private static void makeDefaultMethods(CtClass ctClass, Class<?> delegate) throws CannotCompileException {
         ctClass.addConstructor(CtNewConstructor.make(new CtClass[]{}, new CtClass[0], ctClass));
         ctClass.addMethod(CtNewMethod.make(cts.get("get_delegate_method"), ctClass));
         ctClass.addMethod(CtNewMethod.make(cts.get("set_delegate_method").replace("${proxy_delegate}", delegate.getName()), ctClass));
@@ -112,8 +113,8 @@ public class ProxyBuilder {
         if (!visitedClasses.add(clazz)) return;
 
         CtClass[] ifs = clazz.getInterfaces();
-        for (int i = 0; i < ifs.length; i++)
-            getProxyMethods(hash, from, ifs[i], visitedClasses);
+        for (CtClass anIf : ifs)
+            getProxyMethods(hash, from, anIf, visitedClasses);
 
         CtClass parent = clazz.getSuperclass();
         if (parent != null)
@@ -121,13 +122,12 @@ public class ProxyBuilder {
 
         clazz.defrost();
         CtMethod[] methods = clazz.getDeclaredMethods();
-        for (int i = 0; i < methods.length; i++) {
-            if (isVisible(methods[i].getModifiers(), from, methods[i])) {
-                CtMethod m = methods[i];
-                String key = m.getName() + ':' + m.getMethodInfo().getDescriptor();
-                CtMethod oldMethod = (CtMethod)hash.put(key, methods[i]); 
-                if (null != oldMethod && Modifier.isPublic(oldMethod.getModifiers()) && !Modifier.isPublic(methods[i].getModifiers()) ) {//取public的方法
-                    hash.put(key, oldMethod); 
+        for (CtMethod method : methods) {
+            if (isVisible(method.getModifiers(), from, method)) {
+                String key = method.getName() + ':' + method.getMethodInfo().getDescriptor();
+                CtMethod oldMethod = hash.put(key, method);
+                if (null != oldMethod && Modifier.isPublic(oldMethod.getModifiers()) && !Modifier.isPublic(method.getModifiers())) {//取public的方法
+                    hash.put(key, oldMethod);
                 }
             }
         }
@@ -141,7 +141,7 @@ public class ProxyBuilder {
         } else {
             String p = getPackageName(from);
             String q = getPackageName(meth.getDeclaringClass().getName());
-            return p == null ? q == null : p.equals(q);
+            return Objects.equals(p, q);
         }
     }
 

@@ -42,7 +42,6 @@ abstract class WriterResponse extends Response implements ResponseWriter {
         resp.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_HEADERS, "*");
         resp.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_METHODS, "*");
         resp.headers().set(HttpHeaderNames.ACCESS_CONTROL_EXPOSE_HEADERS, "*");
-        resp.headers().set(HttpHeaderNames.CONTENT_ENCODING, "UTF-8");
     }
 
 }
