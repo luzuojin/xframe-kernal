@@ -25,6 +25,9 @@ public class XStrings {
 		return isEmpty(val) ? def : Boolean.parseBoolean(val);
 	}
 
+    public static boolean isPresent(String x) {
+        return !isEmpty(x);
+    }
     public static boolean isEmpty(String x) {
         return x == null || x.length() == 0;
     }

@@ -13,8 +13,8 @@ import java.util.Date;
 public class XDateFormatter {
 	
 	static DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-	static DateTimeFormatter DATE_FORMATTER     = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-	static DateTimeFormatter TIME_FORMATTER     = DateTimeFormatter.ofPattern("HH:mm:ss");
+	static DateTimeFormatter     DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+	static DateTimeFormatter     TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss");
 
 	public static LocalDateTime toLocalDateTime(String t) {
 		return LocalDateTime.parse(t, DATETIME_FORMATTER);
@@ -31,6 +31,7 @@ public class XDateFormatter {
 	public static LocalDate toLocalDate(String t) {
 		return LocalDate.parse(t, DATE_FORMATTER);
 	}
+
 	public static LocalTime toLocalTime(String t) {
 		return LocalTime.parse(t, TIME_FORMATTER);
 	}
@@ -42,23 +43,28 @@ public class XDateFormatter {
 	public static String from(Timestamp t) {
 		return from(t.toInstant());
 	}
-	
+
 	public static String from(long n) {
 		return from(Instant.ofEpochMilli(n));
-	}
-	
-	public static String from(Instant instant) {
-		return DATETIME_FORMATTER.format(LocalDateTime.ofInstant(instant, ZoneId.systemDefault()));
 	}
 
 	public static String from(Calendar time) {
 		return from(time.toInstant());
 	}
 
-	public static String fromLocalDate(LocalDate t) {
+	public static String from(Instant instant) {
+		return from(LocalDateTime.ofInstant(instant, ZoneId.systemDefault()));
+	}
+
+	public static String from(LocalDateTime t) {
+		return DATETIME_FORMATTER.format(t);
+	}
+
+	public static String from(LocalDate t) {
 		return DATE_FORMATTER.format(t);
 	}
-	public static String fromLocalTime(LocalTime t) {
+
+	public static String from(LocalTime t) {
 		return TIME_FORMATTER.format(t);
 	}
 
