@@ -5,6 +5,7 @@ import dev.xframe.inject.Inject;
 import dev.xframe.inject.Loadable;
 import dev.xframe.inject.Prototype;
 import dev.xframe.inject.Providable;
+import dev.xframe.inject.code.Clazz;
 import dev.xframe.inject.code.Codes;
 import dev.xframe.inject.code.CtHelper;
 import javassist.CannotCompileException;
@@ -259,6 +260,7 @@ public class BeanPretreater implements Iterable<Class<?>> {
 
     public static class Annotated {
         final Class<? extends Annotation>[] annotateds;
+        @SafeVarargs
         public Annotated(Class<? extends Annotation>... annotateds) {
             this.annotateds = annotateds;
         }
@@ -271,7 +273,10 @@ public class BeanPretreater implements Iterable<Class<?>> {
             return annotateds.length;
         }
         public boolean isPresient(Class<?> c) {
-            return Arrays.stream(annotateds).anyMatch(a->c.isAnnotationPresent(a));
+            return Arrays.stream(annotateds).anyMatch(c::isAnnotationPresent);
+        }
+        public boolean isPresient(Clazz c) {
+            return Arrays.stream(annotateds).anyMatch(c::isAnnotationPresent);
         }
         public Function<Class<?>, Comparable<?>> comparator() {
             return this::getPriority;

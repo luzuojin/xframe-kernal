@@ -17,7 +17,7 @@ public class ApplicationContext {
 	final static GlobalContainer gContainer = new GlobalContainer();
 	
 	public static void initialize(String includes, String excludes) {
-		gContainer.initial(Codes.scanClasses(includes, excludes));
+		gContainer.initial(Codes.scan(includes, excludes));
 	}
 	
 	public static void reload(Predicate<Class<?>> preficate) {
@@ -25,7 +25,7 @@ public class ApplicationContext {
 			.filter(b->(b instanceof ReloadableBinder))
 			.map(b->((ReloadableBinder) b).baseClass())
 			.filter(preficate)
-			.forEach(c->reload(c));
+			.forEach(ApplicationContext::reload);
 	}
 	
 	/**
@@ -33,7 +33,7 @@ public class ApplicationContext {
      */
 	public static void reload(Class<?> clazz) {
         Object obj = gContainer.getBean(clazz);
-        if(obj != null && obj instanceof IProxy) {
+        if(obj instanceof IProxy) {
             Object delegate = ProxyBuilder.getDelegate(obj);
             if(delegate instanceof IProxy) {
                 ProxyBuilder.setDelegate(delegate, BeanHelper.inject(ProxyBuilder.getDelegate(delegate).getClass()));
@@ -48,7 +48,7 @@ public class ApplicationContext {
      */
     public static void replace(Class<?> clazz, Class<?> newClazz) {
         Object obj = gContainer.getBean(clazz);
-        if(obj != null && obj instanceof IProxy) {
+        if(obj instanceof IProxy) {
             ProxyBuilder.setDelegate(obj, ProxyBuilder.build(clazz, BeanHelper.inject(newClazz)));
         }
     }

@@ -9,11 +9,11 @@ import dev.xframe.inject.Ordered.Collection;
 import dev.xframe.inject.Prototype;
 import dev.xframe.inject.Reloadable;
 import dev.xframe.inject.Repository;
+import dev.xframe.inject.code.Clazz;
 import dev.xframe.inject.code.CompositeBuilder;
 import dev.xframe.inject.code.Factory;
 import dev.xframe.inject.code.FactoryBuilder;
 import dev.xframe.inject.code.ProxyBuilder;
-import dev.xframe.utils.XReflection;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -39,33 +39,33 @@ public class GlobalContainer extends BeanContainer implements BeanProvider, Bean
 		this.regist(BeanBinder.instanced(new BeanRegistrator(indexes)));
 	}
 	
-	public void initial(List<Class<?>> scanned) {
+	public void initial(List<Clazz> scanned) {
         this.registBeans(scanned);
         this.integrate(); //integrate beans #.load()
         this.getBean(Eventual.class).eventuate();//execute Eventuals
     }
 
-    private void registBeans(List<Class<?>> classes) {
+    private void registBeans(List<Clazz> clazzes) {
         BeanIndexes indexes = this.indexes();
-        registFactories(classes, indexes);
-        registAnnotated(classes, indexes);
-        registDiscovery(classes, indexes);
+        registFactories(clazzes, indexes);
+        registAnnotated(clazzes, indexes);
+        registDiscovery(clazzes, indexes);
     }
-    private void registFactories(List<Class<?>> scanned, BeanIndexes reg) {
-        Predicate<Class<?>> isFactory = c->c.isInterface()&&c.isAnnotationPresent(Factory.class);
-        scanned.stream().filter(isFactory).forEach(c->reg.regist(BeanBinder.instanced(FactoryBuilder.build(c, scanned), c)));
+    private void registFactories(List<Clazz> scanned, BeanIndexes reg) {
+        Predicate<Clazz> isFactory = c->c.isInterface()&&c.isAnnotationPresent(Factory.class);
+        scanned.stream().filter(isFactory).map(Clazz::toClass).forEach(c->reg.regist(BeanBinder.instanced(FactoryBuilder.build(c, scanned), c)));
     }
     @SuppressWarnings("unchecked")
-    private void registAnnotated(List<Class<?>> scanned, BeanIndexes reg) {
-        Collection<Class<?>> components = scanned.stream().filter(c->c.isAnnotation()&&c.isAnnotationPresent(Component.class)).collect(Ordered.Collection::new, (Ordered.Collection<Class<?>> c, Class<?> e)->c.add(e), (r1, r2)->{});
-        Class<? extends Annotation>[] annCls = Stream.concat(Arrays.asList(Prototype.class, Composite.class, Configurator.class, Repository.class).stream(), components.stream()).toArray(Class[]::new);
+    private void registAnnotated(List<Clazz> scanned, BeanIndexes reg) {
+        Collection<Class<?>> components = scanned.stream().filter(c->c.isAnnotation()&&c.isAnnotationPresent(Component.class)).map(Clazz::toClass).collect(Ordered.Collection::new, Ordered.Collection::add, (r1, r2)->{});
+        Class<? extends Annotation>[] annCls = Stream.concat(Stream.of(Prototype.class, Composite.class, Configurator.class, Repository.class), components.stream()).toArray(Class[]::new);
         BeanPretreater.Annotated anns = new BeanPretreater.Annotated(annCls);
         //@Repository可继承,只处理实现类(接口/父类不处理)
-        Predicate<Class<?>> isBeanClass = c->anns.isPresient(c) && (!c.isAnnotationPresent(Repository.class) || XReflection.isImplementation(c));
+        Predicate<Clazz> isBeanClass = c->anns.isPresient(c) && (!c.isAnnotationPresent(Repository.class) || c.isImplementation());
         Predicate<Class<?>> isPrototype = c->c.isAnnotationPresent(Prototype.class);
-        new BeanPretreater(scanned).filter(isBeanClass).pretreat(BeanPretreater.comparator(anns, Composite.class), isPrototype).forEach(c->reg.regist(newBinder(c)));
+        new BeanPretreater(Clazz.filter(scanned, isBeanClass)).pretreat(BeanPretreater.comparator(anns, Composite.class), isPrototype).forEach(c->reg.regist(newBinder(c)));
     }
-    private void registDiscovery(List<Class<?>> scanned, BeanIndexes reg) {
+    private void registDiscovery(List<Clazz> scanned, BeanIndexes reg) {
         this.integrate(reg.getBinder(BeanDiscovery.class));   //提前组装完成
         this.integrate(reg.getBinder(BeanRegistrator.class));
         this.getBean(BeanDiscovery.class).discover(scanned, this.getBean(BeanRegistrator.class));
@@ -77,7 +77,7 @@ public class GlobalContainer extends BeanContainer implements BeanProvider, Bean
         }
         //自身有@Reloadable标识或者有对应的annotation有标识
         if(c.isAnnotationPresent(Reloadable.class) ||
-                Arrays.stream(c.getAnnotations()).map(Annotation::annotationType).filter(cls->cls.isAnnotationPresent(Reloadable.class)).findAny().isPresent()) {
+                Arrays.stream(c.getAnnotations()).map(Annotation::annotationType).anyMatch(cls->cls.isAnnotationPresent(Reloadable.class))) {
             return new ReloadableBinder(c, Injector.of(c, this));
         }
         return BeanBinder.classic(c, Injector.of(c, this));

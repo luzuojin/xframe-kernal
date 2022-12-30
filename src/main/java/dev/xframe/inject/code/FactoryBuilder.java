@@ -1,13 +1,5 @@
 package dev.xframe.inject.code;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.List;
-import java.util.StringJoiner;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import dev.xframe.utils.XCaught;
 import dev.xframe.utils.XReflection;
 import javassist.ClassPool;
@@ -17,6 +9,15 @@ import javassist.CtMethod;
 import javassist.Modifier;
 import javassist.NotFoundException;
 
+import java.lang.reflect.Array;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
  * 
  * 生成@Factory对应的实例
@@ -24,10 +25,10 @@ import javassist.NotFoundException;
  *
  */
 public class FactoryBuilder {
-    
-    public synchronized static Object build(Class<?> factoryInteface, List<Class<?>> clsList) {
+
+    public synchronized static Object build(Class<?> factoryInteface, List<Clazz> clzList) {
         Factory anno = factoryInteface.getAnnotation(Factory.class);
-        List<Class<?>> impls = clsList.stream().filter(c->c.isAnnotationPresent(anno.value())).collect(Collectors.toList());
+        List<Class<?>> impls = Clazz.filter(clzList, c->c.isAnnotationPresent(anno.value()));
         return buildFactoryImplements(factoryInteface, anno, impls);
     }
 
@@ -68,9 +69,9 @@ public class FactoryBuilder {
         if(factory.singleton() && cm.getParameterTypes().length == 1 && !factory.keyInConstructor()) {//make singleon instances field
             singletonIndexOffset = hasDefault(defCls) ? 1 : 0; 
             //new Object[]{new A()...};
-            List<Class<?>> def = hasDefault(defCls) ? Arrays.asList(defCls) : Arrays.asList();
+            List<Class<?>> def = hasDefault(defCls) ? Collections.singletonList(defCls) : Collections.emptyList();
             String cf = String.format("Object[] _impls = new Object[]{%s};",
-                    String.join(",", Stream.concat(def.stream(), impls.stream()).map(cls->String.format("new %s()", cls.getName())).collect(Collectors.toList()))
+                    Stream.concat(def.stream(), impls.stream()).map(cls->String.format("new %s()", cls.getName())).collect(Collectors.joining(","))
                     );
             ct.addField(CtField.make(cf, ct));
         }

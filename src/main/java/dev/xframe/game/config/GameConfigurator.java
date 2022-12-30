@@ -30,10 +30,7 @@ public final class GameConfigurator implements Loadable {
 
 	@Override
 	public void load() {
-		Class<?> assemble = Codes.getScannedClasses().stream().filter(c->c.isAnnotationPresent(Assemble.class)).findAny().orElse(null);
-		if (assemble != null) {
-			configure(assemble);
-		}
+		Codes.getScannedClasses(clz -> clz.isAnnotationPresent(Assemble.class)).stream().findAny().ifPresent(this::configure);
 	}
 
 	private TaskExecutor newExecutor(Class<?> assemble) {
@@ -43,7 +40,6 @@ public final class GameConfigurator implements Loadable {
 		return anno.sharding() ? TaskExecutors.newSharding(name, nThreads) : TaskExecutors.newFixed(name, nThreads);
 	}
 
-	@SuppressWarnings("unchecked")
 	private void configure(Class<?> assemble) {
 		modularAdapter.initial(assemble);
 		

@@ -1,7 +1,5 @@
 package dev.xframe.http.service;
 
-import java.util.List;
-
 import dev.xframe.http.Request;
 import dev.xframe.http.Response;
 import dev.xframe.http.service.path.PathMap;
@@ -11,8 +9,11 @@ import dev.xframe.http.service.path.PathTemplate;
 import dev.xframe.inject.Bean;
 import dev.xframe.inject.Eventual;
 import dev.xframe.inject.Inject;
+import dev.xframe.inject.code.Clazz;
 import dev.xframe.inject.code.Codes;
 import dev.xframe.utils.XReflection;
+
+import java.util.List;
 
 /**
  * @author luzj
@@ -82,7 +83,7 @@ public class ServiceContext implements Eventual {
     
     @Override
     public void eventuate() {
-        defineServices(Codes.getScannedClasses());
+        defineServices(Codes.getScannedClasses(Clazz.filter(Http.class, Rest.class)));
     }
     
     public void defineServices(List<Class<?>> clazzes) {

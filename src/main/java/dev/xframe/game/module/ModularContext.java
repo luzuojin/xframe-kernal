@@ -15,11 +15,10 @@ import dev.xframe.inject.beans.BeanPretreater.Annotated;
 import dev.xframe.inject.beans.BeanProvider;
 import dev.xframe.inject.beans.BeanRegistrator;
 import dev.xframe.inject.beans.Injector;
+import dev.xframe.inject.code.Clazz;
 import dev.xframe.inject.code.Codes;
-import dev.xframe.utils.XReflection;
 
 import java.util.List;
-import java.util.function.Predicate;
 
 @Bean
 public class ModularContext {
@@ -43,8 +42,7 @@ public class ModularContext {
 			//assembleClass作为第一个Bean记录
 			assembleIndex = indexes.regist(new DeclaredBinder(assembleClz, Injector.of(assembleClz, indexes)));
 			registrator.regist(indexes);
-			List<Class<?>> scanned = Codes.getScannedClasses();
-			pretreatModules(scanned).forEach(c->indexes.regist(buildBinder(c, indexes)));
+			pretreatModules().forEach(c->indexes.regist(buildBinder(c, indexes)));
 			indexes.integrate(miFactory);
 		}
 	}
@@ -70,24 +68,21 @@ public class ModularContext {
 		return c.isAnnotationPresent(ModularAgent.class) ? new AgentBinder(c) : new ModularBinder(c, Injector.of(c, indexing));
 	}
 
-	private List<Class<?>> pretreatModules(List<Class<?>> scanned) {
+	private List<Class<?>> pretreatModules() {
 		Annotated annotated = new Annotated(ModularAgent.class, ModularComponent.class, Module.class);
-		return new BeanPretreater(scanned).filter(isModularClass()).pretreat(annotated.comparator()).collect();
+		return new BeanPretreater(Codes.getScannedClasses(ModularContext::isModularClass)).pretreat(annotated.comparator()).collect();
 	}
-	private Predicate<Class<?>> isModularClass() {
-		return c -> isModularClass(c);
-	}
-	private static boolean isModularClass(Class<?> clazz) {
+	private static boolean isModularClass(Clazz clazz) {
 		return isModule(clazz) || isComponent(clazz) || isAgent(clazz);
 	}
-	private static boolean isAgent(Class<?> clazz) {
+	private static boolean isAgent(Clazz clazz) {
         return clazz.isInterface() && clazz.isAnnotationPresent(ModularAgent.class);
     }
-	private static boolean isComponent(Class<?> clazz) {
+	private static boolean isComponent(Clazz clazz) {
         return clazz.isAnnotationPresent(ModularComponent.class) && !clazz.isAnnotationPresent(ModularIgnore.class);
     }
 	//由于@Module可继承 需要过滤掉抽象类
-	private static boolean isModule(Class<?> clazz) {
-        return XReflection.isImplementation(clazz) && clazz.isAnnotationPresent(Module.class) && !clazz.isAnnotationPresent(ModularIgnore.class);
+	private static boolean isModule(Clazz clazz) {
+        return clazz.isImplementation() && clazz.isAnnotationPresent(Module.class) && !clazz.isAnnotationPresent(ModularIgnore.class);
     }
 }

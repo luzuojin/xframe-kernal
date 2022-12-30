@@ -1,14 +1,14 @@
 package dev.xframe.net.cmd;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import dev.xframe.inject.Bean;
 import dev.xframe.inject.Eventual;
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.code.Codes;
 import dev.xframe.utils.XReflection;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 命令集合 遍历所有文件,找出含有@cmd annotation的命令类
@@ -39,7 +39,7 @@ public class CommandContext implements Eventual {
     
     @Override
     public void eventuate() {
-        defineCmds(Codes.getScannedClasses());        
+        defineCmds(Codes.getScannedClasses(clz->clz.isAnnotationPresent(Cmd.class)));
     }
 
 	public void defineCmds(List<Class<?>> clazzes) {

@@ -1,10 +1,5 @@
 package dev.xframe.test.game;
 
-import java.lang.reflect.Method;
-import java.util.List;
-
-import javax.annotation.Resource;
-
 import dev.xframe.game.player.MCallerFactory;
 import dev.xframe.game.player.ModularAdapter;
 import dev.xframe.inject.Bean;
@@ -13,6 +8,10 @@ import dev.xframe.inject.Loadable;
 import dev.xframe.inject.beans.BeanBinder;
 import dev.xframe.inject.beans.BeanDiscovery;
 import dev.xframe.inject.beans.BeanRegistrator;
+import dev.xframe.inject.code.Clazz;
+
+import java.lang.reflect.Method;
+import java.util.List;
 
 @Bean
 public class TCallerDiscovery implements BeanDiscovery, Loadable {
@@ -25,10 +24,10 @@ public class TCallerDiscovery implements BeanDiscovery, Loadable {
     private Method cmm;
 
     @Override
-    public void discover(List<Class<?>> scanned, BeanRegistrator reg) {
+    public void discover(List<Clazz> scanned, BeanRegistrator reg) {
         Class<?> c = TPlayerInventory.class;
         for (Method m : c.getDeclaredMethods()) {
-            if(m.isAnnotationPresent(Resource.class)) {
+            if(m.isAnnotationPresent(TCallerAnno.class)) {
                 cls = c;
                 cbb = new BeanBinder.LazyInstance(TCaller.class);
                 cmm = m;

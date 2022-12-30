@@ -3,14 +3,13 @@ package dev.xframe.game.action;
 import dev.xframe.inject.Bean;
 import dev.xframe.inject.Inject;
 import dev.xframe.inject.Loadable;
+import dev.xframe.inject.code.Clazz;
 import dev.xframe.inject.code.Codes;
 import dev.xframe.net.cmd.Cmd;
 import dev.xframe.utils.XGeneric;
-import dev.xframe.utils.XReflection;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Predicate;
 
 @SuppressWarnings("ALL")
 @Bean
@@ -26,11 +25,11 @@ public class Actions implements Loadable {
 
     @Override
     public void load() {
-        Codes.getScannedClasses().stream()
-                .filter(Action.class::isAssignableFrom)
-                .filter(XReflection::isImplementation)
-                .filter(Predicate.isEqual(RunnableAction.class).negate())
-                .forEach(this::makeFactory);
+        Codes.getScannedClasses(Clazz.filter(
+                clz->clz.isImplementedFrom(Action.class),
+                Clazz::isImplementation,
+                clz->!clz.isImplementedFrom(RunnableAction.class)
+        )).forEach(this::makeFactory);
     }
 
     ActionFactory makeFactory0(Class<?> cls) {

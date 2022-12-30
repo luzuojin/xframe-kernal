@@ -1,40 +1,42 @@
 package dev.xframe.inject.code;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.lang.instrument.ClassDefinition;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import dev.xframe.inject.code.Scanner.ClassEntry;
 import dev.xframe.inject.code.Scanner.ScanMatcher;
+import dev.xframe.utils.XOptional;
 import javassist.CannotCompileException;
 import javassist.ClassMap;
 import javassist.ClassPath;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.InputStream;
+import java.lang.instrument.ClassDefinition;
+import java.net.URL;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 
 public class Codes {
 	
 	private static final Logger logger = LoggerFactory.getLogger(Codes.class);
 	
-	private static Map<String, ClassEntry> classEntryMap = new HashMap<>();
-	private static Map<String, AtomicInteger> classVersionMap = new HashMap<>();
+	private static Map<String, ClassEntry> classEntryMap = new LinkedHashMap<>();
+	private static Map<String, AtomicInteger> classVersionMap = new LinkedHashMap<>();
 	
 	private static ScanMatcher matcher = new ScanMatcher("*xframe-*.jar;dev.xframe.*", "dev.xframe.inject.junit.*");
-	
-	private static List<Class<?>> scanned;
-	
+
+	private static List<Clazz> scanned;
+
 	private static int addEntry(ClassEntry entry) {
 	    classEntryMap.put(entry.name, entry);
 	    
@@ -44,22 +46,15 @@ public class Codes {
 	    return classVersionMap.get(entry.name).getAndIncrement();
 	}
 	
-	public static List<Class<?>> scanClasses(String includes, String excludes) {
-	    matcher.merge(new ScanMatcher(includes, excludes));
-		return scanClasses0();
+	public static List<Clazz> scan(String includes, String excludes) {
+		return scan0(matcher.merge(new ScanMatcher(includes, excludes)));
 	}
 
-	private synchronized static List<Class<?>> scanClasses0() {
+	private synchronized static List<Clazz> scan0(ScanMatcher matcher) {
 	    if(scanned == null) {
-	        List<ClassEntry> entries = Scanner.scan(matcher);
-	        List<String> names = new ArrayList<>();
-	        for (ClassEntry entry : entries) {
-	            addEntry(entry);
-	            names.add(entry.name);
-	        }
-	        
-	        PatcherSet.makePatch(names);
-	        scanned = loadClasses(names);
+			Scanner.scan(matcher).forEach(Codes::addEntry);
+	        PatcherSet.makePatch(classEntryMap.keySet());
+			scanned = loadClazzes(classEntryMap.keySet());
 	    }
 		return scanned;
 	}
@@ -72,8 +67,16 @@ public class Codes {
 	    return matcher.match(className);
 	}
 	
+	public static List<Clazz> scannedClazzes() {
+		return XOptional.orElse(scanned, Collections.emptyList());
+	}
+
+	@Deprecated
 	public static List<Class<?>> getScannedClasses() {
-		return scanned == null ? Collections.emptyList() : scanned;
+		return getScannedClasses(clz->true);
+	}
+	public static List<Class<?>> getScannedClasses(Predicate<Clazz> predicate) {
+		return Clazz.filter(scannedClazzes(), predicate);
 	}
 	
 	private static Class<?> defineClass(ClassPool pool, String name) {
@@ -92,7 +95,7 @@ public class Codes {
 	
 	public static boolean redefineClass(File classFile) throws Exception {
 	    ClassPool pool = getClassPool(classFile);
-        CtClass ctClass = pool.makeClass(new FileInputStream(classFile));
+        CtClass ctClass = pool.makeClass(Files.newInputStream(classFile.toPath()));
         PatcherSet.makePatch(ctClass);
         Class<?> theClass = defineClass(pool, ctClass.getName());
         return XInstrument.redefine(new ClassDefinition(theClass, ctClass.toBytecode()));
@@ -100,7 +103,7 @@ public class Codes {
 	
 	public static Class<?> versioningClass(File classFile) throws Exception {
 		ClassPool pool = getClassPool(classFile);
-		CtClass ctClass = pool.makeClass(new FileInputStream(classFile));
+		CtClass ctClass = pool.makeClass(Files.newInputStream(classFile.toPath()));
 		return renameClass(pool, new ClassEntry(ctClass.getName(), classFile.length(), classFile.lastModified()), ctClass);
 	}
 	
@@ -150,13 +153,14 @@ public class Codes {
         return cm;
 	}
 
-	public static List<Class<?>> loadClasses(List<String> names) {
+	private static List<Clazz> loadClazzes(Collection<String> names) {
 		ClassPool pool = CtHelper.getClassPool();
-		List<Class<?>> clazzes = new ArrayList<>();
+		List<Clazz> clazzes = new ArrayList<>();
 		for (String name : names) {
 			try {
-				pool.get(name).freeze();
-				clazzes.add(Class.forName(name));
+				CtClass ctClass = pool.get(name);
+				ctClass.freeze();
+				clazzes.add(Clazz.of(ctClass));
 			} catch (Throwable e) {//ignore
 				logger.debug("load class error", e);
 			}
@@ -171,7 +175,7 @@ public class Codes {
         }
         public InputStream openClassfile(String classname) {
             try {
-                return new FileInputStream(toFile(classname));
+                return Files.newInputStream(toFile(classname).toPath());
             } catch (Exception e) {}
             return null;
         }

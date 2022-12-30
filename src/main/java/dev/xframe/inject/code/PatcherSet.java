@@ -1,19 +1,19 @@
 package dev.xframe.inject.code;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.ServiceLoader;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.Modifier;
 import javassist.NotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.ServiceLoader;
+import java.util.Set;
 
 public class PatcherSet {
 
@@ -33,9 +33,9 @@ public class PatcherSet {
         patchers.add(patcher);
     }
 
-    public static void makePatch(List<String> classNames) {
+    public static void makePatch(Collection<String> classNames) {
         ClassPool pool = CtHelper.getClassPool();
-        Set<CtClass> patched = new LinkedHashSet<CtClass>();//需要顺序, 先patch先load
+        Set<CtClass> patched = new LinkedHashSet<>();//需要顺序, 先patch先load
 
         for (String className : classNames) {
             try {

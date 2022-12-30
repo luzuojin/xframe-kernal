@@ -1,8 +1,9 @@
 package dev.xframe.inject.beans;
 
-import java.util.List;
-
 import dev.xframe.inject.Composite;
+import dev.xframe.inject.code.Clazz;
+
+import java.util.List;
 
 /**
  * 发现Bean, 向特定的BeanIndexes中regist对应的Binder
@@ -23,6 +24,6 @@ public interface BeanDiscovery {
      * @param scanned
      * @param reg
      */
-    public void discover(List<Class<?>> scanned, BeanRegistrator reg);
+    public void discover(List<Clazz> scanned, BeanRegistrator reg);
 
 }
